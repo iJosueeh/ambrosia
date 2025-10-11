@@ -1,6 +1,9 @@
 import { HelpCircle, CheckCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export const TestCTA = () => {
+  const navigate = useNavigate();
+
   const features = [
     "100% confidencial y anónimo",
     "Resultados inmediatos",
@@ -51,7 +54,10 @@ export const TestCTA = () => {
 
               {/* CTA Button */}
               <div>
-                <button className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                <button
+                  onClick={() => navigate("/quiz")}
+                  className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                >
                   Realizar Test Ahora
                 </button>
               </div>

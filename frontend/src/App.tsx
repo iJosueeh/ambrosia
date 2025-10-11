@@ -1,15 +1,35 @@
-import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter, useLocation } from "react-router-dom";
 import { AppRoutes } from "./routes/AppRoutes";
 import { Navbar } from "./shared/components/Navbar";
 import { Footer } from "./shared/components/Footer";
+import { useEffect } from "react";
 
 function App() {
   return (
     <BrowserRouter>
-      <Navbar />
-        <AppRoutes />
-      <Footer />
+      <AppContent />
     </BrowserRouter>
+  );
+}
+
+function AppContent() {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.hash) {
+      const element = document.getElementById(location.hash.substring(1));
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+  }, [location]);
+
+  return (
+    <>
+      <Navbar />
+      <AppRoutes />
+      <Footer />
+    </>
   );
 }
 

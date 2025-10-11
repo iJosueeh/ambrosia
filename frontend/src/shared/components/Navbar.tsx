@@ -1,18 +1,30 @@
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Menu, X, LogIn, LogOut } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import Logotipo from "../../assets/Ambrosia_Logo2.png";
+import { useAuth } from "../hooks/useAuth";
 
 export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
 
   const navItems = [
-    { name: "Inicio", href: "#home" },
-    { name: "Sobre Nosotros", href: "#about" },
-    { name: "Recursos", href: "#resources" },
-    { name: "Artículos", href: "#articles" },
-    { name: "Tests", href: "#tests" },
+    { name: "Inicio", href: "/#home" },
+    { name: "Sobre Nosotros", href: "/#about" },
+    { name: "Recursos", href: "/#resources" },
+    { name: "Artículos", href: "/#articles" },
+    { name: "Tests", href: "/#tests" },
   ];
+
+  const handleAuthClick = () => {
+    if (isAuthenticated) {
+      logout();
+    } else {
+      navigate("/auth");
+    }
+    setIsOpen(false);
+  };
 
   return (
     <nav className="bg-white shadow-sm fixed top-0 left-0 right-0 z-50">
@@ -38,34 +50,37 @@ export const Navbar = () => {
               </a>
             ))}
             <a
-              href="#contact"
+              href="/#contact"
               className="bg-emerald-500 text-white px-6 py-2 rounded-lg hover:bg-emerald-600 transition-colors duration-200 text-sm font-medium"
             >
               Contacto
             </a>
+            <button
+              onClick={handleAuthClick}
+              className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-200 text-sm font-medium"
+            >
+              {isAuthenticated ? (
+                <LogOut className="w-4 h-4" />
+              ) : (
+                <LogIn className="w-4 h-4" />
+              )}
+              {isAuthenticated ? "Cerrar Sesión" : "Iniciar Sesión"}
+            </button>
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden">
+          <div className="md:hidden flex items-center gap-2">
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="text-gray-600 hover:text-emerald-500 focus:outline-none"
             >
               <div className="relative w-6 h-6">
                 <Menu
-                  className={`absolute transition-all duration-300 ease-in-out ${
-                    isOpen
-                      ? "transform rotate-90 opacity-0"
-                      : "transform rotate-0 opacity-100"
-                  }`}
+                  className={`absolute transition-all duration-300 ease-in-out ${isOpen ? "transform rotate-90 opacity-0" : "transform rotate-0 opacity-100"}`}
                   size={24}
                 />
                 <X
-                  className={`absolute transition-all duration-300 ease-in-out ${
-                    isOpen
-                      ? "transform rotate-0 opacity-100"
-                      : "transform -rotate-90 opacity-0"
-                  }`}
+                  className={`absolute transition-all duration-300 ease-in-out ${isOpen ? "transform rotate-0 opacity-100" : "transform -rotate-90 opacity-0"}`}
                   size={24}
                 />
               </div>
@@ -76,9 +91,7 @@ export const Navbar = () => {
 
       {/* Mobile Menu */}
       <div
-        className={`md:hidden bg-white border-t border-gray-100 transition-all duration-300 ease-in-out overflow-hidden ${
-          isOpen ? "max-h-screen" : "max-h-0"
-        }`}
+        className={`md:hidden bg-white border-t border-gray-100 transition-all duration-300 ease-in-out overflow-hidden ${isOpen ? "max-h-screen" : "max-h-0"}`}
       >
         <div className="px-4 pt-2 pb-4 space-y-2">
           {navItems.map((item) => (
@@ -92,12 +105,18 @@ export const Navbar = () => {
             </a>
           ))}
           <a
-            href="#contact"
+            href="/#contact"
             className="block w-full text-center bg-emerald-500 text-white px-6 py-2 rounded-lg hover:bg-emerald-600 transition-colors duration-200 text-sm font-medium mt-4"
             onClick={() => setIsOpen(false)}
           >
             Contacto
           </a>
+          <button
+            onClick={handleAuthClick}
+            className="block w-full text-center bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-200 text-sm font-medium mt-4"
+          >
+            {isAuthenticated ? "Cerrar Sesión" : "Iniciar Sesión"}
+          </button>
         </div>
       </div>
     </nav>
