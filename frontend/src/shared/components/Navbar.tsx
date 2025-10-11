@@ -1,91 +1,105 @@
 import { useState } from "react";
+import { Menu, X } from "lucide-react";
 import { Link } from "react-router-dom";
+import Logotipo from "../../assets/Ambrosia_Logo2.png";
 
 export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
+  const navItems = [
+    { name: "Inicio", href: "#home" },
+    { name: "Sobre Nosotros", href: "#about" },
+    { name: "Recursos", href: "#resources" },
+    { name: "Artículos", href: "#articles" },
+    { name: "Tests", href: "#tests" },
+  ];
+
   return (
-    <nav className="fixed top-0 left-0 w-full bg-white/70 backdrop-blur-md shadow-md z-50">
-      <div className="max-w-7xl mx-auto flex items-center justify-between p-4">
-        {/* Logo */}
-        <Link to="/" className="text-2xl font-bold text-purple-700">
-          Ambrosia
-        </Link>
+    <nav className="bg-white shadow-sm fixed top-0 left-0 right-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo */}
+          <div className="flex items-center space-x-2">
+            <Link to="/" className="text-2xl font-bold text-purple-700">
+              <img className="w-20" src={Logotipo} alt="Ambrosia Logo" />
+            </Link>
+          </div>
 
-        {/* Links desktop */}
-        <div className="hidden md:flex space-x-6">
-          <a href="#hero" className="hover:text-purple-600 transition">
-            Inicio
-          </a>
-          <a href="#about" className="hover:text-purple-600 transition">
-            Sobre Nosotros
-          </a>
-          <a href="#resources" className="hover:text-purple-600 transition">
-            Recursos
-          </a>
-          <a href="#contact" className="hover:text-purple-600 transition">
-            Contacto
-          </a>
+          {/* Desktop Menu */}
+          <div className="hidden md:flex items-center space-x-8">
+            {navItems.map((item) => (
+              <a
+                key={item.name}
+                href={item.href}
+                className="relative group text-gray-600 hover:text-emerald-500 transition-colors duration-200 text-sm font-medium"
+              >
+                {item.name}
+                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-emerald-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-in-out"></span>
+              </a>
+            ))}
+            <a
+              href="#contact"
+              className="bg-emerald-500 text-white px-6 py-2 rounded-lg hover:bg-emerald-600 transition-colors duration-200 text-sm font-medium"
+            >
+              Contacto
+            </a>
+          </div>
+
+          {/* Mobile menu button */}
+          <div className="md:hidden">
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="text-gray-600 hover:text-emerald-500 focus:outline-none"
+            >
+              <div className="relative w-6 h-6">
+                <Menu
+                  className={`absolute transition-all duration-300 ease-in-out ${
+                    isOpen
+                      ? "transform rotate-90 opacity-0"
+                      : "transform rotate-0 opacity-100"
+                  }`}
+                  size={24}
+                />
+                <X
+                  className={`absolute transition-all duration-300 ease-in-out ${
+                    isOpen
+                      ? "transform rotate-0 opacity-100"
+                      : "transform -rotate-90 opacity-0"
+                  }`}
+                  size={24}
+                />
+              </div>
+            </button>
+          </div>
         </div>
-
-        {/* Botón CTA desktop */}
-        <div className="hidden md:block">
-          <Link
-            to="/login"
-            className="px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition"
-          >
-            Iniciar Sesión
-          </Link>
-        </div>
-
-        {/* Botón hamburguesa (mobile) */}
-        <button
-          className="md:hidden text-purple-700 focus:outline-none"
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          {isOpen ? (
-            <span className="text-3xl">&times;</span> // X
-          ) : (
-            <span className="text-3xl">&#9776;</span> // ☰
-          )}
-        </button>
       </div>
 
-      {/* Menú móvil */}
-      {isOpen && (
-        <div className="md:hidden flex flex-col items-center bg-white shadow-lg pb-4">
-          <a
-            href="#hero"
-            className="py-2 w-full text-center hover:bg-purple-100"
-          >
-            Inicio
-          </a>
-          <a
-            href="#about"
-            className="py-2 w-full text-center hover:bg-purple-100"
-          >
-            Sobre Nosotros
-          </a>
-          <a
-            href="#resources"
-            className="py-2 w-full text-center hover:bg-purple-100"
-          >
-            Recursos
-          </a>
+      {/* Mobile Menu */}
+      <div
+        className={`md:hidden bg-white border-t border-gray-100 transition-all duration-300 ease-in-out overflow-hidden ${
+          isOpen ? "max-h-screen" : "max-h-0"
+        }`}
+      >
+        <div className="px-4 pt-2 pb-4 space-y-2">
+          {navItems.map((item) => (
+            <a
+              key={item.name}
+              href={item.href}
+              className="block py-2 text-gray-600 hover:text-emerald-500 transition-colors duration-200 text-sm font-medium"
+              onClick={() => setIsOpen(false)}
+            >
+              {item.name}
+            </a>
+          ))}
           <a
             href="#contact"
-            className="py-2 w-full text-center hover:bg-purple-100"
+            className="block w-full text-center bg-emerald-500 text-white px-6 py-2 rounded-lg hover:bg-emerald-600 transition-colors duration-200 text-sm font-medium mt-4"
+            onClick={() => setIsOpen(false)}
           >
             Contacto
           </a>
-          <Link
-            to="/login"
-            className="mt-2 px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition"
-          >
-            Iniciar Sesión
-          </Link>
         </div>
-      )}
+      </div>
     </nav>
   );
 };

@@ -4,5 +4,14 @@ export default {
   theme: {
     extend: {},
   },
-  plugins: [],
+  plugins: [
+    function ({ addUtilities }) {
+      const newUtilities = {
+        '.overflow-x-hidden': {
+          'overflow-x': 'hidden',
+        },
+      };
+      addUtilities(newUtilities);
+    },
+  ],
 };
