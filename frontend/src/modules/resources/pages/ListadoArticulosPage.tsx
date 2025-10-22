@@ -1,24 +1,26 @@
 import React from "react";
-// Importamos solo los íconos necesarios y Portada temporal
-import { Search, Mic, BookOpen, Video,  Zap, User, Smile, Baby } from "lucide-react";
-import Portada from "../../../assets/portada1.jpg"; 
+// Importamos solo los íconos necesarios
+import { Search, Mic, BookOpen, Video, Zap, User, Smile, Baby } from "lucide-react";
 
-// =========================================================================
-// 💡 Tipado de las Props de las tarjetas
-// =========================================================================
+
+import articulos from "../../../assets/imgArticulos/articulos.jpg";
+import libro from "../../../assets/imgArticulos/libro.jpg";
+import mental from "../../../assets/imgArticulos/mental.gif"; 
+import mitos from "../../../assets/imgArticulos/mitos.jpg"; 
+import nino from "../../../assets/imgArticulos/nino.jpg"; 
+import podcast from "../../../assets/imgArticulos/podcast.jpg"; 
+import videok from "../../../assets/imgArticulos/videok.gif"; 
 
 interface RecursoCardProps {
   title: string;
-  // Usamos un tipo que asegura que el elemento puede ser clonado con props
+
   icon: React.ReactElement<{ className?: string }>; 
   large?: boolean;
   borderColor?: string;
   backgroundImage?: string;
 }
 
-// =========================================================================
-// 🔍 Componente de buscador con filtros (Color ajustado a verde)
-// =========================================================================
+
 const BuscadorFiltros: React.FC = () => (
   <div className="p-4 bg-white/90 backdrop-blur-md rounded-xl shadow-lg border-2 border-emerald-500/50">
     <h3 className="text-xl font-bold text-emerald-600 mb-4 text-center">buscador</h3>
@@ -55,7 +57,8 @@ const RecursoCard: React.FC<RecursoCardProps> = ({
   icon,
   large = false,
   borderColor = "border-emerald-500", // Color de borde ajustado
-  backgroundImage = Portada,
+  // ⭐️ Cambiado el valor por defecto a 'articulos'
+  backgroundImage = articulos, 
 }) => {
   
   // Clonamos el ícono para asegurar que tenga las clases de Tailwind
@@ -72,8 +75,8 @@ const RecursoCard: React.FC<RecursoCardProps> = ({
       {/* Fondo con imagen */}
       <div
         className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-        // Fallback si la URL de la imagen no está definida
-        style={{ backgroundImage: `url(${backgroundImage || 'https://via.placeholder.com/600x400/10B981/FFFFFF?text=Fondo+no+disponible'})` }} 
+        // ⭐️ Uso de la variable de imagen local
+        style={{ backgroundImage: `url(${backgroundImage || articulos})` }} 
       />
 
       {/* Capa de oscurecimiento (Ajustado a un tono más verde-oscuro) */}
@@ -100,16 +103,15 @@ const RecursoCard: React.FC<RecursoCardProps> = ({
 // 🌿 Página Principal: Listado de Recursos
 // =========================================================================
 export const ListadoArticulosPage: React.FC = () => {
-  // Ejemplos de imágenes para todas las tarjetas
+  // ⭐️ ASIGNACIÓN DE LAS IMÁGENES IMPORTADAS
   const images = {
-    articulos: "https://images.unsplash.com/photo-1550503953-b3c9906649e3?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    podcast: "https://images.unsplash.com/photo-1518609802319-21b2289f074d?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    videos: "https://images.unsplash.com/photo-1488756916560-6b610c1157ba?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    libros: "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    mitos: "https://images.unsplash.com/photo-1577717903265-c3243003b5f9?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    comida: "https://images.unsplash.com/photo-1498837142430-82a856a29790?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    salud_mental: "https://images.unsplash.com/photo-1582266858273-d9d96b99b53b?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    desarrollo_infantil: "https://images.unsplash.com/photo-1589998188091-ce975ad3d162?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+    articulos: articulos,
+    podcast: podcast,
+    videos: videok,
+    libros: libro,
+    mitos: mitos,
+    salud_mental: mental,
+    desarrollo_infantil: nino
   };
 
   return (
@@ -187,7 +189,7 @@ export const ListadoArticulosPage: React.FC = () => {
           />
         </div>
 
-        {/* ⭐️ 8. Nueva Categoría 1 (Añadida abajo) */}
+        {/* ⭐️ 8. Salud Mental (Abajo, col-span-2) */}
         <div className="md:col-span-2 min-h-[180px]">
           <RecursoCard 
             title="Salud Mental" 
@@ -196,7 +198,7 @@ export const ListadoArticulosPage: React.FC = () => {
           />
         </div>
 
-        
+      
 
       </div>
     </div>
