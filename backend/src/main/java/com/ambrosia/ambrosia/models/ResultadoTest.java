@@ -19,6 +19,7 @@ public class ResultadoTest {
     private Long id;
 
     private Integer puntaje;
+    private Integer cantidadTestsRespondidos;
     private LocalDateTime fechaRealizacion;
 
     @ManyToOne

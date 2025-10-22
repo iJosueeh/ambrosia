@@ -1,120 +1,163 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft, ArrowRight, CheckCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import AmbrosiaLogo from "../../../assets/Ambrosia_Logo2.png";
+import { useMutation } from "@tanstack/react-query";
+import { guardarResultado } from "../services/test.service";
+import * as TestServiceTypes from "../services/test.service";
+import { toast } from 'react-hot-toast';
+import { useAuth } from "../../../shared/hooks/useAuth";
+
+const staticTest: TestServiceTypes.TestDTO = {
+  id: 1,
+  titulo: "Evaluación de Bienestar Integral",
+  descripcion: "Este test evalúa aspectos psicológicos y nutricionales para un bienestar completo.",
+  preguntas: [
+    {
+      id: 101,
+      texto: "¿Con qué frecuencia sientes estrés o ansiedad en tu día a día?",
+      opciones: [
+        { id: 1001, texto: "Nunca o casi nunca" },
+        { id: 1002, texto: "Raramente" },
+        { id: 1003, texto: "A veces" },
+        { id: 1004, texto: "Frecuentemente" },
+        { id: 1005, texto: "Constantemente" },
+      ],
+    },
+    {
+      id: 102,
+      texto: "¿Cómo describirías la calidad de tu sueño?",
+      opciones: [
+        { id: 1006, texto: "Muy buena, duermo profundamente" },
+        { id: 1007, texto: "Buena, me siento descansado/a" },
+        { id: 1008, texto: "Regular, a veces me cuesta dormir" },
+        { id: 1009, texto: "Mala, me despierto varias veces" },
+        { id: 1010, texto: "Muy mala, casi no duermo" },
+      ],
+    },
+    {
+      id: 103,
+      texto: "¿Con qué frecuencia consumes frutas y verduras?",
+      opciones: [
+        { id: 1011, texto: "Varias veces al día" },
+        { id: 1012, texto: "Una vez al día" },
+        { id: 1013, texto: "Algunos días a la semana" },
+        { id: 1014, texto: "Raramente" },
+        { id: 1015, texto: "Nunca o casi nunca" },
+      ],
+    },
+    {
+      id: 104,
+      texto: "¿Cuántos vasos de agua bebes al día en promedio?",
+      opciones: [
+        { id: 1016, texto: "8 o más" },
+        { id: 1017, texto: "Entre 5 y 7" },
+        { id: 1018, texto: "Entre 2 y 4" },
+        { id: 1019, texto: "Menos de 2" },
+        { id: 1020, texto: "Casi ninguno" },
+      ],
+    },
+  ],
+};
 
 export const AssessmentQuiz = () => {
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState<Record<number, string>>({});
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [answers, setAnswers] = useState<Record<number, number>>({}); // Stores questionId -> optionId
   const [showResults, setShowResults] = useState(false);
+  const [currentTest, setCurrentTest] = useState<TestServiceTypes.TestDTO | null>(null);
 
-  const questions = [
-    {
-      id: 1,
-      text: "¿Con qué frecuencia te preocupas por tu peso o forma corporal?",
-      options: [
-        "Nunca",
-        "Raramente",
-        "A veces",
-        "Frecuentemente",
-        "Constantemente",
-      ],
-    },
-    {
-      id: 2,
-      text: "¿Has experimentado cambios significativos en tus hábitos alimenticios?",
-      options: [
-        "No, ningún cambio",
-        "Cambios menores",
-        "Algunos cambios",
-        "Cambios significativos",
-        "Cambios drásticos",
-      ],
-    },
-    {
-      id: 3,
-      text: "¿Cómo te sientes después de comer?",
-      options: [
-        "Satisfecho y bien",
-        "Generalmente bien",
-        "A veces culpable",
-        "Frecuentemente culpable",
-        "Muy culpable o ansioso",
-      ],
-    },
-    {
-      id: 4,
-      text: "¿Con qué frecuencia evitas comer en situaciones sociales?",
-      options: ["Nunca", "Raramente", "A veces", "Frecuentemente", "Siempre"],
-    },
-    {
-      id: 5,
-      text: "¿Has notado cambios en tu energía o estado de ánimo?",
-      options: [
-        "No, me siento normal",
-        "Cambios leves",
-        "Algunos cambios",
-        "Cambios notables",
-        "Cambios severos",
-      ],
-    },
-    {
-      id: 6,
-      text: "¿Cuentas calorías o controlas estrictamente lo que comes?",
-      options: [
-        "Nunca",
-        "Raramente",
-        "A veces",
-        "Frecuentemente",
-        "Constantemente",
-      ],
-    },
-    {
-      id: 7,
-      text: "¿Afecta tu alimentación a tus relaciones personales?",
-      options: [
-        "Para nada",
-        "Muy poco",
-        "A veces",
-        "Frecuentemente",
-        "Significativamente",
-      ],
-    },
-    {
-      id: 8,
-      text: "¿Te sientes fuera de control cuando comes?",
-      options: [
-        "Nunca",
-        "Raramente",
-        "A veces",
-        "Frecuentemente",
-        "Muy frecuentemente",
-      ],
-    },
-  ];
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSelectAnswer = (answer: string) => {
+  useEffect(() => {
+    setCurrentTest(staticTest);
+  }, []);
+
+  const submitResultMutation = useMutation<void, Error, TestServiceTypes.ResultadoDTO>({
+    mutationFn: guardarResultado,
+    onSuccess: () => {
+      console.log("Resultados guardados exitosamente!");
+      toast.success("Resultados guardados exitosamente!");
+      setTimeout(() => {
+        navigate('/');
+      }, 2000); // 2-second delay before redirecting
+    },
+    onError: (err) => {
+      console.error("Error al guardar resultados:", err);
+      toast.error("Error al guardar resultados: " + err.message);
+      setIsSubmitting(false); // Reset on error
+    },
+  });
+
+  if (!currentTest) return <div className="min-h-screen flex items-center justify-center">Cargando test...</div>;
+
+  const questions = currentTest.preguntas;
+
+  if (questions.length === 0) {
+    return <div className="min-h-screen flex items-center justify-center">No hay preguntas para este test.</div>;
+  }
+
+  const currentQuestion: TestServiceTypes.Pregunta = questions[currentQuestionIndex];
+
+  const handleSelectAnswer = (questionId: number, optionId: number) => {
     setAnswers({
       ...answers,
-      [currentQuestion]: answer,
+      [questionId]: optionId,
     });
   };
 
   const handleNext = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
       setShowResults(true);
     }
   };
 
   const handlePrevious = () => {
-    if (currentQuestion > 0) {
-      setCurrentQuestion(currentQuestion - 1);
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
     }
   };
 
-  const progress = ((currentQuestion + 1) / questions.length) * 100;
+  const calculateScore = () => {
+    let score = 0;
+    questions.forEach(question => {
+      const selectedOptionId = answers[question.id];
+      if (selectedOptionId) {
+
+        score += selectedOptionId % 1000;
+      }
+    });
+    return score;
+  };
+
+  const handleSaveResults = () => {
+    if (isSubmitting) return; // Prevent multiple submissions
+
+    setIsSubmitting(true);
+    if (user && currentTest) {
+      const puntajeTotal = calculateScore();
+      const resultado: TestServiceTypes.ResultadoDTO = {
+        usuarioId: user.id,
+        testId: currentTest.id,
+        respuestas: Object.entries(answers).map(([preguntaId, opcionId]) => ({
+          preguntaId: parseInt(preguntaId),
+          opcionId: opcionId,
+        })),
+        puntajeTotal: puntajeTotal,
+      };
+      submitResultMutation.mutate(resultado);
+    } else {
+      // This case should ideally not be reached if the button is conditionally rendered
+      toast.error("Debes iniciar sesión para guardar tus resultados.");
+      setIsSubmitting(false);
+    }
+  };
+
+  const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
 
   if (showResults) {
     return (
@@ -142,8 +185,8 @@ export const AssessmentQuiz = () => {
                 Tus Resultados
               </h3>
               <p className="text-gray-700 leading-relaxed">
-                Basándonos en tus respuestas, recomendamos que consideres hablar
-                con un profesional de la salud. Recuerda que buscar ayuda es un
+                Basándonos en tus respuestas, tu puntaje total es: <strong>{calculateScore()}</strong>.
+                Recomendamos que consideres hablar con un profesional de la salud. Recuerda que buscar ayuda es un
                 acto de valentía y el primer paso hacia la recuperación.
               </p>
             </div>
@@ -194,9 +237,21 @@ export const AssessmentQuiz = () => {
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 mb-6">
-              <button className="flex-1 bg-emerald-500 text-white py-3 px-6 rounded-lg font-semibold hover:bg-emerald-600 transition-colors duration-200 shadow-md">
-                Ver Recursos
-              </button>
+              {user ? (
+                <motion.button
+                  onClick={handleSaveResults}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex-1 bg-blue-500 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-600 transition-colors duration-200 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={submitResultMutation.isPending || isSubmitting}
+                >
+                  {submitResultMutation.isPending || isSubmitting ? "Guardando..." : "Guardar Resultados"}
+                </motion.button>
+              ) : (
+                <button className="flex-1 bg-gray-300 text-gray-700 py-3 px-6 rounded-lg font-semibold cursor-not-allowed">
+                  Inicia sesión para guardar resultados
+                </button>
+              )}
               <button className="flex-1 border-2 border-emerald-500 text-emerald-600 py-3 px-6 rounded-lg font-semibold hover:bg-emerald-50 transition-colors duration-200">
                 Contactar Especialista
               </button>
@@ -236,7 +291,7 @@ export const AssessmentQuiz = () => {
         <div className="mb-8">
           <div className="flex justify-between items-center mb-2">
             <span className="text-sm font-medium text-gray-600">
-              Pregunta {currentQuestion + 1} de {questions.length}
+              Pregunta {currentQuestionIndex + 1} de {questions.length}
             </span>
             <span className="text-sm font-medium text-blue-600">
               {Math.round(progress)}%
@@ -253,7 +308,7 @@ export const AssessmentQuiz = () => {
         {/* Question Card */}
         <AnimatePresence mode="wait">
           <motion.div
-            key={currentQuestion}
+            key={currentQuestion.id}
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -50 }}
@@ -261,24 +316,24 @@ export const AssessmentQuiz = () => {
             className="bg-white rounded-2xl shadow-xl p-8 mb-6"
           >
             <h3 className="text-lg md:text-xl font-semibold text-gray-800 mb-6">
-              {questions[currentQuestion].text}
+              {currentTest.titulo} - {currentQuestion.texto}
             </h3>
 
             {/* Answer Options */}
             <div className="space-y-3">
-              {questions[currentQuestion].options.map((option, index) => (
+              {currentQuestion.opciones.map((option) => (
                 <motion.button
-                  key={index}
-                  onClick={() => handleSelectAnswer(option)}
+                  key={option.id}
+                  onClick={() => handleSelectAnswer(currentQuestion.id, option.id)}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   className={`w-full text-left px-6 py-4 rounded-lg border-2 transition-all duration-200 ${
-                    answers[currentQuestion] === option
+                    answers[currentQuestion.id] === option.id
                       ? "border-blue-500 bg-blue-50 text-blue-900"
                       : "border-gray-200 hover:border-blue-300 hover:bg-gray-50 text-gray-700"
                   }`}
                 >
-                  {option}
+                  {option.texto}
                 </motion.button>
               ))}
             </div>
@@ -289,7 +344,7 @@ export const AssessmentQuiz = () => {
         <div className="flex gap-4">
           <motion.button
             onClick={handlePrevious}
-            disabled={currentQuestion === 0}
+            disabled={currentQuestionIndex === 0}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             className="flex items-center gap-2 px-6 py-3 border-2 border-gray-300 text-gray-600 rounded-lg font-medium hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -300,12 +355,12 @@ export const AssessmentQuiz = () => {
 
           <motion.button
             onClick={handleNext}
-            disabled={!answers[currentQuestion]}
+            disabled={!answers[currentQuestion.id]}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition-colors duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {currentQuestion === questions.length - 1
+            {currentQuestionIndex === questions.length - 1
               ? "Ver Resultados"
               : "Siguiente"}
             <ArrowRight className="w-5 h-5" />

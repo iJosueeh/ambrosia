@@ -3,6 +3,7 @@ import { Heart, Mail, Lock, Eye, EyeOff, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "../../../shared/hooks/useAuth";
 import { useForm, required, emailValidator } from "../../../shared/hooks/useForm";
+import { useNavigate } from "react-router-dom";
 
 interface LoginProps {
     onToggleView: () => void;
@@ -11,6 +12,7 @@ interface LoginProps {
 export const Login: React.FC<LoginProps> = ({ onToggleView }) => {
     const [showPassword, setShowPassword] = useState(false);
     const { login, loading, error } = useAuth();
+    const navigate = useNavigate();
 
     const { getFieldProps, validateForm } = useForm({
         email: { value: '', validators: [required, emailValidator] },
@@ -23,7 +25,10 @@ export const Login: React.FC<LoginProps> = ({ onToggleView }) => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (validateForm()) {
-            await login(emailProps.value, passwordProps.value);
+            const success = await login(emailProps.value, passwordProps.value);
+            if (success) {
+                navigate("/");
+            }
         }
     };
 

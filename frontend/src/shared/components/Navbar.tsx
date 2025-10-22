@@ -2,12 +2,17 @@ import { useState } from "react";
 import { Menu, X, LogIn, LogOut } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import Logotipo from "../../assets/Ambrosia_Logo2.png";
+import { UserIcon } from "./icons/UserIcon";
 import { useAuth } from "../hooks/useAuth";
 
 export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
+
+  const firstName = user ? user.name.split(' ')[0] : '';
+
+  console.log("Navbar render - user:", user, "isAuthenticated:", isAuthenticated);
 
   const navItems = [
     { name: "Inicio", href: "/#home" },
@@ -55,17 +60,44 @@ export const Navbar = () => {
             >
               Contacto
             </a>
-            <button
-              onClick={handleAuthClick}
-              className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-200 text-sm font-medium"
-            >
-              {isAuthenticated ? (
-                <LogOut className="w-4 h-4" />
-              ) : (
+            {isAuthenticated && user ? (
+              <div className="relative group">
+                <button className="flex items-center gap-2 focus:outline-none">
+                  <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center ring-2 ring-emerald-300">
+                    <UserIcon className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="text-gray-600 text-sm font-medium">Hola, {firstName}</span>
+                </button>
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20 opacity-0 group-hover:opacity-100 group-hover:visible transition-all duration-300 invisible border border-gray-200">
+                  <Link
+                    to="/profile"
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <UserIcon className="w-4 h-4" />
+                    Ver perfil
+                  </Link>
+                  <button
+                    onClick={() => {
+                      logout();
+                      setIsOpen(false);
+                    }}
+                    className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Salir
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={handleAuthClick}
+                className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-200 text-sm font-medium"
+              >
                 <LogIn className="w-4 h-4" />
-              )}
-              {isAuthenticated ? "Cerrar Sesión" : "Iniciar Sesión"}
-            </button>
+                Iniciar Sesión
+              </button>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -111,12 +143,41 @@ export const Navbar = () => {
           >
             Contacto
           </a>
-          <button
-            onClick={handleAuthClick}
-            className="block w-full text-center bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-200 text-sm font-medium mt-4"
-          >
-            {isAuthenticated ? "Cerrar Sesión" : "Iniciar Sesión"}
-          </button>
+          {isAuthenticated && user ? (
+            <div className="border-t border-gray-200 pt-4 mt-4">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center ring-2 ring-emerald-300">
+                  <UserIcon className="w-5 h-5 text-white" />
+                </div>
+                <span className="text-gray-600 text-sm font-medium">Hola, {firstName}</span>
+              </div>
+              <Link
+                to="/profile"
+                className="flex items-center gap-2 py-2 text-gray-600 hover:text-emerald-500 transition-colors duration-200 text-sm font-medium"
+                onClick={() => setIsOpen(false)}
+              >
+                <UserIcon className="w-4 h-4" />
+                Ver perfil
+              </Link>
+              <button
+                onClick={() => {
+                  logout();
+                  setIsOpen(false);
+                }}
+                className="flex items-center gap-2 w-full text-left py-2 text-gray-600 hover:text-emerald-500 transition-colors duration-200 text-sm font-medium"
+              >
+                <LogOut className="w-4 h-4" />
+                Salir
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={handleAuthClick}
+              className="block w-full text-center bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-200 text-sm font-medium mt-4"
+            >
+              Iniciar Sesión
+            </button>
+          )}
         </div>
       </div>
     </nav>
