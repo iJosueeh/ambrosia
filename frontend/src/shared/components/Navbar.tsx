@@ -15,11 +15,11 @@ export const Navbar = () => {
   console.log("Navbar render - user:", user, "isAuthenticated:", isAuthenticated);
 
   const navItems = [
-    { name: "Inicio", href: "/#home" },
-    { name: "Sobre Nosotros", href: "/#about" },
-    { name: "Recursos", href: "/#resources" },
-    { name: "Artículos", href: "/#articles" },
-    { name: "Tests", href: "/#tests" },
+    { name: "Inicio", to: "/" },
+    { name: "Sobre Nosotros", to: "/" }, // Assuming these are sections on the landing page
+    { name: "Recursos", to: "/quiz" }, // Assuming /quiz is the resources page
+    { name: "Artículos", to: "/articulos" },
+    { name: "Tests", to: "/quiz" },
   ];
 
   const handleAuthClick = () => {
@@ -45,21 +45,21 @@ export const Navbar = () => {
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-8">
             {navItems.map((item) => (
-              <a
+              <Link
                 key={item.name}
-                href={item.href}
+                to={item.to}
                 className="relative group text-gray-600 hover:text-emerald-500 transition-colors duration-200 text-sm font-medium"
               >
                 {item.name}
                 <span className="absolute bottom-0 left-0 w-full h-0.5 bg-emerald-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-in-out"></span>
-              </a>
+              </Link>
             ))}
-            <a
-              href="/#contact"
+            <Link
+              to="/"
               className="bg-emerald-500 text-white px-6 py-2 rounded-lg hover:bg-emerald-600 transition-colors duration-200 text-sm font-medium"
             >
               Contacto
-            </a>
+            </Link>
             {isAuthenticated && user ? (
               <div className="relative group">
                 <button className="flex items-center gap-2 focus:outline-none">
@@ -70,7 +70,7 @@ export const Navbar = () => {
                 </button>
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20 opacity-0 group-hover:opacity-100 group-hover:visible transition-all duration-300 invisible border border-gray-200">
                   <Link
-                    to="/profile"
+                    to="/dashboard"
                     className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     onClick={() => setIsOpen(false)}
                   >
@@ -127,22 +127,22 @@ export const Navbar = () => {
       >
         <div className="px-4 pt-2 pb-4 space-y-2">
           {navItems.map((item) => (
-            <a
+            <Link
               key={item.name}
-              href={item.href}
+              to={item.to}
               className="block py-2 text-gray-600 hover:text-emerald-500 transition-colors duration-200 text-sm font-medium"
               onClick={() => setIsOpen(false)}
             >
               {item.name}
-            </a>
+            </Link>
           ))}
-          <a
-            href="/#contact"
+          <Link
+            to="/"
             className="block w-full text-center bg-emerald-500 text-white px-6 py-2 rounded-lg hover:bg-emerald-600 transition-colors duration-200 text-sm font-medium mt-4"
             onClick={() => setIsOpen(false)}
           >
             Contacto
-          </a>
+          </Link>
           {isAuthenticated && user ? (
             <div className="border-t border-gray-200 pt-4 mt-4">
               <div className="flex items-center gap-2 mb-2">
@@ -152,7 +152,7 @@ export const Navbar = () => {
                 <span className="text-gray-600 text-sm font-medium">Hola, {firstName}</span>
               </div>
               <Link
-                to="/profile"
+                to="/dashboard"
                 className="flex items-center gap-2 py-2 text-gray-600 hover:text-emerald-500 transition-colors duration-200 text-sm font-medium"
                 onClick={() => setIsOpen(false)}
               >

@@ -33,7 +33,10 @@ function AppContent() {
     <>
       <Toaster />
       <Navbar />
-      <AppRoutes />
+      {/* Main content wrapper with padding to clear the fixed Navbar */}
+      <div className="pt-16"> {/* Adjust pt-XX based on actual Navbar height */}
+        <AppRoutes />
+      </div>
       <Footer />
     </>
   );
