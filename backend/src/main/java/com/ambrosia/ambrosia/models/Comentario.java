@@ -1,0 +1,38 @@
+package com.ambrosia.ambrosia.models;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "comentarios")
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+public class Comentario {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String contenido;
+    private LocalDateTime fechaCreacion;
+
+    @ManyToOne
+    @JoinColumn(name = "autor_id")
+    private Usuario autor;
+
+    @ManyToOne
+    @JoinColumn(name = "foro_id")
+    private Foro foro;
+
+    @ManyToOne
+    @JoinColumn(name = "moderador_id")
+    private Administrador moderador;
+
+}
