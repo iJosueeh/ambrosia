@@ -153,7 +153,7 @@ export const Footer = () => {
                   href="tel:+34800123456"
                   className="text-gray-700 hover:text-emerald-600 block"
                 >
-                  +34 800 123 4567
+                  +51 945 915 296
                 </a>
                 <span className="text-gray-600">Lun - Vie, 9:00 - 18:00</span>
               </div>
@@ -165,8 +165,8 @@ export const Footer = () => {
                 <MapPin className="w-5 h-5 text-emerald-600" />
               </div>
               <div className="text-sm">
-                <p className="text-gray-700">Calle Ejemplo 123</p>
-                <p className="text-gray-600">Madrid, España</p>
+                <p className="text-gray-700">Calle Marielena Moyano </p>
+                <p className="text-gray-600">Lima, Perú</p>
               </div>
             </div>
           </div>
