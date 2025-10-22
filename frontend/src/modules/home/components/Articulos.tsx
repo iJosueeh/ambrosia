@@ -1,7 +1,10 @@
 import { ArrowRight, Calendar, User } from "lucide-react";
+// 💡 ¡Importa el componente Link de React Router!
+import { Link } from "react-router-dom";
 
 export const Articulos = () => {
   const articles = [
+    // ... (Tu array de artículos) ...
     {
       category: "Nutrición",
       categoryColor: "bg-emerald-500",
@@ -60,7 +63,7 @@ export const Articulos = () => {
               data-aos="fade-up"
               data-aos-delay={100 * (index + 1)}
             >
-              {/* Image */}
+              {/* Image y Content (sin cambios) */}
               <div className="relative h-56 overflow-hidden">
                 <img
                   src={article.image}
@@ -96,7 +99,7 @@ export const Articulos = () => {
                   </div>
                 </div>
 
-                {/* Read More Link */}
+                {/* Read More Link: Lo dejamos como está, asumiendo que eventualmente lo harás dinámico */}
                 <a
                   href="#"
                   className="inline-flex items-center gap-2 text-emerald-600 font-medium hover:text-emerald-700 transition-colors"
@@ -111,9 +114,13 @@ export const Articulos = () => {
 
         {/* View All Button */}
         <div className="text-center" data-aos="fade-up">
-          <button className="border-2 border-emerald-600 text-emerald-600 px-8 py-3 rounded-lg font-medium hover:bg-emerald-50 transition-all duration-200 transform hover:scale-105">
+          {/* ⭐️ Cambiamos <button> por <Link> y añadimos la propiedad 'to' */}
+          <Link 
+            to="/articulos" // 🎯 Esta es la ruta a tu nueva página de listado
+            className="inline-block border-2 border-emerald-600 text-emerald-600 px-8 py-3 rounded-lg font-medium hover:bg-emerald-50 transition-all duration-200 transform hover:scale-105"
+          >
             Ver todos los artículos
-          </button>
+          </Link>
         </div>
       </div>
     </section>
