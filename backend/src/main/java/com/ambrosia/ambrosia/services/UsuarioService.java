@@ -13,7 +13,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayInputStream;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -58,12 +60,12 @@ public class UsuarioService {
         return modelMapper.map(usuario, UsuarioDTO.class);
     }
 
-    public java.io.ByteArrayInputStream exportUsers(String format) {
+    public ByteArrayInputStream exportUsers(String format) {
         ExportStrategy<Usuario> strategy = exportStrategies.get(format.toLowerCase());
         if (strategy == null) {
             throw new IllegalArgumentException("Formato de exportación no soportado: " + format);
         }
-        java.util.List<Usuario> usuarios = usuarioRepository.findAll();
+        List<Usuario> usuarios = usuarioRepository.findAllWithRoles();
         return strategy.export(usuarios);
     }
 

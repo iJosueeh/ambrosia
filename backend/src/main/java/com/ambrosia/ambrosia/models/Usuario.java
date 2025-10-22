@@ -29,11 +29,4 @@ public class Usuario {
     @JoinColumn(name = "rol_id")
     private Rol rol;
 
-    public Long getId() {
-        return this.id;
-    }
-
-    public String getNombre() {
-        return this.nombre;
-    }
 }

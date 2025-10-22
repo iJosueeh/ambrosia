@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "foros")
@@ -35,5 +36,5 @@ public class Foro {
     private EstadoPublicado estado;
 
     @OneToMany(mappedBy = "foro", cascade = CascadeType.ALL, orphanRemoval = true)
-    private java.util.List<Comentario> comentarios;
+    private List<Comentario> comentarios;
 }
