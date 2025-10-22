@@ -1,21 +1,22 @@
-import axios from 'axios';
-
-const API_URL = 'http://localhost:8080/api';
+import axiosInstance from '@utils/axiosInstance'; // Use the path alias // Base URL is now handled by axiosInstance
 
 export interface LoginResponse {
   id: number;
   nombre: string;
   correo: string;
   rol: string;
+  token: string; // Add token field
 }
 
 export const login = async (credentials: { correo: string; contrasena: string }): Promise<LoginResponse> => {
-  const response = await axios.post(`${API_URL}/auth/login`, {
+  const response = await axiosInstance.post('/auth/login', { // Use axiosInstance
     correo: credentials.correo,
     contrasena: credentials.contrasena,
   });
-  
-  return response.data;
+
+  const loginResponse = response.data;
+  localStorage.setItem('jwt_token', loginResponse.token); // Store the token
+  return loginResponse;
 };
 
 export interface RegisterResponse {
@@ -30,6 +31,6 @@ interface RegisterRequest {
 }
 
 export const register = async (userData: RegisterRequest): Promise<RegisterResponse> => {
-  const response = await axios.post(`${API_URL}/usuarios/registrar`, userData);
+  const response = await axiosInstance.post('/usuarios/registrar', userData); // Use axiosInstance
   return response.data;
 };

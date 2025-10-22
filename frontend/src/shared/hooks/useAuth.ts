@@ -30,7 +30,10 @@ interface AuthContextType {
 const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [user, setUser] = React.useState<User | null>(null);
+    const [user, setUser] = React.useState<User | null>(() => {
+        const storedUser = localStorage.getItem('user');
+        return storedUser ? JSON.parse(storedUser) : null;
+    });
 
     const loginMutation = useMutation<LoginResponse, BackendError, Parameters<typeof authServiceLogin>[0]>({
         mutationFn: authServiceLogin,
@@ -39,6 +42,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const loggedInUser: User = { id: data.id, name: data.nombre, email: data.correo, role: data.rol };
             console.log("Logged in user object:", loggedInUser);
             setUser(loggedInUser);
+            localStorage.setItem('user', JSON.stringify(loggedInUser));
             toast.success("¡Inicio de sesión exitoso!");
         },
         onError: (err) => {
@@ -59,6 +63,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const logout = () => {
         setUser(null);
+        localStorage.removeItem('user');
     };
 
     const value = {

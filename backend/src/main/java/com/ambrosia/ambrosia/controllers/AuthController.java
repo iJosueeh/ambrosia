@@ -4,6 +4,7 @@ import com.ambrosia.ambrosia.models.Usuario;
 import com.ambrosia.ambrosia.models.dto.LoginRequest;
 import com.ambrosia.ambrosia.models.dto.LoginResponseDTO;
 import com.ambrosia.ambrosia.services.UsuarioService;
+import com.ambrosia.ambrosia.utils.JwtUtil; // Import JwtUtil
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -22,6 +23,7 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final UsuarioService usuarioService;
+    private final JwtUtil jwtUtil; // Inject JwtUtil
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> authenticateUser(@RequestBody LoginRequest loginRequest) {
@@ -32,11 +34,15 @@ public class AuthController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         Usuario authenticatedUser = (Usuario) authentication.getPrincipal();
 
+        // Generate JWT token
+        String token = jwtUtil.generateToken(authenticatedUser);
+
         LoginResponseDTO responseDTO = new LoginResponseDTO(
                 authenticatedUser.getId(),
                 authenticatedUser.getNombre(),
                 authenticatedUser.getEmail(),
-                authenticatedUser.getRol().getNombre()
+                authenticatedUser.getRol().getNombre(),
+                token // Include the generated token
         );
 
         return ResponseEntity.ok(responseDTO);
