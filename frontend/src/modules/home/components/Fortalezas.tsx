@@ -1,12 +1,9 @@
-
-import book from "../../../assets/book.png";
-import cora from "../../../assets/cora.png";
-import start from "../../../assets/start.png";
+import { Heart, Book, Users } from "lucide-react";
 
 export const Fortalezas = () => {
   const features = [
     {
-      icon: cora, 
+      icon: <Heart className="w-8 h-8" />,
       title: "Apoyo",
       description:
         "Te damos una ventana, compartiendo tú historia, ayudas a otros también.",
@@ -14,7 +11,7 @@ export const Fortalezas = () => {
       lightBg: "bg-pink-50",
     },
     {
-      icon: book,
+      icon: <Book className="w-8 h-8" />,
       title: "Recursos",
       description:
         "Especialistas, guías y herramientas prácticas para tu bienestar.",
@@ -22,7 +19,7 @@ export const Fortalezas = () => {
       lightBg: "bg-orange-50",
     },
     {
-      icon: start,
+      icon: <Users className="w-8 h-8" />,
       title: "Familia",
       description:
         "Orientación y recursos para seres queridos que desean ayudar.",
@@ -46,16 +43,14 @@ export const Fortalezas = () => {
               data-aos="fade-up"
               data-aos-delay={index * 100}
             >
-           
               <div
                 className={`${feature.lightBg} w-20 h-20 rounded-2xl flex items-center justify-center mb-6 mx-auto`}
               >
-               
-                <img 
-                  src={feature.icon} 
-                  alt={feature.title} 
-                  className="w-100 h-100 object-contain" 
-                />
+                <div
+                  className={`${feature.bgColor} w-16 h-16 rounded-xl flex items-center justify-center text-white`}
+                >
+                  {feature.icon}
+                </div>
               </div>
 
               <h3 className="text-xl font-semibold text-teal-800 text-center mb-4">

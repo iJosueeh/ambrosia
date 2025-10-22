@@ -10,7 +10,6 @@ Ambrosia es una aplicación web completa (full-stack) diseñada para ayudar a pe
     *   Gestión de perfiles de usuario.
     *   Cuestionarios interactivos (como el `AssessmentQuiz`).
     *   Visualización de recursos y artículos.
-    *   Exportación de datos (por ejemplo, a Excel).
     *   Panel de administración (si aplica).
     *   Integración con bases de datos para persistencia de datos.
 
@@ -19,15 +18,10 @@ Ambrosia es una aplicación web completa (full-stack) diseñada para ayudar a pe
 ### Backend (Spring Boot)
 
 *   **Java**: Lenguaje de programación principal.
-*   **Spring Boot**: Framework para el desarrollo rápido de aplicaciones Java (versión 3.5.6).
+*   **Spring Boot**: Framework para el desarrollo rápido de aplicaciones Java.
 *   **Maven**: Herramienta de gestión de proyectos y dependencias.
-*   **PostgreSQL**: Base de datos relacional.
 *   **Spring Data JPA**: Para la interacción con la base de datos.
 *   **Spring Security**: Para la autenticación y autorización.
-*   **Lombok**: Para reducir el código repetitivo (getters, setters, constructores, etc.).
-*   **ModelMapper**: Para mapeo de objetos (DTOs a entidades y viceversa).
-*   **Apache POI**: Para la generación de informes en formatos como Excel.
-*   **Guava**: Librería de utilidades de Google.
 
 ### Frontend (React con TypeScript)
 
