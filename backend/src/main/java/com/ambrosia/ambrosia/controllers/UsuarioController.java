@@ -3,6 +3,8 @@ package com.ambrosia.ambrosia.controllers;
 import com.ambrosia.ambrosia.models.dto.UsuarioDTO;
 import com.ambrosia.ambrosia.services.UsuarioService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,4 +25,17 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarioService.buscarPorCorreo(correo));
     }
 
+    @GetMapping("/exportar")
+    public ResponseEntity<InputStreamResource> exportarUsuarios() {
+        java.io.ByteArrayInputStream in = usuarioService.exportUsersToExcel();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=usuarios.xlsx");
+
+        return ResponseEntity
+                .ok()
+                .headers(headers)
+                .contentType(org.springframework.http.MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(new InputStreamResource(in));
+    }
 }

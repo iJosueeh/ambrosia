@@ -13,7 +13,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -52,5 +62,33 @@ public class UsuarioService {
         Usuario usuario = usuarioRepository.findByEmail(correo)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con el correo: " + correo));
         return modelMapper.map(usuario, UsuarioDTO.class);
+    }
+    public ByteArrayInputStream exportUsersToExcel() {
+        String[] columns = {"ID", "Nombre", "Email", "Rol", "Fecha de Registro"};
+        try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream();) {
+            Sheet sheet = workbook.createSheet("Usuarios");
+
+            Row headerRow = sheet.createRow(0);
+            for (int col = 0; col < columns.length; col++) {
+                Cell cell = headerRow.createCell(col);
+                cell.setCellValue(columns[col]);
+            }
+
+            List<Usuario> usuarios = usuarioRepository.findAll();
+            int rowIdx = 1;
+            for (Usuario usuario : usuarios) {
+                Row row = sheet.createRow(rowIdx++);
+                row.createCell(0).setCellValue(usuario.getId());
+                row.createCell(1).setCellValue(usuario.getNombre());
+                row.createCell(2).setCellValue(usuario.getEmail());
+                row.createCell(3).setCellValue(usuario.getRol().getNombre());
+                row.createCell(4).setCellValue(usuario.getFecha_registro().toString());
+            }
+
+            workbook.write(out);
+            return new ByteArrayInputStream(out.toByteArray());
+        } catch (IOException e) {
+            throw new RuntimeException("Error al generar el archivo Excel: " + e.getMessage());
+        }
     }
 }
