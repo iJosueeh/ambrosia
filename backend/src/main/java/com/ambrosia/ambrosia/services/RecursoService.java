@@ -1,6 +1,5 @@
 package com.ambrosia.ambrosia.services;
 
-import com.ambrosia.ambrosia.exceptions.ResourceNotFoundException;
 import com.ambrosia.ambrosia.models.CategoriaRecurso;
 import com.ambrosia.ambrosia.models.EstadoPublicado;
 import com.ambrosia.ambrosia.models.RecursoEducativo;
@@ -39,17 +38,19 @@ public class RecursoService {
 
         logger.info("Publicando recurso con título: {}", dto.titulo());
 
-        RecursoEducativo recurso = modelMapper.map(dto, RecursoEducativo.class);
-
         CategoriaRecurso categoria = categoriaRecursoRepository.findByNombre(dto.categoria())
-                .orElseThrow(() -> new ResourceNotFoundException("Categoria no encontrada con el nombre: " + dto.categoria()));
-        recurso.setCategoria(categoria);
+                .orElseThrow(() -> new RuntimeException("Categoria no encontrada con el nombre: " + dto.categoria()));
 
         EstadoPublicado estado = estadoPublicadoRepository.findByNombre(dto.estado())
-                .orElseThrow(() -> new ResourceNotFoundException("Estado no encontrado con el nombre: " + dto.estado()));
-        recurso.setEstado(estado);
+                .orElseThrow(() -> new RuntimeException("Estado no encontrado con el nombre: " + dto.estado()));
 
-        recurso.setFechaPublicacion(LocalDateTime.now());
+        RecursoEducativo recurso = RecursoEducativo.builder()
+                .titulo(dto.titulo())
+                .descripcion(dto.descripcion())
+                .categoria(categoria)
+                .estado(estado)
+                .fechaPublicacion(LocalDateTime.now())
+                .build();
 
         RecursoEducativo recursoGuardado = recursoRepository.save(recurso);
         return modelMapper.map(recursoGuardado, RecursoDTO.class);

@@ -1,6 +1,5 @@
 package com.ambrosia.ambrosia.services;
 
-import com.ambrosia.ambrosia.exceptions.ResourceNotFoundException;
 import com.ambrosia.ambrosia.models.ResultadoTest;
 import com.ambrosia.ambrosia.models.TestEvaluacion;
 import com.ambrosia.ambrosia.models.Usuario;
@@ -44,19 +43,19 @@ public class TestService {
 
         logger.info("Guardando resultado de test para el usuario con id: {}", dto.usuarioId());
 
-        ResultadoTest resultado = modelMapper.map(dto, ResultadoTest.class);
-
         Usuario usuario = usuarioRepository.findById(dto.usuarioId())
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con el id: " + dto.usuarioId()));
-        resultado.setUsuario(usuario);
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con el id: " + dto.usuarioId()));
 
         TestEvaluacion test = testRepository.findById(dto.testId())
-                .orElseThrow(() -> new ResourceNotFoundException("Test no encontrado con el id: " + dto.testId()));
-        resultado.setTest(test);
+                .orElseThrow(() -> new RuntimeException("Test no encontrado con el id: " + dto.testId()));
 
-        resultado.setFechaRealizacion(LocalDateTime.now());
+        ResultadoTest resultado = ResultadoTest.builder()
+                .puntaje(dto.puntaje())
+                .usuario(usuario)
+                .test(test)
+                .fechaRealizacion(LocalDateTime.now())
+                .build();
 
         resultadoRepository.save(resultado);
     }
-
 }

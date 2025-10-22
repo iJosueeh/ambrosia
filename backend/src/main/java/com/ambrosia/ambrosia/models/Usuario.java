@@ -1,10 +1,7 @@
 package com.ambrosia.ambrosia.models;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -14,6 +11,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Getter
 @Setter
+@Builder
 public class Usuario {
 
     @Id
@@ -31,4 +29,11 @@ public class Usuario {
     @JoinColumn(name = "rol_id")
     private Rol rol;
 
+    public Long getId() {
+        return this.id;
+    }
+
+    public String getNombre() {
+        return this.nombre;
+    }
 }
