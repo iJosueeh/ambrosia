@@ -3,6 +3,8 @@ package com.ambrosia.ambrosia.models;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Entity
 @Table(name = "preguntas")
 @AllArgsConstructor
@@ -23,6 +25,6 @@ public class Pregunta {
     private TestEvaluacion test;
 
     @OneToMany(mappedBy = "pregunta", cascade = CascadeType.ALL, orphanRemoval = true)
-    private java.util.List<Opcion> opciones;
+    private List<Opcion> opciones;
 
 }
