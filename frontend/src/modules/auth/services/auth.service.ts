@@ -14,6 +14,7 @@ export const login = async (credentials: { correo: string; contrasena: string })
     correo: credentials.correo,
     contrasena: credentials.contrasena,
   });
+  
   return response.data;
 };
 
