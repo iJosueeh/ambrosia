@@ -7,10 +7,15 @@ import com.ambrosia.ambrosia.repository.RolRepository;
 import com.ambrosia.ambrosia.repository.UsuarioRepository;
 import com.ambrosia.ambrosia.strategies.ExportStrategy;
 import com.google.common.base.Strings;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
@@ -19,29 +24,42 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class UsuarioService {
+public class UsuarioService implements UserDetailsService {
 
     private static final Logger logger = LoggerFactory.getLogger(UsuarioService.class);
 
     private final UsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
     private final ModelMapper modelMapper;
+    private final PasswordEncoder passwordEncoder;
     private final java.util.Map<String, ExportStrategy<Usuario>> exportStrategies;
 
+    @PostConstruct
+    public void initRoles() {
+        if (rolRepository.findByNombre("USER").isEmpty()) {
+            rolRepository.save(Rol.builder().nombre("USER").build());
+            logger.info("Rol 'USER' creado.");
+        }
+        if (rolRepository.findByNombre("ADMIN").isEmpty()) {
+            rolRepository.save(Rol.builder().nombre("ADMIN").build());
+            logger.info("Rol 'ADMIN' creado.");
+        }
+    }
+
     public UsuarioDTO registrar(UsuarioDTO dto) {
-        if (Strings.isNullOrEmpty(dto.correo()) || Strings.isNullOrEmpty(dto.rol()) || Strings.isNullOrEmpty(dto.password())) {
+        if (Strings.isNullOrEmpty(dto.getCorreo()) || Strings.isNullOrEmpty(dto.getRol()) || Strings.isNullOrEmpty(dto.getPassword())) {
             throw new IllegalArgumentException("El correo, el rol y la contraseña no pueden ser nulos o vacíos");
         }
 
-        logger.info("Registrando usuario con correo: {}", dto.correo());
+        logger.info("Registrando usuario con correo: {}", dto.getCorreo());
 
-        Rol rol = rolRepository.findByNombre(dto.rol())
-                .orElseThrow(() -> new RuntimeException("Rol no encontrado con el nombre: " + dto.rol()));
+        Rol rol = rolRepository.findByNombre(dto.getRol())
+                .orElseThrow(() -> new RuntimeException("Rol no encontrado con el nombre: " + dto.getRol()));
 
         Usuario usuario = Usuario.builder()
-                .nombre(dto.nombre())
-                .email(dto.correo())
-                .password(dto.password())
+                .nombre(dto.getNombre())
+                .email(dto.getCorreo())
+                .password(passwordEncoder.encode(dto.getPassword())) // Encode password
                 .rol(rol)
                 .fecha_registro(LocalDateTime.now())
                 .build();
@@ -58,6 +76,12 @@ public class UsuarioService {
         Usuario usuario = usuarioRepository.findByEmail(correo)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con el correo: " + correo));
         return modelMapper.map(usuario, UsuarioDTO.class);
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return usuarioRepository.findByEmail(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con el correo: " + username));
     }
 
     public ByteArrayInputStream exportUsers(String format) {

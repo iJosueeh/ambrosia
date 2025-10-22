@@ -9,9 +9,8 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class TestDTO {
-   private Long id;
-   private String titulo;
-   private String descripcion;
-   private List<PreguntaDTO> preguntas;
+public class PreguntaDTO {
+    private Long id;
+    private String texto;
+    private List<OpcionDTO> opciones;
 }

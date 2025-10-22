@@ -1,7 +1,18 @@
+import { useMutation } from "@tanstack/react-query";
 import React, { useState } from "react";
-import { Heart, User, Mail, Lock, Eye, EyeOff } from "lucide-react";
-import { motion } from "framer-motion";
-import { useForm, required, emailValidator, minLength } from "../../../shared/hooks/useForm";
+import { Heart, User, Mail, Lock, Eye, EyeOff, AlertCircle } from "lucide-react"
+import { motion } from "framer-motion"
+import { toast } from 'react-hot-toast';
+import { useForm, required, emailValidator, minLength } from "../../../shared/hooks/useForm"
+import { register as authServiceRegister, type RegisterResponse } from "../services/auth.service";
+
+interface BackendError {
+    response?: {
+        data?: {
+            message?: string;
+        };
+    };
+}
 
 interface RegisterProps {
     onToggleView: () => void;
@@ -11,7 +22,7 @@ export const Register: React.FC<RegisterProps> = ({ onToggleView }) => {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-    const { getFieldProps, validateForm, fields } = useForm({
+    const { getFieldProps, validateForm } = useForm({
         fullName: { value: '', validators: [required] },
         email: { value: '', validators: [required, emailValidator] },
         password: { value: '', validators: [required, minLength(8)] },
@@ -19,7 +30,16 @@ export const Register: React.FC<RegisterProps> = ({ onToggleView }) => {
             value: '',
             validators: [
                 required,
-                (value) => value === fields.password.value ? null : 'Las contraseñas no coinciden.'
+                (value, allFields) => {
+                    const trimmedConfirmPassword = value.trim();
+                    const trimmedPassword = allFields.password.value.trim();
+                    if (trimmedConfirmPassword !== trimmedPassword) {
+                        console.log("Confirm Password Char Codes:", Array.from(trimmedConfirmPassword).map(char => char.charCodeAt(0)));
+                        console.log("Original Password Char Codes:", Array.from(trimmedPassword).map(char => char.charCodeAt(0)));
+                        return `Las contraseñas no coinciden. Confirmada: '${trimmedConfirmPassword}', Original: '${trimmedPassword}'`;
+                    }
+                    return null;
+                }
             ]
         },
     });
@@ -29,12 +49,25 @@ export const Register: React.FC<RegisterProps> = ({ onToggleView }) => {
     const passwordProps = getFieldProps("password");
     const confirmPasswordProps = getFieldProps("confirmPassword");
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const registerMutation = useMutation<RegisterResponse, BackendError, Parameters<typeof authServiceRegister>[0]>({
+        mutationFn: authServiceRegister,
+        onSuccess: () => {
+            toast.success("Registro exitoso. Por favor, inicia sesión.");
+            onToggleView(); // Redirect to login
+        },
+        onError: (err) => {
+            toast.error(err.response?.data?.message || "Error al registrar usuario.");
+        },
+    });
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (validateForm()) {
-            console.log("Register attempt:", {
-                fullName: fullNameProps.value,
-                email: emailProps.value,
+            registerMutation.mutate({
+                nombre: fullNameProps.value,
+                correo: emailProps.value,
+                password: passwordProps.value,
+                rol: "USER" // Assuming a default role for registration
             });
         }
     };
@@ -68,6 +101,12 @@ export const Register: React.FC<RegisterProps> = ({ onToggleView }) => {
                     className="bg-white rounded-2xl shadow-xl p-8"
                 >
                     <form onSubmit={handleSubmit} className="space-y-5">
+                        {registerMutation.isError && (
+                            <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg flex items-center">
+                                <AlertCircle className="w-5 h-5 mr-3" />
+                                <span>{registerMutation.error.response?.data?.message || "Error al registrar usuario."}</span>
+                            </div>
+                        )}
                         <div>
                             <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-2">Nombre Completo</label>
                             <div className="relative">
@@ -134,8 +173,8 @@ export const Register: React.FC<RegisterProps> = ({ onToggleView }) => {
                             {confirmPasswordProps.error && <p className="text-red-500 text-xs mt-1">{confirmPasswordProps.error}</p>}
                         </div>
 
-                        <button type="submit" className="w-full bg-blue-500 text-white py-3 rounded-lg font-semibold hover:bg-blue-600 transition-colors duration-200 shadow-md hover:shadow-lg">
-                            Crear Cuenta
+                        <button type="submit" disabled={registerMutation.isPending} className="w-full bg-blue-500 text-white py-3 rounded-lg font-semibold hover:bg-blue-600 transition-colors duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-wait">
+                            {registerMutation.isPending ? 'Registrando...' : 'Crear Cuenta'}
                         </button>
 
                         <p className="text-center text-sm text-gray-600 mt-6">

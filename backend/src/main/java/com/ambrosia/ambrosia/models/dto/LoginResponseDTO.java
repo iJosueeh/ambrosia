@@ -4,14 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class TestDTO {
-   private Long id;
-   private String titulo;
-   private String descripcion;
-   private List<PreguntaDTO> preguntas;
+public class LoginResponseDTO {
+    private Long id;
+    private String nombre;
+    private String correo;
+    private String rol;
 }
