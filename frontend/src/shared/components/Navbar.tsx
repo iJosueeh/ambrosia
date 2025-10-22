@@ -33,7 +33,7 @@ export const Navbar = () => {
           {/* Logo */}
           <div className="flex items-center space-x-2">
             <Link to="/" className="text-2xl font-bold text-purple-700">
-              <img className="w-20" src={Logotipo} alt="Ambrosia Logo" />
+              <img className="w-40" src={Logotipo} alt="Ambrosia Logo" />
             </Link>
           </div>
 
