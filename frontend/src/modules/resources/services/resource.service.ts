@@ -1,6 +1,6 @@
 import axiosInstance from '../../../utils/axiosInstance';
-import type { RecursoDTO } from "./types/recurso.types";
-import type { CategoriaRecursoDTO } from "./types/categoria.types";
+import type { RecursoDTO } from "../types/recurso.types";
+import type { CategoriaRecursoDTO } from "../types/categoria.types";
 
 export const getAllResources = async (): Promise<RecursoDTO[]> => {
     const response = await axiosInstance.get<RecursoDTO[]>('/recursos');

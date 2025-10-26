@@ -77,7 +77,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, article
               <MessageCircle className="w-5 h-5" /> WhatsApp
             </button>
           </div>
-          {navigator.share && (
+          {navigator.share && typeof navigator.share === 'function' && (
             <button
               onClick={shareViaWebShareApi}
               className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-lg bg-emerald-500 hover:bg-emerald-600 transition-colors text-white font-medium"

@@ -1,16 +1,17 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { FileText, Target, Download, TrendingUp, CheckCircle, BookOpen, FileCheck, User, Activity, Settings, Shield } from 'lucide-react';
 import { useAuth } from '../../../shared/hooks/useAuth';
 import { getUserByEmail } from '../services/user.service';
 import { useNavigate } from 'react-router-dom';
+import type { UsuarioDTO, ActividadReciente, Recomendacion } from '../types/user.types';
 
 export default function UserDashboard() {
     const [activeTab, setActiveTab] = useState('resumen');
     const { user: authUser, isAuthenticated } = useAuth();
     const navigate = useNavigate();
 
-    const { data: userData, isLoading, isError, error } = useQuery({
+    const { data: userData, isLoading, isError, error } = useQuery<UsuarioDTO, Error>({
         queryKey: ['userData', authUser?.email],
         queryFn: () => {
             if (!authUser?.email) {
@@ -42,7 +43,7 @@ export default function UserDashboard() {
 
     const progressData = userData.progreso || [];
 
-    const formatTimeAgo = (dateString) => {
+    const formatTimeAgo = (dateString: string) => {
         const date = new Date(dateString);
         const now = new Date();
         const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
@@ -60,7 +61,7 @@ export default function UserDashboard() {
         return "hace unos segundos";
     };
 
-    const activityTypeToUIMap = {
+    const activityTypeToUIMap: Record<ActividadReciente['tipoActividad'], { icon: any, color: string, bgColor: string }> = {
         REGISTRO: {
             icon: User,
             color: 'text-emerald-600',
@@ -83,7 +84,7 @@ export default function UserDashboard() {
         }
     };
 
-    const recentActivity = (userData.actividadReciente || []).map(activity => {
+    const recentActivity = (userData.actividadReciente || []).map((activity: ActividadReciente) => {
         const uiProps = activityTypeToUIMap[activity.tipoActividad] || {
             icon: Activity, // Icono por defecto
             color: 'text-gray-600',
@@ -98,7 +99,7 @@ export default function UserDashboard() {
         };
     });
 
-    const recommendationTypeToUIMap = {
+    const recommendationTypeToUIMap: Record<Recomendacion['tipo'], { icon: any, color: string, bgColor: string }> = {
         TEST: {
             icon: Target,
             color: 'text-purple-600',
@@ -116,7 +117,7 @@ export default function UserDashboard() {
         }
     };
 
-    const recommendations = (userData.recomendaciones || []).map(rec => {
+    const recommendations = (userData.recomendaciones || []).map((rec: Recomendacion) => {
         const uiProps = recommendationTypeToUIMap[rec.tipo] || {
             icon: TrendingUp, // Icono por defecto
             color: 'text-gray-600',

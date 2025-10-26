@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowLeft, Share2, Bookmark, Calendar, Tag, CheckCircle, FileText, Video, BookOpen, LoaderCircle } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getArticleById } from '../services/resource.service';
@@ -222,7 +222,10 @@ export default function ArticleDetailPage() {
                 <p className="text-emerald-50 text-sm mb-6">
                   Si sientes que necesitas apoyo profesional, estamos aquí para ayudarte.
                 </p>
-                <button className="w-full bg-white text-emerald-600 py-3 rounded-lg font-semibold hover:bg-emerald-50 transition-colors shadow-md">
+                <button 
+                  onClick={() => navigate('/contacto')}
+                  className="w-full bg-white text-emerald-600 py-3 rounded-lg font-semibold hover:bg-emerald-50 transition-colors shadow-md"
+                >
                   Contactar un especialista
                 </button>
               </div>
