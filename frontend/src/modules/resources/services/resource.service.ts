@@ -21,3 +21,7 @@ export const getArticleById = async (id: number): Promise<RecursoDTO> => {
     const response = await axiosInstance.get<RecursoDTO>(`/recursos/${id}`);
     return response.data;
 };
+
+export const incrementDownloadCount = async (id: number): Promise<void> => {
+    await axiosInstance.put(`/recursos/${id}/descargar`);
+};

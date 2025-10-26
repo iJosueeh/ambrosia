@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Heart, User, Mail, Lock, Eye, EyeOff, AlertCircle } from "lucide-react"
 import { motion } from "framer-motion"
 import { toast } from 'react-hot-toast';
-import { useForm, required, emailValidator, minLength } from "../../../shared/hooks/useForm"
+import { useForm, required, emailValidator, minLength, hasUpperCase, hasLowerCase, hasNumber, hasSpecialChar } from "../../../shared/hooks/useForm"
 import { register as authServiceRegister, type RegisterResponse } from "../services/auth.service";
 
 interface BackendError {
@@ -25,7 +25,7 @@ export const Register: React.FC<RegisterProps> = ({ onToggleView }) => {
     const { getFieldProps, validateForm } = useForm({
         fullName: { value: '', validators: [required] },
         email: { value: '', validators: [required, emailValidator] },
-        password: { value: '', validators: [required, minLength(8)] },
+        password: { value: '', validators: [required, minLength(8), hasUpperCase, hasLowerCase, hasNumber, hasSpecialChar] },
         confirmPassword: {
             value: '',
             validators: [

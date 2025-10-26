@@ -41,4 +41,10 @@ public class RecursoController {
     public ResponseEntity<RecursoDTO> obtenerPorId(@PathVariable Long id) {
         return ResponseEntity.ok(recursoService.obtenerRecursoPorId(id));
     }
+
+    @PutMapping("/{id}/descargar")
+    public ResponseEntity<Void> incrementarDescargas(@PathVariable Long id) {
+        recursoService.incrementarDescargas(id);
+        return ResponseEntity.ok().build();
+    }
 }
