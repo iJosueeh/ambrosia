@@ -21,6 +21,7 @@ public class RecursoEducativo {
     private String titulo;
     private String descripcion;
     private String enlace;
+    private String urlimg;
     @Column(columnDefinition = "TEXT") // Use this for explicit PostgreSQL TEXT type
     private String contenido;
     private String size;

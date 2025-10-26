@@ -5,6 +5,7 @@ export interface RecursoDTO {
     titulo: string;
     descripcion: string;
     enlace: string;
+    urlimg: string;
     fechaPublicacion: string; // ISO date string
     nombreCategoria: string;
     estado: string;

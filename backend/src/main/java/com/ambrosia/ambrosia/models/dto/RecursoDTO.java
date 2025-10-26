@@ -14,6 +14,7 @@ public class RecursoDTO {
     private String titulo;
     private String descripcion;
     private String enlace;
+    private String urlimg;
     private String contenido;
     private String size;
     private Long downloads;

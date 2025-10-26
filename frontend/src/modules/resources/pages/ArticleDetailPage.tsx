@@ -5,6 +5,8 @@ import { getArticleById } from '../services/resource.service';
 import type { RecursoDTO } from '../types/recurso.types';
 import { ShareModal } from "@shared/components/ShareModal";
 
+import { motion } from "framer-motion";
+
 export default function ArticleDetailPage() {
   const { articleId } = useParams<{ articleId: string }>();
   const navigate = useNavigate();
@@ -94,7 +96,12 @@ export default function ArticleDetailPage() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content */}
-          <article className="lg:col-span-2">
+          <motion.article 
+            initial={{ opacity: 0, x: -100 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+            className="lg:col-span-2"
+          >
             {/* Back Button */}
             <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-gray-600 hover:text-emerald-600 mb-6 transition-colors">
               <ArrowLeft className="w-5 h-5" />
@@ -143,7 +150,7 @@ export default function ArticleDetailPage() {
                 {/* Main Image - Placeholder for now */}
                 <div className="rounded-xl overflow-hidden mb-8">
                   <img
-                    src={article.enlace}
+                    src={article.urlimg}
                     alt={article.titulo}
                     className="w-full h-auto"
                   />
@@ -165,10 +172,15 @@ export default function ArticleDetailPage() {
                 </div>
               </div>
             </div>
-          </article>
+          </motion.article>
 
           {/* Sidebar */}
-          <aside className="lg:col-span-1">
+          <motion.aside 
+            initial={{ opacity: 0, x: 100 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="lg:col-span-1"
+          >
             <div className="sticky top-8 space-y-6">
               {/* Related Resources */}
               <div className="bg-white rounded-2xl shadow-lg p-6">
@@ -231,7 +243,7 @@ export default function ArticleDetailPage() {
                 </div>
               </div>
             </div>
-          </aside>
+          </motion.aside>
         </div>
       </div>
       {article && (

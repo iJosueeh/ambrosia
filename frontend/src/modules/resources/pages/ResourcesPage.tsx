@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Heart, Phone, Mail, MessageCircle, FileText, Download, ChevronDown } from 'lucide-react';
-import { getAllResources, getCategories, getResourcesByCategory } from '../services/resource.service';
+import { getAllResources, getCategories, getResourcesByCategory, incrementDownloadCount } from '../services/resource.service';
 import type { RecursoDTO } from '../types/recurso.types';
 import type { CategoriaRecursoDTO } from '../types/categoria.types';
+
+import { motion } from "framer-motion";
 
 export const ResourcesPage = () => {
 
@@ -43,6 +45,18 @@ export const ResourcesPage = () => {
         fetchResources();
     }, [activeTab]);
 
+    const handleDownload = async (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>, resourceId: number, enlace: string) => {
+        event.preventDefault();
+        try {
+            await incrementDownloadCount(resourceId);
+            window.open(enlace, '_blank');
+        } catch (error) {
+            console.error("Error incrementing download count:", error);
+            // still open the link
+            window.open(enlace, '_blank');
+        }
+    };
+
     const faqs = [
         {
             question: '¿Los servicios de la Línea 113 tienen costo?',
@@ -65,7 +79,12 @@ export const ResourcesPage = () => {
     return (
         <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
             {/* Header */}
-            <div className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white">
+            <motion.div 
+                initial={{ opacity: 0, y: -50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white"
+            >
                 <div className="max-w-7xl mx-auto px-4 py-8">
                     <button className="flex items-center gap-2 text-white hover:text-emerald-100 mb-6 transition-colors">
                         <ArrowLeft className="w-5 h-5" />
@@ -84,11 +103,16 @@ export const ResourcesPage = () => {
                         Aquí encontrarás una combinación de recursos verificados del sistema de salud pública peruano y herramientas exclusivas de Ambrosia, diseñadas por nuestros especialistas para apoyarte en tu proceso.
                     </p>
                 </div>
-            </div>
+            </motion.div>
 
             {/* Contact Options */}
             <div className="max-w-7xl mx-auto px-4 mt-8 mb-8">
-                <div className="grid md:grid-cols-2 gap-4">
+                <motion.div 
+                    initial={{ opacity: 0, y: 50 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                    className="grid md:grid-cols-2 gap-4"
+                >
                     {/* Crisis Line Card */}
                     <div className="bg-white rounded-2xl shadow-lg p-6 border-2 border-red-100">
                         <div className="flex items-start gap-4">
@@ -144,13 +168,18 @@ export const ResourcesPage = () => {
                             </div>
                         </div>
                     </div>
-                </div>
+                </motion.div>
             </div>
 
             {/* Main Content */}
             <div className="max-w-7xl mx-auto px-4 pb-12">
                 {/* Tabs */}
-                <div className="bg-white rounded-xl shadow-md mb-8 overflow-hidden">
+                <motion.div 
+                    initial={{ opacity: 0, x: -100 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.5, delay: 0.4 }}
+                    className="bg-white rounded-xl shadow-md mb-8 overflow-hidden"
+                >
                     <div className="flex overflow-x-auto border-b border-gray-200">
                         {categories.map((cat) => (
                             <button
@@ -165,10 +194,23 @@ export const ResourcesPage = () => {
                             </button>
                         ))}
                     </div>
-                </div>
+                </motion.div>
 
                 {/* Resources Section */}
-                <div className="mb-12">
+                <motion.div 
+                    variants={{
+                        hidden: { opacity: 0 },
+                        show: {
+                            opacity: 1,
+                            transition: {
+                                staggerChildren: 0.2
+                            }
+                        }
+                    }}
+                    initial="hidden"
+                    animate="show"
+                    className="mb-12"
+                >
                     <h3 className="text-2xl font-bold text-gray-800 mb-2">
                         Guías y Herramientas de Ambrosia
                     </h3>
@@ -179,8 +221,9 @@ export const ResourcesPage = () => {
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {resources.length > 0 ? (
                             resources.map((resource, index) => (
-                                <div
+                                <motion.div
                                     key={index}
+                                    variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }}
                                     className="bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow duration-200 p-6 border border-gray-100"
                                 >
                                     <div className="flex items-start justify-between mb-4">
@@ -204,20 +247,25 @@ export const ResourcesPage = () => {
                                         <span>{resource.downloads?.toLocaleString()} descargas</span>
                                     </div>
 
-                                    <button className="w-full bg-emerald-500 text-white py-2.5 rounded-lg font-semibold hover:bg-emerald-600 transition-colors flex items-center justify-center gap-2">
+                                    <a href={resource.enlace} onClick={(e) => handleDownload(e, resource.id, resource.enlace)} target="_blank" rel="noopener noreferrer" className="w-full bg-emerald-500 text-white py-2.5 rounded-lg font-semibold hover:bg-emerald-600 transition-colors flex items-center justify-center gap-2">
                                         <Download className="w-4 h-4" />
                                         Descargar
-                                    </button>
-                                </div>
+                                    </a>
+                                </motion.div>
                             ))
                         ) : (
                             <p className="text-center col-span-full text-gray-500">No hay recursos disponibles en esta categoría en este momento.</p>
                         )}
                     </div>
-                </div>
+                </motion.div>
 
                 {/* FAQ Section */}
-                <div className="mb-12">
+                <motion.div 
+                    initial={{ opacity: 0, y: 50 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.6 }}
+                    className="mb-12"
+                >
                     <h3 className="text-2xl font-bold text-gray-800 mb-6">
                         Preguntas Frecuentes
                     </h3>
@@ -246,10 +294,15 @@ export const ResourcesPage = () => {
                             </div>
                         ))}
                     </div>
-                </div>
+                </motion.div>
 
                 {/* CTA Section */}
-                <div className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl shadow-xl p-8 md:p-12 text-center text-white">
+                <motion.div 
+                    initial={{ opacity: 0, y: 50 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.8 }}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl shadow-xl p-8 md:p-12 text-center text-white"
+                >
                     <h3 className="text-2xl md:text-3xl font-bold mb-4">
                         ¿No encuentras lo que buscas?
                     </h3>
@@ -265,7 +318,7 @@ export const ResourcesPage = () => {
                             Ver Más Recursos
                         </button>
                     </div>
-                </div>
+                </motion.div>
             </div>
         </div>
     )

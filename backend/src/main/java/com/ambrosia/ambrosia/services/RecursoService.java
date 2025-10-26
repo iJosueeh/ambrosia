@@ -48,6 +48,8 @@ public class RecursoService {
         RecursoEducativo recurso = RecursoEducativo.builder()
                 .titulo(dto.getTitulo())
                 .descripcion(dto.getDescripcion())
+                .enlace(dto.getEnlace())
+                .urlimg(dto.getUrlimg())
                 .categoria(categoria)
                 .estado(estado)
                 .fechaPublicacion(LocalDateTime.now())
@@ -83,6 +85,17 @@ public class RecursoService {
         RecursoEducativo recurso = recursoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Recurso no encontrado con el id: " + id));
         return modelMapper.map(recurso, RecursoDTO.class);
+    }
+
+    public void incrementarDescargas(Long id) {
+        logger.info("Incrementando descargas para el recurso con id: {}", id);
+        RecursoEducativo recurso = recursoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Recurso no encontrado con el id: " + id));
+        if (recurso.getDownloads() == null) {
+            recurso.setDownloads(0L);
+        }
+        recurso.setDownloads(recurso.getDownloads() + 1);
+        recursoRepository.save(recurso);
     }
 
 }

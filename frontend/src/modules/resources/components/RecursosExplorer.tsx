@@ -5,6 +5,8 @@ import type { CategoriaRecursoDTO } from '../types/categoria.types';
 import type { RecursoDTO } from '../types/recurso.types';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 
+import { motion } from "framer-motion";
+
 // Helper to map category names to icons
 const iconMap: { [key: string]: React.ElementType } = {
   'articulos': FileText,
@@ -89,15 +91,29 @@ export const RecursosExplorer: React.FC = () => {
     if (displayedArticles.length > 0) {
       return (
         <>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <motion.div 
+            variants={{
+                hidden: { opacity: 0 },
+                show: {
+                    opacity: 1,
+                    transition: {
+                        staggerChildren: 0.2
+                    }
+                }
+            }}
+            initial="hidden"
+            animate="show"
+            className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"
+          >
             {displayedArticles.map((article) => (
-              <article
+              <motion.article
                 key={article.id}
+                variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }}
                 className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 group cursor-pointer flex flex-col h-full"
               >
                 <div className="relative h-52 overflow-hidden bg-gray-200">
                   <img
-                    src={article.enlace}
+                    src={article.urlimg}
                     alt={article.titulo}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
@@ -114,9 +130,9 @@ export const RecursosExplorer: React.FC = () => {
                     <ChevronRight className="w-4 h-4 ml-1 group-hover/link:translate-x-1 transition-transform" />
                   </Link>
                 </div>
-              </article>
+              </motion.article>
             ))}
-          </div>
+          </motion.div>
 
           {totalPages > 1 && (
             <div className="flex items-center justify-center gap-2">
@@ -169,7 +185,12 @@ export const RecursosExplorer: React.FC = () => {
 
               {/* Sidebar - Categories */}
 
-              <aside className="lg:w-64 flex-shrink-0">
+              <motion.aside 
+                initial={{ opacity: 0, x: -100 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5 }}
+                className="lg:w-64 flex-shrink-0"
+              >
 
                 <div className="bg-white rounded-xl shadow-md p-6 lg:sticky lg:top-8">
 
@@ -239,13 +260,18 @@ export const RecursosExplorer: React.FC = () => {
 
                 </div>
 
-              </aside>
+              </motion.aside>
 
   
 
               {/* Main Content */}
 
-              <main className="flex-1 min-w-0">
+              <motion.main 
+                initial={{ opacity: 0, x: 100 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5 }}
+                className="flex-1 min-w-0"
+              >
 
                 <div className="mb-8">
 
@@ -285,7 +311,7 @@ export const RecursosExplorer: React.FC = () => {
 
                 {renderContent()}
 
-              </main>
+              </motion.main>
 
             </div>
 

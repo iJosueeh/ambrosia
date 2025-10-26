@@ -15,10 +15,17 @@ import videokImg from "../../../assets/imgArticulos/videok.gif";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 
+import { motion } from "framer-motion";
+
 const ResourceModal = ({ category, resources, onClose }: { category: string; resources: RecursoDTO[]; onClose: () => void; }) => {
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex justify-center items-center p-4 transition-opacity duration-300">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col transform transition-all duration-300 scale-95 opacity-0 animate-fade-in-scale">
+            <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col transform transition-all duration-300"
+            >
                 <header className="p-6 flex justify-between items-center border-b border-gray-200">
                     <h2 className="text-2xl font-bold text-emerald-800">{category}</h2>
                     <button onClick={onClose} className="p-2 rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-800 transition-colors">
@@ -28,7 +35,12 @@ const ResourceModal = ({ category, resources, onClose }: { category: string; res
                 <main className="p-6 overflow-y-auto">
                     <ul className="space-y-4">
                         {resources.map(resource => (
-                            <li key={resource.id}>
+                            <motion.li 
+                                key={resource.id}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.1 * resource.id }}
+                            >
                                 <a
                                     href={resource.enlace}
                                     target="_blank"
@@ -41,11 +53,11 @@ const ResourceModal = ({ category, resources, onClose }: { category: string; res
                                         Publicado el: {new Date(resource.fechaPublicacion).toLocaleDateString()}
                                     </span>
                                 </a>
-                            </li>
+                            </motion.li>
                         ))}
                     </ul>
                 </main>
-            </div>
+            </motion.div>
         </div>
     );
 };
@@ -152,41 +164,59 @@ export const ListadoArticulosPage: React.FC = () => {
             <Toaster />
 
             <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-                <header className="text-center mb-10 mt-4 sm:mt-8">
+                <motion.header 
+                    initial={{ opacity: 0, y: -50 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="text-center mb-10 mt-4 sm:mt-8"
+                >
                     <h1 className="text-4xl font-extrabold text-emerald-900 border-b-4 border-emerald-400 inline-block pb-1">
                         Nuestro Centro de Recursos
                     </h1>
                     <p className="mt-3 text-xl text-gray-600">
                         Explora guías, podcasts y videos sobre bienestar y salud.
                     </p>
-                </header>
+                </motion.header>
 
-                <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <div className="md:col-span-1 md:row-span-4 min-h-[400px]">
+                <motion.div 
+                    variants={{
+                        hidden: { opacity: 0 },
+                        show: {
+                            opacity: 1,
+                            transition: {
+                                staggerChildren: 0.2
+                            }
+                        }
+                    }}
+                    initial="hidden"
+                    animate="show"
+                    className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-6"
+                >
+                    <motion.div variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }} className="md:col-span-1 md:row-span-4 min-h-[400px]">
                         <RecursoCard title="Artículos" icon={<User />} large backgroundImage={images.articulos} onClick={() => handleCardClick('Artículos')} />
-                    </div>
-                    <div className="md:col-span-3 min-h-[180px]">
+                    </motion.div>
+                    <motion.div variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }} className="md:col-span-3 min-h-[180px]">
                         <RecursoCard title="Podcast" icon={<Mic />} backgroundImage={images.podcast} onClick={() => handleCardClick('Podcast')} />
-                    </div>
-                    <div className="md:col-span-2">
+                    </motion.div>
+                    <motion.div variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }} className="md:col-span-2">
                         <BuscadorFiltros />
-                    </div>
-                    <div className="md:col-span-1 md:row-span-2 min-h-[300px]">
+                    </motion.div>
+                    <motion.div variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }} className="md:col-span-1 md:row-span-2 min-h-[300px]">
                         <RecursoCard title="Videos" icon={<Video />} backgroundImage={images.videos} onClick={() => handleCardClick('Videos')} />
-                    </div>
-                    <div className="md:col-span-1 min-h-[180px]">
+                    </motion.div>
+                    <motion.div variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }} className="md:col-span-1 min-h-[180px]">
                         <RecursoCard title="Libros" icon={<BookOpen />} backgroundImage={images.libros} onClick={() => handleCardClick('Libros')} />
-                    </div>
-                    <div className="md:col-span-1 min-h-[180px]">
+                    </motion.div>
+                    <motion.div variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }} className="md:col-span-1 min-h-[180px]">
                         <RecursoCard title="Mitos y Realidades" icon={<Zap />} backgroundImage={images.mitos} onClick={() => handleCardClick('Mitos y Realidades')} />
-                    </div>
-                    <div className="md:col-span-1 min-h-[180px]">
+                    </motion.div>
+                    <motion.div variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }} className="md:col-span-1 min-h-[180px]">
                         <RecursoCard title="Desarrollo Infantil" icon={<Baby />} backgroundImage={images.desarrollo_infantil} onClick={() => handleCardClick('Desarrollo Infantil')} />
-                    </div>
-                    <div className="md:col-span-2 min-h-[180px]">
+                    </motion.div>
+                    <motion.div variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }} className="md:col-span-2 min-h-[180px]">
                         <RecursoCard title="Salud Mental" icon={<Smile />} backgroundImage={images.salud_mental} onClick={() => handleCardClick('Salud Mental')} />
-                    </div>
-                </div>
+                    </motion.div>
+                </motion.div>
             </div>
         </>
     );
