@@ -78,4 +78,11 @@ public class RecursoService {
                 .collect(Collectors.toList());
     }
 
+    public RecursoDTO obtenerRecursoPorId(Long id) {
+        logger.info("Obteniendo recurso con id: {}", id);
+        RecursoEducativo recurso = recursoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Recurso no encontrado con el id: " + id));
+        return modelMapper.map(recurso, RecursoDTO.class);
+    }
+
 }
