@@ -9,6 +9,7 @@ export default defineConfig({
   resolve: { // Add resolve configuration
     alias: {
       '@utils': path.resolve(__dirname, './src/utils'),
+      '@shared': path.resolve(__dirname, './src/shared'),
     },
   },
   css: {

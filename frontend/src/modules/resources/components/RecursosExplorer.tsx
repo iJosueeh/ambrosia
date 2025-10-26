@@ -97,7 +97,7 @@ export const RecursosExplorer: React.FC = () => {
               >
                 <div className="relative h-52 overflow-hidden bg-gray-200">
                   <img
-                    src={`https://source.unsplash.com/800x600/?food,${article.id}`}// Placeholder image
+                    src={article.enlace}
                     alt={article.titulo}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />

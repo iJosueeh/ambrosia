@@ -3,6 +3,7 @@ import { ArrowLeft, Share2, Bookmark, Calendar, Tag, CheckCircle, FileText, Vide
 import { useParams, useNavigate } from 'react-router-dom';
 import { getArticleById } from '../services/resource.service';
 import type { RecursoDTO } from '../types/recurso.types';
+import { ShareModal } from "@shared/components/ShareModal";
 
 export default function ArticleDetailPage() {
   const { articleId } = useParams<{ articleId: string }>();
@@ -10,6 +11,7 @@ export default function ArticleDetailPage() {
   const [article, setArticle] = useState<RecursoDTO | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchArticle = async () => {
@@ -81,6 +83,12 @@ export default function ArticleDetailPage() {
     );
   }
 
+  const openShareModal = () => setIsShareModalOpen(true);
+  const closeShareModal = () => setIsShareModalOpen(false);
+
+  const currentArticleUrl = window.location.href;
+  const currentArticleTitle = article?.titulo || "Artículo de Ambrosia";
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -121,7 +129,7 @@ export default function ArticleDetailPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <Share2 className="w-4 h-4" />
-                    <button className="hover:text-emerald-600 transition-colors">
+                    <button onClick={openShareModal} className="hover:text-emerald-600 transition-colors">
                       Compartir
                     </button>
                   </div>
@@ -135,18 +143,25 @@ export default function ArticleDetailPage() {
                 {/* Main Image - Placeholder for now */}
                 <div className="rounded-xl overflow-hidden mb-8">
                   <img
-                    src={`https://source.unsplash.com/1200x600/?food,health,${article.id}`}
+                    src={article.enlace}
                     alt={article.titulo}
                     className="w-full h-auto"
                   />
                 </div>
 
-                {/* Article Content - Using description for now, ideally a rich text field */}
+                {/* Article Content - Using contenido field */}
                 <div className="prose prose-lg max-w-none">
-                  <p className="text-gray-700 leading-relaxed mb-6">
-                    {article.descripcion} {/* Re-using description for main content */}
-                  </p>
-                  {/* More detailed content would go here if RecursoDTO had a 'content' field */}
+                  {article.contenido && (
+                    <div
+                      className="text-gray-700 leading-relaxed mb-6"
+                      dangerouslySetInnerHTML={{ __html: article.contenido }}
+                    />
+                  )}
+                  {!article.contenido && (
+                    <p className="text-gray-700 leading-relaxed mb-6">
+                      {article.descripcion} {/* Fallback to description if no specific content */}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -219,6 +234,14 @@ export default function ArticleDetailPage() {
           </aside>
         </div>
       </div>
+      {article && (
+        <ShareModal
+          isOpen={isShareModalOpen}
+          onClose={closeShareModal}
+          articleUrl={currentArticleUrl}
+          articleTitle={currentArticleTitle}
+        />
+      )}
     </div>
   );
 }
