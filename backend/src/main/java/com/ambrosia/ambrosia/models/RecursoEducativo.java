@@ -26,11 +26,11 @@ public class RecursoEducativo {
     private LocalDateTime fechaPublicacion;
 
     @ManyToOne
-    @JoinColumn(name = "creador_id")
+    @JoinColumn(name = "creador_id", nullable = true)
     private Profesional creador;
 
     @ManyToOne
-    @JoinColumn(name = "aprobador_id")
+    @JoinColumn(name = "aprobador_id", nullable = true)
     private Administrador aprobador;
 
     @ManyToOne
