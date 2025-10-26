@@ -1,6 +1,7 @@
 package com.ambrosia.ambrosia.controllers;
 
 import com.ambrosia.ambrosia.models.dto.UsuarioDTO;
+import com.ambrosia.ambrosia.models.dto.UsuarioDashboardDTO;
 import com.ambrosia.ambrosia.services.UsuarioService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
@@ -23,8 +24,8 @@ public class UsuarioController {
     }
 
     @GetMapping("/{correo}")
-    public ResponseEntity<UsuarioDTO> obtenerPorCorreo(@PathVariable String correo) {
-        return ResponseEntity.ok(usuarioService.buscarPorCorreo(correo));
+    public ResponseEntity<UsuarioDashboardDTO> obtenerPorCorreo(@PathVariable String correo) {
+        return ResponseEntity.ok(usuarioService.getUsuarioDashboardByEmail(correo));
     }
 
     @GetMapping("/exportar")

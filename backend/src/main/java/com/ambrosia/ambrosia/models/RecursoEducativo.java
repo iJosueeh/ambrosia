@@ -21,6 +21,8 @@ public class RecursoEducativo {
     private String titulo;
     private String descripcion;
     private String enlace;
+    private String size;
+    private Long downloads;
     private LocalDateTime fechaPublicacion;
 
     @ManyToOne

@@ -67,7 +67,6 @@ public class SecurityConfig {
         return source;
     }
 
-    // Define JwtAuthenticationFilter as a Bean
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter(JwtUtil jwtUtil, UsuarioService usuarioService) {
         return new JwtAuthenticationFilter(jwtUtil, usuarioService);
@@ -77,17 +76,17 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
         http
             .csrf(AbstractHttpConfigurer::disable)
-            .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Apply CORS configuration
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .exceptionHandling(exceptions -> exceptions
-                .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)) // Handle unauthenticated requests
+                .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
             )
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Configure session management to be stateless
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers("/api/usuarios/registrar", "/api/auth/login", "/api/tests/**").permitAll()
                 .anyRequest().authenticated()
             )
-            .formLogin(AbstractHttpConfigurer::disable) // We will use a custom login endpoint
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class); // Add JWT filter
+            .formLogin(AbstractHttpConfigurer::disable)
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

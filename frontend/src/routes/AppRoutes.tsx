@@ -3,6 +3,7 @@ import { LandingPage } from "../modules/home/pages/LandingPage"
 import { AuthUser } from "../modules/auth/pages/AuthUser"
 import { QuizPage } from "../modules/resources/pages/QuizPage"
 import { ListadoArticulosPage } from "../modules/resources/pages/ListadoArticulosPage"
+import { ResourcesPage } from "../modules/resources/pages/ResourcesPage"
 import UserDashboard from "../modules/users/components/UserDashboard"
 import { useAuth } from "../shared/hooks/useAuth"
 import type { JSX } from "react/jsx-runtime"
@@ -22,6 +23,7 @@ export const AppRoutes = () => {
       <Route path="/auth" element={<AuthUser />} />
       <Route path="/quiz" element={<QuizPage />} />
       <Route path="/articulos" element={<ListadoArticulosPage />} />
+      <Route path="/resources-center" element={<ResourcesPage />} />
       <Route
         path="/dashboard"
         element={

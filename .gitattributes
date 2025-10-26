@@ -1,2 +1,2 @@
-frontend/package-lock.json linguist-vendored
+frontend/* linguist-vendored
 *.java linguist-language=Java

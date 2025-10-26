@@ -1,9 +1,16 @@
 package com.ambrosia.ambrosia.services;
 
+import com.ambrosia.ambrosia.models.Actividad;
 import com.ambrosia.ambrosia.models.Rol;
+import com.ambrosia.ambrosia.models.TipoActividad;
 import com.ambrosia.ambrosia.models.Usuario;
+import com.ambrosia.ambrosia.models.dto.ActividadDTO;
 import com.ambrosia.ambrosia.models.dto.UsuarioDTO;
+import com.ambrosia.ambrosia.models.dto.UsuarioDashboardDTO;
+import com.ambrosia.ambrosia.repository.ActividadRepository;
 import com.ambrosia.ambrosia.repository.RolRepository;
+import com.ambrosia.ambrosia.repository.RecursoRepository;
+import com.ambrosia.ambrosia.repository.TestRepository;
 import com.ambrosia.ambrosia.repository.UsuarioRepository;
 import com.ambrosia.ambrosia.strategies.ExportStrategy;
 import com.google.common.base.Strings;
@@ -19,7 +26,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -30,6 +40,10 @@ public class UsuarioService implements UserDetailsService {
 
     private final UsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
+    private final RecursoRepository recursoRepository;
+    private final TestRepository testRepository;
+    private final ActividadRepository actividadRepository;
+    private final ActividadService actividadService;
     private final ModelMapper modelMapper;
     private final PasswordEncoder passwordEncoder;
     private final java.util.Map<String, ExportStrategy<Usuario>> exportStrategies;
@@ -65,6 +79,10 @@ public class UsuarioService implements UserDetailsService {
                 .build();
 
         Usuario usuarioGuardado = usuarioRepository.save(usuario);
+
+        // Crear actividad de registro
+        actividadService.crearActividad(usuarioGuardado, TipoActividad.REGISTRO, "Te uniste a Ambrosia Vital");
+
         return modelMapper.map(usuarioGuardado, UsuarioDTO.class);
     }
 
@@ -76,6 +94,86 @@ public class UsuarioService implements UserDetailsService {
         Usuario usuario = usuarioRepository.findByEmail(correo)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con el correo: " + correo));
         return modelMapper.map(usuario, UsuarioDTO.class);
+    }
+
+    public UsuarioDashboardDTO getUsuarioDashboardByEmail(String email) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con el correo: " + email));
+
+        long diasActivo = 0;
+        if (usuario.getFecha_registro() != null) {
+            diasActivo = ChronoUnit.DAYS.between(usuario.getFecha_registro().toLocalDate(), LocalDate.now());
+        }
+
+        // Calcular Progreso
+        long totalRecursos = recursoRepository.count();
+        long totalTests = testRepository.count();
+        int articulosLeidos = usuario.getArticulosLeidos() != null ? usuario.getArticulosLeidos() : 0;
+        int testsCompletados = usuario.getTestsCompletados() != null ? usuario.getTestsCompletados() : 0;
+
+        int progresoArticulos = (totalRecursos == 0) ? 0 : Math.min(100, (int) Math.round(((double) articulosLeidos / totalRecursos * 100)));
+        int progresoTests = (totalTests == 0) ? 0 : Math.min(100, (int) Math.round(((double) testsCompletados / totalTests * 100)));
+
+        List<com.ambrosia.ambrosia.models.dto.ProgressItemDTO> progreso = List.of(
+            com.ambrosia.ambrosia.models.dto.ProgressItemDTO.builder()
+                .label("Artículos completados")
+                .current(articulosLeidos)
+                .total(totalRecursos)
+                .percentage(progresoArticulos)
+                .build(),
+            com.ambrosia.ambrosia.models.dto.ProgressItemDTO.builder()
+                .label("Tests de seguimiento")
+                .current(testsCompletados)
+                .total(totalTests)
+                .percentage(progresoTests)
+                .build()
+        );
+
+        List<Actividad> actividades = actividadRepository.findTop5ByUsuarioOrderByFechaDesc(usuario);
+        List<ActividadDTO> actividadReciente = actividades.stream()
+                .map(actividad -> modelMapper.map(actividad, ActividadDTO.class))
+                .toList();
+
+        List<com.ambrosia.ambrosia.models.dto.RecomendacionDTO> recomendaciones = new ArrayList<>();
+        if (testsCompletados == 0) {
+            recomendaciones.add(com.ambrosia.ambrosia.models.dto.RecomendacionDTO.builder()
+                    .title("Realizar primer test")
+                    .description("Completa tu evaluación inicial")
+                    .link("/quiz/1")
+                    .tipo("TEST")
+                    .build());
+        }
+
+        long articulosNoLeidos = totalRecursos - articulosLeidos;
+        if (articulosNoLeidos > 0) {
+            recomendaciones.add(com.ambrosia.ambrosia.models.dto.RecomendacionDTO.builder()
+                    .title("Leer artículos nuevos")
+                    .description(articulosNoLeidos + " sin leer")
+                    .link("/articulos")
+                    .tipo("ARTICULO")
+                    .build());
+        }
+
+        recomendaciones.add(com.ambrosia.ambrosia.models.dto.RecomendacionDTO.builder()
+                .title("Explorar recursos")
+                .description("Guías y videos disponibles")
+                .link("/articulos")
+                .tipo("RECURSO")
+                .build());
+
+
+        return UsuarioDashboardDTO.builder()
+                .nombre(usuario.getNombre())
+                .correo(usuario.getEmail())
+                .fechaRegistro(usuario.getFecha_registro() != null ? usuario.getFecha_registro().toLocalDate() : null)
+                .diasActivo(diasActivo)
+                .articulosLeidos(articulosLeidos)
+                .testsCompletados(testsCompletados)
+                .recursosDescargados(usuario.getRecursosDescargados() != null ? usuario.getRecursosDescargados() : 0)
+                .progreso(progreso)
+                .actividadReciente(actividadReciente)
+                .recomendaciones(recomendaciones)
+                .build();
     }
 
     @Override

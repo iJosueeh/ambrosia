@@ -1,8 +1,8 @@
 # Dependencias
-backend/node_modules/
+frontend/node_modules/
 
 # Archivos de compilación de TypeScript
-backend/dist/
+frontend/dist/
 
 # Archivos de entorno
 .env
