@@ -1,28 +1,94 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Heart, Phone, Mail, MessageCircle, FileText, Download, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Heart, Phone, Mail, MessageCircle, FileText, Download, ChevronDown, BookOpen, Video, Mic, Zap, Smile, Baby } from 'lucide-react';
 import { getAllResources, getCategories, getResourcesByCategory, incrementDownloadCount } from '../services/resource.service';
-import type { RecursoDTO } from '../types/recurso.types';
 import type { CategoriaRecursoDTO } from '../types/categoria.types';
+import type { RecursoDTO } from '../types/recurso.types';
 
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+
+interface ResourceItemCardProps {
+    resource: RecursoDTO;
+    handleDownload: (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>, resourceId: number, enlace: string) => void;
+}
+
+const categoryIconMap: Record<string, { icon: React.ElementType, color: string, bgColor: string }> = {
+    'Artículos': { icon: FileText, color: 'text-blue-600', bgColor: 'bg-blue-50' },
+    'Podcast': { icon: Mic, color: 'text-purple-600', bgColor: 'bg-purple-50' },
+    'Videos': { icon: Video, color: 'text-red-600', bgColor: 'bg-red-50' },
+    'Libros': { icon: BookOpen, color: 'text-yellow-600', bgColor: 'bg-yellow-50' },
+    'Mitos y Realidades': { icon: Zap, color: 'text-indigo-600', bgColor: 'bg-indigo-50' },
+    'Salud Mental': { icon: Smile, color: 'text-green-600', bgColor: 'bg-green-50' },
+    'Desarrollo Infantil': { icon: Baby, color: 'text-pink-600', bgColor: 'bg-pink-50' },
+    'Sin Categoría': { icon: FileText, color: 'text-gray-600', bgColor: 'bg-gray-50' }, // Default
+};
+
+const ResourceItemCard: React.FC<ResourceItemCardProps> = ({ resource, handleDownload }) => {
+    const categoryName = resource.nombreCategoria || 'Sin Categoría';
+    const { icon: Icon, color, bgColor } = categoryIconMap[categoryName] || categoryIconMap['Sin Categoría'];
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow duration-200 p-6 border border-gray-100"
+        >
+            <div className="flex items-start justify-between mb-4">
+                <div className={`w-12 h-12 ${bgColor} rounded-lg flex items-center justify-center`}>
+                    <Icon className={`w-6 h-6 ${color}`} />
+                </div>
+                <span className="bg-gray-100 text-gray-600 text-xs font-semibold px-2 py-1 rounded">
+                    {categoryName}
+                </span>
+            </div>
+
+            <h4 className="font-bold text-gray-800 mb-2 line-clamp-2">
+                {resource.titulo}
+            </h4>
+            <p className="text-sm text-gray-600 mb-4 line-clamp-3">
+                {resource.descripcion}
+            </p>
+
+            <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
+                <span>{resource.size}</span>
+                <span>{resource.downloads?.toLocaleString()} descargas</span>
+            </div>
+
+            <a href={resource.enlace} onClick={(e) => handleDownload(e, resource.id, resource.enlace)} target="_blank" rel="noopener noreferrer" className="w-full bg-emerald-500 text-white py-2.5 rounded-lg font-semibold hover:bg-emerald-600 transition-colors flex items-center justify-center gap-2">
+                <Download className="w-4 h-4" />
+                Descargar
+            </a>
+        </motion.div>
+    );
+};
 
 export const ResourcesPage = () => {
+    const navigate = useNavigate();
 
     const [activeTab, setActiveTab] = useState<number | null>(null);
     const [openFaq, setOpenFaq] = useState<number | null>(null);
     const [resources, setResources] = useState<RecursoDTO[]>([]);
     const [categories, setCategories] = useState<CategoriaRecursoDTO[]>([]);
+    const [isLoading, setIsLoading] = useState(true); // Added isLoading state
 
     useEffect(() => {
         const fetchCategories = async () => {
+            setIsLoading(true); // Set loading to true
             try {
                 const fetchedCategories = await getCategories();
+                console.log("Fetched categories:", fetchedCategories); // Add this
                 setCategories(fetchedCategories);
                 if (fetchedCategories.length > 0) {
-                    setActiveTab(fetchedCategories[0].id);
+                    // Find the "Artículos" category
+                    setActiveTab(0); // Set to 0 for 'Todos' by default
+                } else {
+                    setActiveTab(0); // Ensure activeTab is 0 if no categories
                 }
             } catch (error) {
                 console.error("Error fetching categories:", error);
+            } finally {
+                setIsLoading(false); // Set loading to false after fetch
             }
         };
         fetchCategories();
@@ -30,16 +96,21 @@ export const ResourcesPage = () => {
 
     useEffect(() => {
         const fetchResources = async () => {
+            setIsLoading(true); // Set loading to true
             try {
-                if (activeTab !== null) {
+                if (activeTab === 0) {
+                    const fetchedResources = await getAllResources();
+                    setResources(fetchedResources);
+                } else if (activeTab !== null) {
                     const fetchedResources = await getResourcesByCategory(activeTab);
                     setResources(fetchedResources);
                 } else {
-                    const fetchedResources = await getAllResources();
-                    setResources(fetchedResources);
+                    setResources([]);
                 }
             } catch (error) {
                 console.error("Error fetching resources:", error);
+            } finally {
+                setIsLoading(false); // Set loading to false after fetch
             }
         };
         fetchResources();
@@ -181,6 +252,16 @@ export const ResourcesPage = () => {
                     className="bg-white rounded-xl shadow-md mb-8 overflow-hidden"
                 >
                     <div className="flex overflow-x-auto border-b border-gray-200">
+                        <button
+                            key={0} // Use 0 for 'Todos'
+                            onClick={() => setActiveTab(0)}
+                            className={`px-6 py-4 font-medium transition-colors whitespace-nowrap ${activeTab === 0
+                                    ? 'border-b-2 border-emerald-500 text-emerald-600 bg-emerald-50'
+                                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                                }`}
+                        >
+                            Todos
+                        </button>
                         {categories.map((cat) => (
                             <button
                                 key={cat.id}
@@ -218,45 +299,19 @@ export const ResourcesPage = () => {
                         Nuestro equipo de profesionales ha desarrollado las siguientes guías y herramientas para complementar tu camino hacia el bienestar.
                     </p>
 
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {resources.length > 0 ? (
-                            resources.map((resource, index) => (
-                                <motion.div
-                                    key={index}
-                                    variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }}
-                                    className="bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow duration-200 p-6 border border-gray-100"
-                                >
-                                    <div className="flex items-start justify-between mb-4">
-                                        <div className="w-12 h-12 bg-emerald-50 rounded-lg flex items-center justify-center">
-                                            <FileText className="w-6 h-6 text-emerald-600" />
-                                        </div>
-                                        <span className="bg-gray-100 text-gray-600 text-xs font-semibold px-2 py-1 rounded">
-                                            PDF
-                                        </span>
-                                    </div>
-
-                                    <h4 className="font-bold text-gray-800 mb-2 line-clamp-2">
-                                        {resource.titulo}
-                                    </h4>
-                                    <p className="text-sm text-gray-600 mb-4 line-clamp-3">
-                                        {resource.descripcion}
-                                    </p>
-
-                                    <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                                        <span>{resource.size}</span>
-                                        <span>{resource.downloads?.toLocaleString()} descargas</span>
-                                    </div>
-
-                                    <a href={resource.enlace} onClick={(e) => handleDownload(e, resource.id, resource.enlace)} target="_blank" rel="noopener noreferrer" className="w-full bg-emerald-500 text-white py-2.5 rounded-lg font-semibold hover:bg-emerald-600 transition-colors flex items-center justify-center gap-2">
-                                        <Download className="w-4 h-4" />
-                                        Descargar
-                                    </a>
-                                </motion.div>
-                            ))
+                    {isLoading ? (
+                        <div className="text-center col-span-full text-gray-500">Cargando recursos...</div>
+                    ) : (
+                        resources.length > 0 ? (
+                            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {resources.map((resource, index) => (
+                                    <ResourceItemCard key={index} resource={resource} handleDownload={handleDownload} />
+                                ))}
+                            </div>
                         ) : (
                             <p className="text-center col-span-full text-gray-500">No hay recursos disponibles en esta categoría en este momento.</p>
-                        )}
-                    </div>
+                        )
+                    )}
                 </motion.div>
 
                 {/* FAQ Section */}
@@ -311,7 +366,10 @@ export const ResourcesPage = () => {
                         Contáctanos y te guiaremos.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <button className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors">
+                        <button 
+                            onClick={() => navigate('/contacto')}
+                            className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
+                        >
                             Contactar Equipo de Apoyo
                         </button>
                         <button className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:bg-opacity-10 transition-colors">

@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getAllResources, getCategories } from "../services/resource.service";
-import type { RecursoDTO } from "../types/recurso.types";
+
 import type { CategoriaRecursoDTO } from "../types/categoria.types";
-import { Search, Mic, BookOpen, Video, Zap, User, Smile, Baby, X } from "lucide-react";
+import { Search, Mic, BookOpen, Video, Zap, User, Smile, Baby } from "lucide-react";
 import { toast, Toaster } from 'react-hot-toast';
 import articulosImg from "../../../assets/imgArticulos/articulos.jpg";
 import libroImg from "../../../assets/imgArticulos/libro.jpg";
@@ -17,50 +17,7 @@ import { useEffect } from "react";
 
 import { motion } from "framer-motion";
 
-const ResourceModal = ({ category, resources, onClose }: { category: string; resources: RecursoDTO[]; onClose: () => void; }) => {
-    return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex justify-center items-center p-4 transition-opacity duration-300">
-            <motion.div 
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col transform transition-all duration-300"
-            >
-                <header className="p-6 flex justify-between items-center border-b border-gray-200">
-                    <h2 className="text-2xl font-bold text-emerald-800">{category}</h2>
-                    <button onClick={onClose} className="p-2 rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-800 transition-colors">
-                        <X className="w-6 h-6" />
-                    </button>
-                </header>
-                <main className="p-6 overflow-y-auto">
-                    <ul className="space-y-4">
-                        {resources.map(resource => (
-                            <motion.li 
-                                key={resource.id}
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: 0.1 * resource.id }}
-                            >
-                                <a
-                                    href={resource.enlace}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="block p-4 rounded-lg border border-gray-200 hover:bg-emerald-50 hover:border-emerald-300 transition-all duration-200"
-                                >
-                                    <h3 className="font-semibold text-lg text-emerald-700 group-hover:text-emerald-800">{resource.titulo}</h3>
-                                    <p className="text-gray-600 text-sm mt-1">{resource.descripcion}</p>
-                                    <span className="text-xs text-gray-400 mt-2 block">
-                                        Publicado el: {new Date(resource.fechaPublicacion).toLocaleDateString()}
-                                    </span>
-                                </a>
-                            </motion.li>
-                        ))}
-                    </ul>
-                </main>
-            </motion.div>
-        </div>
-    );
-};
+
 
 const BuscadorFiltros: React.FC = () => (
     <div className="p-4 bg-white/90 backdrop-blur-md rounded-xl shadow-lg border-2 border-emerald-500/50 h-full">
@@ -102,7 +59,7 @@ const RecursoCard: React.FC<RecursoCardProps> = ({ title, icon, large = false, b
     );
 };
 
-export const ListadoArticulosPage: React.FC = () => {
+const ListadoArticulosPage: React.FC = () => {
     const navigate = useNavigate();
     const [categories, setCategories] = useState<CategoriaRecursoDTO[]>([]);
 
@@ -118,19 +75,12 @@ export const ListadoArticulosPage: React.FC = () => {
         fetchCategories();
     }, []);
 
-    const { data: allResources = [], isLoading, isError } = useQuery({
+    const { isLoading, isError } = useQuery({
         queryKey: ['allResources'],
         queryFn: getAllResources,
     });
 
-    const resourcesByCategory = allResources.reduce((acc, resource) => {
-        const category = resource.nombreCategoria || 'Sin Categoría';
-        if (!acc[category]) {
-            acc[category] = [];
-        }
-        acc[category].push(resource);
-        return acc;
-    }, {} as Record<string, RecursoDTO[]>);
+
 
     const handleCardClick = (categoryName: string) => {
         const category = categories.find(cat => cat.nombre.toLowerCase() === categoryName.toLowerCase());
@@ -221,3 +171,4 @@ export const ListadoArticulosPage: React.FC = () => {
         </>
     );
 };
+export default ListadoArticulosPage;

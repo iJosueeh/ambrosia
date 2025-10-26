@@ -252,7 +252,10 @@ export const AssessmentQuiz = () => {
                   Inicia sesión para guardar resultados
                 </button>
               )}
-              <button className="flex-1 border-2 border-emerald-500 text-emerald-600 py-3 px-6 rounded-lg font-semibold hover:bg-emerald-50 transition-colors duration-200">
+              <button 
+                onClick={() => navigate('/contacto')}
+                className="flex-1 border-2 border-emerald-500 text-emerald-600 py-3 px-6 rounded-lg font-semibold hover:bg-emerald-50 transition-colors duration-200"
+              >
                 Contactar Especialista
               </button>
             </div>

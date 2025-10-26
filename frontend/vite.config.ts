@@ -2,14 +2,14 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from 'tailwindcss'
 import autoprefixer from 'autoprefixer'
-import path from 'path' // Import path
+import path from 'node:path';
 
-// https://vite.dev/config/
+// https://vitejs.dev/config/
 export default defineConfig({
-  resolve: { // Add resolve configuration
+  resolve: {
     alias: {
-      '@utils': path.resolve(__dirname, './src/utils'),
-      '@shared': path.resolve(__dirname, './src/shared'),
+      '@utils': path.resolve(process.cwd(), './src/utils'),
+      '@shared': path.resolve(process.cwd(), './src/shared'),
     },
   },
   css: {
