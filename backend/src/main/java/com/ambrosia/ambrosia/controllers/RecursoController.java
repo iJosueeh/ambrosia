@@ -36,4 +36,9 @@ public class RecursoController {
     public ResponseEntity<List<CategoriaRecursoDTO>> listarCategorias() {
         return ResponseEntity.ok(recursoService.listarCategorias());
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<RecursoDTO> obtenerPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(recursoService.obtenerRecursoPorId(id));
+    }
 }

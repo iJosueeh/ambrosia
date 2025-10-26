@@ -82,7 +82,7 @@ public class SecurityConfig {
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/api/usuarios/registrar", "/api/auth/login", "/api/tests/**").permitAll()
+                .requestMatchers("/api/usuarios/registrar", "/api/auth/login", "/api/tests/**", "/api/recursos/**").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(AbstractHttpConfigurer::disable)

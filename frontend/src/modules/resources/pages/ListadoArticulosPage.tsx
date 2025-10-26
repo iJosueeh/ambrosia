@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getAllResources } from "../services/resource.service";
+import { getAllResources, getCategories } from "../services/resource.service";
 import type { RecursoDTO } from "../types/recurso.types";
+import type { CategoriaRecursoDTO } from "../types/categoria.types";
 import { Search, Mic, BookOpen, Video, Zap, User, Smile, Baby, X } from "lucide-react";
 import { toast, Toaster } from 'react-hot-toast';
 import articulosImg from "../../../assets/imgArticulos/articulos.jpg";
@@ -11,6 +12,8 @@ import mitosImg from "../../../assets/imgArticulos/mitos.jpg";
 import ninoImg from "../../../assets/imgArticulos/nino.jpg";
 import podcastImg from "../../../assets/imgArticulos/podcast.jpg";
 import videokImg from "../../../assets/imgArticulos/videok.gif";
+import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 const ResourceModal = ({ category, resources, onClose }: { category: string; resources: RecursoDTO[]; onClose: () => void; }) => {
     return (
@@ -88,7 +91,20 @@ const RecursoCard: React.FC<RecursoCardProps> = ({ title, icon, large = false, b
 };
 
 export const ListadoArticulosPage: React.FC = () => {
-    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+    const navigate = useNavigate();
+    const [categories, setCategories] = useState<CategoriaRecursoDTO[]>([]);
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const fetchedCategories = await getCategories();
+                setCategories(fetchedCategories);
+            } catch (error) {
+                console.error("Error fetching categories:", error);
+            }
+        };
+        fetchCategories();
+    }, []);
 
     const { data: allResources = [], isLoading, isError } = useQuery({
         queryKey: ['allResources'],
@@ -104,12 +120,12 @@ export const ListadoArticulosPage: React.FC = () => {
         return acc;
     }, {} as Record<string, RecursoDTO[]>);
 
-    const openModal = (category: string) => {
-        if (resourcesByCategory[category] && resourcesByCategory[category].length > 0) {
-            setSelectedCategory(category);
-        }
-        else {
-            toast.error(`No hay recursos disponibles en la categoría "${category}" por el momento.`);
+    const handleCardClick = (categoryName: string) => {
+        const category = categories.find(cat => cat.nombre.toLowerCase() === categoryName.toLowerCase());
+        if (category) {
+            navigate(`/explorar-recursos/${category.id}`);
+        } else {
+            toast.error(`Categoría "${categoryName}" no encontrada.`);
         }
     };
 
@@ -134,13 +150,6 @@ export const ListadoArticulosPage: React.FC = () => {
     return (
         <>
             <Toaster />
-            {selectedCategory && (
-                <ResourceModal
-                    category={selectedCategory}
-                    resources={resourcesByCategory[selectedCategory]}
-                    onClose={() => setSelectedCategory(null)}
-                />
-            )}
 
             <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
                 <header className="text-center mb-10 mt-4 sm:mt-8">
@@ -154,28 +163,28 @@ export const ListadoArticulosPage: React.FC = () => {
 
                 <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-6">
                     <div className="md:col-span-1 md:row-span-4 min-h-[400px]">
-                        <RecursoCard title="Artículos" icon={<User />} large backgroundImage={images.articulos} onClick={() => openModal('Articulo')} />
+                        <RecursoCard title="Artículos" icon={<User />} large backgroundImage={images.articulos} onClick={() => handleCardClick('Artículos')} />
                     </div>
                     <div className="md:col-span-3 min-h-[180px]">
-                        <RecursoCard title="Podcast" icon={<Mic />} backgroundImage={images.podcast} onClick={() => openModal('Podcast')} />
+                        <RecursoCard title="Podcast" icon={<Mic />} backgroundImage={images.podcast} onClick={() => handleCardClick('Podcast')} />
                     </div>
                     <div className="md:col-span-2">
                         <BuscadorFiltros />
                     </div>
                     <div className="md:col-span-1 md:row-span-2 min-h-[300px]">
-                        <RecursoCard title="Videos" icon={<Video />} backgroundImage={images.videos} onClick={() => openModal('Video')} />
+                        <RecursoCard title="Videos" icon={<Video />} backgroundImage={images.videos} onClick={() => handleCardClick('Videos')} />
                     </div>
                     <div className="md:col-span-1 min-h-[180px]">
-                        <RecursoCard title="Libros" icon={<BookOpen />} backgroundImage={images.libros} onClick={() => openModal('Libro')} />
+                        <RecursoCard title="Libros" icon={<BookOpen />} backgroundImage={images.libros} onClick={() => handleCardClick('Libros')} />
                     </div>
                     <div className="md:col-span-1 min-h-[180px]">
-                        <RecursoCard title="Mitos y Realidades" icon={<Zap />} backgroundImage={images.mitos} onClick={() => openModal('Mitos y Realidades')} />
+                        <RecursoCard title="Mitos y Realidades" icon={<Zap />} backgroundImage={images.mitos} onClick={() => handleCardClick('Mitos y Realidades')} />
                     </div>
                     <div className="md:col-span-1 min-h-[180px]">
-                        <RecursoCard title="Desarrollo Infantil" icon={<Baby />} backgroundImage={images.desarrollo_infantil} onClick={() => openModal('Desarrollo Infantil')} />
+                        <RecursoCard title="Desarrollo Infantil" icon={<Baby />} backgroundImage={images.desarrollo_infantil} onClick={() => handleCardClick('Desarrollo Infantil')} />
                     </div>
                     <div className="md:col-span-2 min-h-[180px]">
-                        <RecursoCard title="Salud Mental" icon={<Smile />} backgroundImage={images.salud_mental} onClick={() => openModal('Salud Mental')} />
+                        <RecursoCard title="Salud Mental" icon={<Smile />} backgroundImage={images.salud_mental} onClick={() => handleCardClick('Salud Mental')} />
                     </div>
                 </div>
             </div>

@@ -16,3 +16,8 @@ export const getResourcesByCategory = async (categoryId: number): Promise<Recurs
     const response = await axiosInstance.get<RecursoDTO[]>(`/recursos/categoria/${categoryId}`);
     return response.data;
 };
+
+export const getArticleById = async (id: number): Promise<RecursoDTO> => {
+    const response = await axiosInstance.get<RecursoDTO>(`/recursos/${id}`);
+    return response.data;
+};
