@@ -3,6 +3,7 @@ package com.ambrosia.ambrosia.services;
 import com.ambrosia.ambrosia.models.CategoriaRecurso;
 import com.ambrosia.ambrosia.models.EstadoPublicado;
 import com.ambrosia.ambrosia.models.RecursoEducativo;
+import com.ambrosia.ambrosia.models.dto.CategoriaRecursoDTO;
 import com.ambrosia.ambrosia.models.dto.RecursoDTO;
 import com.ambrosia.ambrosia.repository.CategoriaRecursoRepository;
 import com.ambrosia.ambrosia.repository.EstadoPublicadoRepository;
@@ -32,21 +33,21 @@ public class RecursoService {
     private final ModelMapper modelMapper;
 
     public RecursoDTO publicarRecurso(RecursoDTO dto) {
-        if (Strings.isNullOrEmpty(dto.titulo()) || Strings.isNullOrEmpty(dto.descripcion())) {
+        if (Strings.isNullOrEmpty(dto.getTitulo()) || Strings.isNullOrEmpty(dto.getDescripcion())) {
             throw new IllegalArgumentException("El título y la descripción no pueden ser nulos o vacíos");
         }
 
-        logger.info("Publicando recurso con título: {}", dto.titulo());
+        logger.info("Publicando recurso con título: {}", dto.getTitulo());
 
-        CategoriaRecurso categoria = categoriaRecursoRepository.findByNombre(dto.categoria())
-                .orElseThrow(() -> new RuntimeException("Categoria no encontrada con el nombre: " + dto.categoria()));
+        CategoriaRecurso categoria = categoriaRecursoRepository.findByNombre(dto.getNombreCategoria())
+                .orElseThrow(() -> new RuntimeException("Categoria no encontrada con el nombre: " + dto.getNombreCategoria()));
 
-        EstadoPublicado estado = estadoPublicadoRepository.findByNombre(dto.estado())
-                .orElseThrow(() -> new RuntimeException("Estado no encontrado con el nombre: " + dto.estado()));
+        EstadoPublicado estado = estadoPublicadoRepository.findByNombre(dto.getEstado())
+                .orElseThrow(() -> new RuntimeException("Estado no encontrado con el nombre: " + dto.getEstado()));
 
         RecursoEducativo recurso = RecursoEducativo.builder()
-                .titulo(dto.titulo())
-                .descripcion(dto.descripcion())
+                .titulo(dto.getTitulo())
+                .descripcion(dto.getDescripcion())
                 .categoria(categoria)
                 .estado(estado)
                 .fechaPublicacion(LocalDateTime.now())
@@ -56,10 +57,24 @@ public class RecursoService {
         return modelMapper.map(recursoGuardado, RecursoDTO.class);
     }
 
+    public List<RecursoDTO> listarTodosLosRecursos() {
+        logger.info("Listando todos los recursos");
+        return recursoRepository.findAll().stream()
+                .map(recurso -> modelMapper.map(recurso, RecursoDTO.class))
+                .collect(Collectors.toList());
+    }
+
     public List<RecursoDTO> listarRecursosPorCategoria(Long id) {
         logger.info("Listando recursos para la categoría con id: {}", id);
         return recursoRepository.findByCategoriaId(id).stream()
                 .map(recurso -> modelMapper.map(recurso, RecursoDTO.class))
+                .collect(Collectors.toList());
+    }
+
+    public List<CategoriaRecursoDTO> listarCategorias() {
+        logger.info("Listando todas las categorias");
+        return categoriaRecursoRepository.findAll().stream()
+                .map(categoria -> modelMapper.map(categoria, CategoriaRecursoDTO.class))
                 .collect(Collectors.toList());
     }
 

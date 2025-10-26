@@ -30,6 +30,8 @@ public class Usuario implements UserDetails {
     private String password;
     private LocalDateTime fecha_registro;
     private Integer testsCompletados = 0;
+    private Integer articulosLeidos = 0;
+    private Integer recursosDescargados = 0;
 
     @ManyToOne
     @JoinColumn(name = "rol_id")

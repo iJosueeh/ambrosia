@@ -1,5 +1,6 @@
 package com.ambrosia.ambrosia.controllers;
 
+import com.ambrosia.ambrosia.models.dto.CategoriaRecursoDTO;
 import com.ambrosia.ambrosia.models.dto.RecursoDTO;
 import com.ambrosia.ambrosia.services.RecursoService;
 import lombok.RequiredArgsConstructor;
@@ -21,9 +22,18 @@ public class RecursoController {
         return  ResponseEntity.status(201).body(recursoPublicado);
     }
 
+    @GetMapping
+    public ResponseEntity<List<RecursoDTO>> listarTodos() {
+        return ResponseEntity.ok(recursoService.listarTodosLosRecursos());
+    }
+
     @GetMapping("/categoria/{id}")
     public ResponseEntity<List<RecursoDTO>> listarPorCategoria(@PathVariable Long id) {
         return ResponseEntity.ok(recursoService.listarRecursosPorCategoria(id));
     }
 
+    @GetMapping("/categorias")
+    public ResponseEntity<List<CategoriaRecursoDTO>> listarCategorias() {
+        return ResponseEntity.ok(recursoService.listarCategorias());
+    }
 }

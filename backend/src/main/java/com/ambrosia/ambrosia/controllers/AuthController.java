@@ -23,7 +23,7 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final UsuarioService usuarioService;
-    private final JwtUtil jwtUtil; // Inject JwtUtil
+    private final JwtUtil jwtUtil;
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> authenticateUser(@RequestBody LoginRequest loginRequest) {
@@ -34,7 +34,6 @@ public class AuthController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         Usuario authenticatedUser = (Usuario) authentication.getPrincipal();
 
-        // Generate JWT token
         String token = jwtUtil.generateToken(authenticatedUser);
 
         LoginResponseDTO responseDTO = new LoginResponseDTO(
@@ -42,7 +41,7 @@ public class AuthController {
                 authenticatedUser.getNombre(),
                 authenticatedUser.getEmail(),
                 authenticatedUser.getRol().getNombre(),
-                token // Include the generated token
+                token
         );
 
         return ResponseEntity.ok(responseDTO);

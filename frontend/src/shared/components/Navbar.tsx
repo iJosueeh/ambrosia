@@ -17,7 +17,7 @@ export const Navbar = () => {
   const navItems = [
     { name: "Inicio", to: "/" },
     { name: "Sobre Nosotros", to: "/" }, // Assuming these are sections on the landing page
-    { name: "Recursos", to: "/quiz" }, // Assuming /quiz is the resources page
+    { name: "Recursos", to: "/resources-center" },
     { name: "Artículos", to: "/articulos" },
     { name: "Tests", to: "/quiz" },
   ];
