@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -20,21 +21,18 @@ public class Foro {
     private Long id;
 
     private String titulo;
-    private String contenido;
-    private LocalDateTime fechaCreacion;
+    private String descripcion;
 
     @ManyToOne
     @JoinColumn(name = "autor_id")
     private Usuario autor;
 
-    @ManyToOne
-    @JoinColumn(name = "aprobador_id")
-    private Administrador aprobador;
+    private LocalDateTime fechaCreacion;
 
     @ManyToOne
-    @JoinColumn(name = "estado_id")
-    private EstadoPublicado estado;
+    @JoinColumn(name = "categoria_foro_id")
+    private CategoriaForo categoriaForo;
 
     @OneToMany(mappedBy = "foro", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Comentario> comentarios;
+    private List<Comentario> comentarios = new ArrayList<>();
 }

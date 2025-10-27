@@ -140,30 +140,30 @@ const ListadoArticulosPage: React.FC = () => {
                     }}
                     initial="hidden"
                     animate="show"
-                    className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-6"
+                    className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
                 >
-                    <motion.div variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }} className="md:col-span-1 md:row-span-4 min-h-[400px]">
+                    <motion.div variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }} className="md:col-span-2 lg:col-span-2 min-h-[250px]">
                         <RecursoCard title="Artículos" icon={<User />} large backgroundImage={images.articulos} onClick={() => handleCardClick('Artículos')} />
                     </motion.div>
-                    <motion.div variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }} className="md:col-span-3 min-h-[180px]">
+                    <motion.div variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }} className="md:col-span-2 lg:col-span-2 min-h-[250px]">
                         <RecursoCard title="Podcast" icon={<Mic />} backgroundImage={images.podcast} onClick={() => handleCardClick('Podcast')} />
                     </motion.div>
-                    <motion.div variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }} className="md:col-span-2">
+                    <motion.div variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }} className="md:col-span-2 lg:col-span-2 min-h-[250px]">
                         <BuscadorFiltros />
                     </motion.div>
-                    <motion.div variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }} className="md:col-span-1 md:row-span-2 min-h-[300px]">
+                    <motion.div variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }} className="md:col-span-2 lg:col-span-2 min-h-[250px]">
                         <RecursoCard title="Videos" icon={<Video />} backgroundImage={images.videos} onClick={() => handleCardClick('Videos')} />
                     </motion.div>
-                    <motion.div variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }} className="md:col-span-1 min-h-[180px]">
+                    <motion.div variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }} className="md:col-span-1 lg:col-span-1 min-h-[200px]">
                         <RecursoCard title="Libros" icon={<BookOpen />} backgroundImage={images.libros} onClick={() => handleCardClick('Libros')} />
                     </motion.div>
-                    <motion.div variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }} className="md:col-span-1 min-h-[180px]">
+                    <motion.div variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }} className="md:col-span-1 lg:col-span-1 min-h-[200px]">
                         <RecursoCard title="Mitos y Realidades" icon={<Zap />} backgroundImage={images.mitos} onClick={() => handleCardClick('Mitos y Realidades')} />
                     </motion.div>
-                    <motion.div variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }} className="md:col-span-1 min-h-[180px]">
+                    <motion.div variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }} className="md:col-span-1 lg:col-span-1 min-h-[200px]">
                         <RecursoCard title="Desarrollo Infantil" icon={<Baby />} backgroundImage={images.desarrollo_infantil} onClick={() => handleCardClick('Desarrollo Infantil')} />
                     </motion.div>
-                    <motion.div variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }} className="md:col-span-2 min-h-[180px]">
+                    <motion.div variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }} className="md:col-span-1 lg:col-span-1 min-h-[200px]">
                         <RecursoCard title="Salud Mental" icon={<Smile />} backgroundImage={images.salud_mental} onClick={() => handleCardClick('Salud Mental')} />
                     </motion.div>
                 </motion.div>

@@ -10,10 +10,13 @@ import com.ambrosia.ambrosia.repository.EstadoPublicadoRepository;
 import com.ambrosia.ambrosia.repository.ProfesionalRepository;
 import com.ambrosia.ambrosia.repository.RecursoRepository;
 import com.google.common.base.Strings;
+import com.ambrosia.ambrosia.mappers.RecursoMapper;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -30,7 +33,8 @@ public class RecursoService {
     private final CategoriaRecursoRepository categoriaRecursoRepository;
     private final EstadoPublicadoRepository estadoPublicadoRepository;
     private final ProfesionalRepository profesionalRepository;
-    private final ModelMapper modelMapper;
+    private final RecursoMapper recursoMapper;
+
 
     public RecursoDTO publicarRecurso(RecursoDTO dto) {
         if (Strings.isNullOrEmpty(dto.getTitulo()) || Strings.isNullOrEmpty(dto.getDescripcion())) {
@@ -56,35 +60,37 @@ public class RecursoService {
                 .build();
 
         RecursoEducativo recursoGuardado = recursoRepository.save(recurso);
-        return modelMapper.map(recursoGuardado, RecursoDTO.class);
+        return recursoMapper.toDto(recursoGuardado);
     }
 
-    public List<RecursoDTO> listarTodosLosRecursos() {
-        logger.info("Listando todos los recursos");
-        return recursoRepository.findAll().stream()
-                .map(recurso -> modelMapper.map(recurso, RecursoDTO.class))
-                .collect(Collectors.toList());
+    public Page<RecursoDTO> listarTodosLosRecursos(Pageable pageable, String search) {
+        logger.info("Listando todos los recursos con paginación y búsqueda");
+        Page<RecursoEducativo> recursosPage;
+        if (Strings.isNullOrEmpty(search)) {
+            recursosPage = recursoRepository.findAll(pageable);
+        } else {
+            recursosPage = recursoRepository.findByTituloContainingIgnoreCaseOrDescripcionContainingIgnoreCase(search, search, pageable);
+        }
+        return recursosPage.map(recursoMapper::toDto);
     }
 
-    public List<RecursoDTO> listarRecursosPorCategoria(Long id) {
-        logger.info("Listando recursos para la categoría con id: {}", id);
-        return recursoRepository.findByCategoriaId(id).stream()
-                .map(recurso -> modelMapper.map(recurso, RecursoDTO.class))
-                .collect(Collectors.toList());
-    }
-
-    public List<CategoriaRecursoDTO> listarCategorias() {
-        logger.info("Listando todas las categorias");
-        return categoriaRecursoRepository.findAll().stream()
-                .map(categoria -> modelMapper.map(categoria, CategoriaRecursoDTO.class))
-                .collect(Collectors.toList());
+    public Page<RecursoDTO> listarRecursosPorCategoria(Long id, Pageable pageable, String search) {
+        logger.info("Listando recursos para la categoría con id: {} con paginación y búsqueda", id);
+        Page<RecursoEducativo> recursosPage;
+        if (Strings.isNullOrEmpty(search)) {
+            recursosPage = recursoRepository.findByCategoriaId(id, pageable);
+        } else {
+            recursosPage = recursoRepository.findByCategoriaIdAndTituloContainingIgnoreCaseOrCategoriaIdAndDescripcionContainingIgnoreCase(id, search, id, search, pageable);
+        }
+        return recursosPage.map(recursoMapper::toDto);
     }
 
     public RecursoDTO obtenerRecursoPorId(Long id) {
         logger.info("Obteniendo recurso con id: {}", id);
         RecursoEducativo recurso = recursoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Recurso no encontrado con el id: " + id));
-        return modelMapper.map(recurso, RecursoDTO.class);
+        logger.debug("Mapping RecursoEducativo: {} with categoria: {}", recurso.getId(), recurso.getCategoria());
+        return recursoMapper.toDto(recurso);
     }
 
     public void incrementarDescargas(Long id) {

@@ -36,6 +36,8 @@ export default function ArticleDetailPage() {
     fetchArticle();
   }, [articleId]);
 
+  console.log("ArticleDetailPage: article object received:", article);
+
   const relatedResources = [
     {
       icon: FileText,
@@ -103,7 +105,7 @@ export default function ArticleDetailPage() {
             className="lg:col-span-2"
           >
             {/* Back Button */}
-            <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-gray-600 hover:text-emerald-600 mb-6 transition-colors">
+            <button onClick={() => navigate(`/explorar-recursos/${article.categoria ? article.categoria.id : ''}`)} className="flex items-center gap-2 text-gray-600 hover:text-emerald-600 mb-6 transition-colors">
               <ArrowLeft className="w-5 h-5" />
               <span className="font-medium">Volver</span>
             </button>
