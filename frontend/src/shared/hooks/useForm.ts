@@ -85,3 +85,8 @@ export const useForm = (initialState: FormFields) => {
 export const required = (value: string) => isNotEmpty(value) ? null : 'Este campo es requerido.';
 export const emailValidator = (value: string) => isEmail(value) ? null : 'Por favor, introduce un correo válido.';
 export const minLength = (min: number) => (value: string) => value.length >= min ? null : `Debe tener al menos ${min} caracteres.`;
+
+export const hasUpperCase = (value: string) => /[A-Z]/.test(value) ? null : 'Debe contener al menos una mayúscula.';
+export const hasLowerCase = (value: string) => /[a-z]/.test(value) ? null : 'Debe contener al menos una minúscula.';
+export const hasNumber = (value: string) => /[0-9]/.test(value) ? null : 'Debe contener al menos un número.';
+export const hasSpecialChar = (value: string) => /[^A-Za-z0-9]/.test(value) ? null : 'Debe contener al menos un caracter especial.';

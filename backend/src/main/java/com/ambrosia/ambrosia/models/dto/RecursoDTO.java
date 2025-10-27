@@ -1,5 +1,6 @@
 package com.ambrosia.ambrosia.models.dto;
 
+import com.ambrosia.ambrosia.models.CategoriaRecurso;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,9 +15,12 @@ public class RecursoDTO {
     private String titulo;
     private String descripcion;
     private String enlace;
+    private String urlimg;
+    private String contenido;
     private String size;
     private Long downloads;
     private LocalDateTime fechaPublicacion;
     private String nombreCategoria;
+    private CategoriaRecursoDTO categoria;
     private String estado;
 }

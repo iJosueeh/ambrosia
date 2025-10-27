@@ -13,7 +13,8 @@ import com.ambrosia.ambrosia.repository.UsuarioRepository;
 import com.google.common.base.Preconditions;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
+import com.ambrosia.ambrosia.mappers.RecursoMapper;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -32,7 +33,8 @@ public class TestService {
     private final TestRepository testRepository;
     private final ResultadoRepository resultadoRepository;
     private final UsuarioRepository usuarioRepository;
-    private final ModelMapper modelMapper;
+    private final RecursoMapper recursoMapper;
+
 
 
     public List<TestDTO> listarTests() {
@@ -40,7 +42,7 @@ public class TestService {
         List<TestEvaluacion> tests = testRepository.findAll();
         logger.info("Found {} tests in the database.", tests.size());
         return tests.stream()
-                .map(test -> modelMapper.map(test, TestDTO.class))
+                .map(recursoMapper::toDto)
                 .collect(Collectors.toList());
     }
 

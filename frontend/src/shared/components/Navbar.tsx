@@ -19,6 +19,7 @@ export const Navbar = () => {
     { name: "Sobre Nosotros", to: "/" }, // Assuming these are sections on the landing page
     { name: "Recursos", to: "/resources-center" },
     { name: "Artículos", to: "/articulos" },
+    { name: "Foros", to: "/community-forums" },
     { name: "Tests", to: "/quiz" },
   ];
 
@@ -55,7 +56,7 @@ export const Navbar = () => {
               </Link>
             ))}
             <Link
-              to="/"
+              to="/contacto"
               className="bg-emerald-500 text-white px-6 py-2 rounded-lg hover:bg-emerald-600 transition-colors duration-200 text-sm font-medium"
             >
               Contacto
@@ -137,7 +138,7 @@ export const Navbar = () => {
             </Link>
           ))}
           <Link
-            to="/"
+            to="/contacto"
             className="block w-full text-center bg-emerald-500 text-white px-6 py-2 rounded-lg hover:bg-emerald-600 transition-colors duration-200 text-sm font-medium mt-4"
             onClick={() => setIsOpen(false)}
           >

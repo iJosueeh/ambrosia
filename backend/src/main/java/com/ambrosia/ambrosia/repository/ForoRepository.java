@@ -6,7 +6,10 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+import java.util.List;
+
 @Repository
 public interface ForoRepository extends JpaRepository<Foro, Long> {
-    List<Foro> findByTituloContaining(String titulo);
+    List<Foro> findByCategoriaForoId(Long categoriaForoId);
+    List<Foro> findByAutorId(Long autorId);
 }

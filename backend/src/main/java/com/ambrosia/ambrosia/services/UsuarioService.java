@@ -14,9 +14,10 @@ import com.ambrosia.ambrosia.repository.TestRepository;
 import com.ambrosia.ambrosia.repository.UsuarioRepository;
 import com.ambrosia.ambrosia.strategies.ExportStrategy;
 import com.google.common.base.Strings;
+import com.ambrosia.ambrosia.mappers.RecursoMapper;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -44,7 +45,8 @@ public class UsuarioService implements UserDetailsService {
     private final TestRepository testRepository;
     private final ActividadRepository actividadRepository;
     private final ActividadService actividadService;
-    private final ModelMapper modelMapper;
+    private final RecursoMapper recursoMapper;
+
     private final PasswordEncoder passwordEncoder;
     private final java.util.Map<String, ExportStrategy<Usuario>> exportStrategies;
 
@@ -83,7 +85,7 @@ public class UsuarioService implements UserDetailsService {
         // Crear actividad de registro
         actividadService.crearActividad(usuarioGuardado, TipoActividad.REGISTRO, "Te uniste a Ambrosia Vital");
 
-        return modelMapper.map(usuarioGuardado, UsuarioDTO.class);
+        return recursoMapper.toDto(usuarioGuardado);
     }
 
     public UsuarioDTO buscarPorCorreo(String correo) {
@@ -93,7 +95,7 @@ public class UsuarioService implements UserDetailsService {
         logger.info("Buscando usuario con correo: {}", correo);
         Usuario usuario = usuarioRepository.findByEmail(correo)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con el correo: " + correo));
-        return modelMapper.map(usuario, UsuarioDTO.class);
+        return recursoMapper.toDto(usuario);
     }
 
     public UsuarioDashboardDTO getUsuarioDashboardByEmail(String email) {
@@ -131,7 +133,7 @@ public class UsuarioService implements UserDetailsService {
 
         List<Actividad> actividades = actividadRepository.findTop5ByUsuarioOrderByFechaDesc(usuario);
         List<ActividadDTO> actividadReciente = actividades.stream()
-                .map(actividad -> modelMapper.map(actividad, ActividadDTO.class))
+                .map(recursoMapper::toDto)
                 .toList();
 
         List<com.ambrosia.ambrosia.models.dto.RecomendacionDTO> recomendaciones = new ArrayList<>();

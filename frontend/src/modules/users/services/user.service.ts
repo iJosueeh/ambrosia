@@ -1,18 +1,5 @@
 import axiosInstance from '@utils/axiosInstance'; // Use the path alias
-
-export interface UsuarioDTO {
-    actividadReciente: never[];
-    progreso: never[];
-    diasActivo: any;
-    recursosDescargados: any;
-    testsCompletados: any;
-    articulosLeidos: any;
-    recomendaciones: never[];
-    id: number;
-    nombre: string;
-    correo: string;
-    rol: string;
-} 
+import type { UsuarioDTO } from "../types/user.types"; // Import from new file
 
 export const getUserByEmail = async (email: string): Promise<UsuarioDTO> => {
     try {
