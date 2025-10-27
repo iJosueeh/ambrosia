@@ -1,64 +1,77 @@
 package com.ambrosia.ambrosia.services;
 
-
 import com.ambrosia.ambrosia.models.Foro;
-import com.ambrosia.ambrosia.models.Usuario;
-import com.ambrosia.ambrosia.models.EstadoPublicado;
 import com.ambrosia.ambrosia.models.dto.ForoDTO;
-import com.ambrosia.ambrosia.repository.EstadoPublicadoRepository;
 import com.ambrosia.ambrosia.repository.ForoRepository;
-import com.ambrosia.ambrosia.repository.UsuarioRepository;
-import com.google.common.base.Strings;
-import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class ForoService {
 
-    private final ForoRepository foroRepository;
-    private final UsuarioRepository usuarioRepository;
-    private final EstadoPublicadoRepository estadoPublicadoRepository;
-    private final ModelMapper modelMapper;
-    private static final Logger logger = LoggerFactory.getLogger(ForoService.class);
+    @Autowired
+    private ForoRepository foroRepository;
 
-    public ForoDTO crearForo(ForoDTO dto) {
-        if (Strings.isNullOrEmpty(dto.titulo()) || Strings.isNullOrEmpty(dto.contenido())) {
-            throw new IllegalArgumentException("El título y el contenido no pueden ser nulos o vacíos");
-        }
-
-        logger.info("Creando foro con título: {}", dto.titulo());
-
-        Usuario autor = usuarioRepository.findByEmail(dto.autor())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con el correo: " + dto.autor()));
-
-        EstadoPublicado estado = estadoPublicadoRepository.findByNombre(dto.estado())
-                .orElseThrow(() -> new RuntimeException("Estado no encontrado con el nombre: " + dto.estado()));
-
-        Foro foro = Foro.builder()
-                .titulo(dto.titulo())
-                .contenido(dto.contenido())
-                .autor(autor)
-                .estado(estado)
-                .fechaCreacion(LocalDateTime.now())
-                .build();
-
-        Foro foroGuardado = foroRepository.save(foro);
-        return modelMapper.map(foroGuardado, ForoDTO.class);
+    public List<Foro> getAllForos() {
+        return foroRepository.findAll();
     }
 
-    public List<ForoDTO> listarForos() {
-        logger.info("Listando todos los foros");
-        return foroRepository.findAll().stream()
-                .map(foro -> modelMapper.map(foro, ForoDTO.class))
+    public Optional<Foro> getForoById(Long id) {
+        return foroRepository.findById(id);
+    }
+
+    public Foro createForo(Foro foro) {
+        return foroRepository.save(foro);
+    }
+
+    public Foro updateForo(Long id, Foro foroDetails) {
+        Foro foro = foroRepository.findById(id).orElseThrow(() -> new RuntimeException("Foro no encontrado"));
+        foro.setTitulo(foroDetails.getTitulo());
+        foro.setDescripcion(foroDetails.getDescripcion());
+        foro.setAutor(foroDetails.getAutor());
+        foro.setCategoriaForo(foroDetails.getCategoriaForo());
+        return foroRepository.save(foro);
+    }
+
+    public void deleteForo(Long id) {
+        foroRepository.deleteById(id);
+    }
+
+    public List<Foro> getForosByCategoriaForoId(Long categoriaForoId) {
+        return foroRepository.findByCategoriaForoId(categoriaForoId);
+    }
+
+    public List<Foro> getForosByAutorId(Long autorId) {
+        return foroRepository.findByAutorId(autorId);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<ForoDTO> getForoDTOById(Long id) {
+        return foroRepository.findById(id)
+                .map(this::convertToDTO);
+    }
+
+    public ForoDTO convertToDTO(Foro foro) {
+        return ForoDTO.builder()
+                .id(foro.getId())
+                .titulo(foro.getTitulo())
+                .descripcion(foro.getDescripcion())
+                .autorId(foro.getAutor() != null ? foro.getAutor().getId() : null)
+                .autorNombre(foro.getAutor() != null ? foro.getAutor().getNombre() : "Anónimo")
+                .fechaCreacion(foro.getFechaCreacion())
+                .numeroComentarios(foro.getComentarios() != null ? foro.getComentarios().size() : 0)
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ForoDTO> getForosDTOByCategoriaForoId(Long categoriaForoId) {
+        return foroRepository.findByCategoriaForoId(categoriaForoId).stream()
+                .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
-
 }

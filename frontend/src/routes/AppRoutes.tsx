@@ -12,6 +12,8 @@ import type { JSX } from "react/jsx-runtime"
 
 import ContactPage from "../modules/contact/pages/ContactPage";
 
+import CommunityForums from "../modules/community/pages/CommunityForums";
+
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const { isAuthenticated } = useAuth();
   if (!isAuthenticated) {
@@ -32,6 +34,7 @@ export const AppRoutes = () => {
       <Route path="/articulos/:articleId" element={<ArticleDetailPage />} />
       <Route path="/resources-center" element={<ResourcesPage />} />
       <Route path="/contacto" element={<ContactPage />} />
+      <Route path="/community-forums" element={<CommunityForums />} />
       <Route
         path="/dashboard"
         element={

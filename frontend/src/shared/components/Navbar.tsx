@@ -19,6 +19,7 @@ export const Navbar = () => {
     { name: "Sobre Nosotros", to: "/" }, // Assuming these are sections on the landing page
     { name: "Recursos", to: "/resources-center" },
     { name: "Artículos", to: "/articulos" },
+    { name: "Foros", to: "/community-forums" },
     { name: "Tests", to: "/quiz" },
   ];
 

@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, Heart, Apple, BookOpen, Search, ChevronLeft, ChevronRight, LoaderCircle } from 'lucide-react';
-import { getCategories, getResourcesByCategory, getAllResources } from '../services/resource.service';
+import { getCategories, getResourcesByCategory, getAllResources, type PaginatedResources } from '../services/resource.service';
 import type { CategoriaRecursoDTO } from '../types/categoria.types';
 import type { RecursoDTO } from '../types/recurso.types';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 
 import { motion } from "framer-motion";
 
+// TEMP: Forcing Vite re-process
 // Helper to map category names to icons
 const iconMap: { [key: string]: React.ElementType } = {
   'articulos': FileText,
@@ -24,61 +25,68 @@ export const RecursosExplorer: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
+  const [totalElements, setTotalElements] = useState(0);
   const navigate = useNavigate();
 
+  const articlesPerPage = 6;
+
   useEffect(() => {
-    const fetchCategories = async () => {
+    console.log("URL categoryId:", categoryId);
+    const loadData = async () => {
+      setIsLoading(true);
       try {
         const fetchedCategories = await getCategories();
         setCategories(fetchedCategories);
-        if (categoryId && fetchedCategories.some(c => c.id === parseInt(categoryId))) {
-          setSelectedCategory(parseInt(categoryId));
-        } else {
-          setSelectedCategory(null);
-        }
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-      }
-    };
-    fetchCategories();
-  }, [categoryId]);
 
-  useEffect(() => {
-    const fetchResources = async () => {
-      setIsLoading(true);
-      setResources([]); // Clear previous resources
-      try {
-        const fetchedResources = selectedCategory !== null
-          ? await getResourcesByCategory(selectedCategory)
-          : await getAllResources();
-        setResources(fetchedResources);
+        let currentSelectedCategory: number | null = null;
+        if (categoryId && fetchedCategories.some(c => c.id === parseInt(categoryId))) {
+          currentSelectedCategory = parseInt(categoryId);
+          console.log("setSelectedCategory from URL:", currentSelectedCategory);
+        } else {
+          console.log("setSelectedCategory to null (no categoryId or invalid):");
+        }
+        setSelectedCategory(currentSelectedCategory);
+
+        let fetchedPaginatedResources: PaginatedResources;
+        if (currentSelectedCategory !== null) {
+          fetchedPaginatedResources = await getResourcesByCategory(currentSelectedCategory, currentPage - 1, articlesPerPage, searchQuery);
+        } else {
+          fetchedPaginatedResources = await getAllResources(currentPage - 1, articlesPerPage, searchQuery);
+        }
+        
+        console.log("Fetched paginated resources:", fetchedPaginatedResources);
+        setResources(fetchedPaginatedResources.content);
+        setTotalElements(fetchedPaginatedResources.totalElements);
+
       } catch (error) {
-        console.error("Error fetching resources:", error);
+        console.error("Error fetching data:", error);
       } finally {
         setIsLoading(false);
       }
     };
-    fetchResources();
-  }, [selectedCategory]);
+    loadData();
+  }, [categoryId, currentPage, searchQuery]); // Added currentPage and searchQuery to dependencies
 
-  const filteredResources = resources.filter(resource => 
-    (searchQuery === '' || 
-     resource.titulo.toLowerCase().includes(searchQuery.toLowerCase()) ||
-     resource.descripcion.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentPage]);
 
-  const articlesPerPage = 6;
-  const totalPages = Math.ceil(filteredResources.length / articlesPerPage);
-  const startIndex = (currentPage - 1) * articlesPerPage;
-  const displayedArticles = filteredResources.slice(startIndex, startIndex + articlesPerPage);
+  const totalPages = Math.ceil(totalElements / articlesPerPage);
+  const displayedArticles = resources; // Resources are already paginated by the backend
 
   const handleCategoryClick = (id: number | null) => {
     setSelectedCategory(id);
-    setCurrentPage(1);
+    setCurrentPage(1); // Reset page when category changes
+    console.log("handleCategoryClick: Resetting currentPage to 1.");
     navigate(id === null ? '/explorar-recursos' : `/explorar-recursos/${id}`, { replace: true });
   };
 
   const renderContent = () => {
+    console.log("renderContent: totalElements =", totalElements);
+    console.log("renderContent: totalPages =", totalPages);
+    console.log("renderContent: currentPage =", currentPage);
+    console.log("renderContent: displayedArticles.length =", displayedArticles.length);
+
     if (isLoading) {
       return (
         <div className="text-center py-16 bg-white rounded-2xl shadow-md flex flex-col items-center justify-center">
@@ -91,21 +99,21 @@ export const RecursosExplorer: React.FC = () => {
     if (displayedArticles.length > 0) {
       return (
         <>
-          <motion.div 
-            variants={{
-                hidden: { opacity: 0 },
-                show: {
-                    opacity: 1,
-                    transition: {
-                        staggerChildren: 0.2
-                    }
-                }
-            }}
-            initial="hidden"
-            animate="show"
-            className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"
-          >
-            {displayedArticles.map((article) => (
+                                <motion.div 
+                                  key={currentPage} // Add key to force re-render and re-animation on page change
+                                  variants={{
+                                      hidden: { opacity: 0 },
+                                      show: {
+                                          opacity: 1,
+                                          transition: {
+                                              staggerChildren: 0.2
+                                          }
+                                      }
+                                  }}
+                                  initial="hidden"
+                                  animate="show"
+                                  className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 min-h-[500px]"
+                                >            {displayedArticles.map((article) => (
               <motion.article
                 key={article.id}
                 variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }}
@@ -122,7 +130,7 @@ export const RecursosExplorer: React.FC = () => {
                   <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-emerald-600 transition-colors leading-snug">
                     {article.titulo}
                   </h3>
-                  <p className="text-gray-600 mb-4 line-clamp-2 text-sm flex-1">
+                  <p className="text-gray-600 mb-4 line-clamp-3 text-sm flex-1">
                     {article.descripcion}
                   </p>
                   <Link to={`/articulos/${article.id}`} className="inline-flex items-center gap-2 text-emerald-600 font-semibold hover:text-emerald-700 text-sm group/link">

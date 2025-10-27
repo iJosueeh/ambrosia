@@ -6,18 +6,16 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ForoDTO {
+public class ComentarioDTO {
     private Long id;
-    private String titulo;
-    private String descripcion;
+    private String contenido;
+    private LocalDateTime fechaCreacion;
     private Long autorId;
     private String autorNombre;
-    private LocalDateTime fechaCreacion;
-    private int numeroComentarios;
+    private Long foroId;
 }

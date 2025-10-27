@@ -48,13 +48,13 @@ export default function ContactPage() {
         {
             icon: Phone,
             title: 'Teléfono',
-            value: '+34 800 123 4567',
+            value: '+51 945 915 296',
             link: 'tel:+34800123456'
         },
         {
             icon: MapPin,
             title: 'Ubicación',
-            value: 'Madrid, España',
+            value: 'Calle Marielena Moyano',
             link: '#'
         }
     ];
