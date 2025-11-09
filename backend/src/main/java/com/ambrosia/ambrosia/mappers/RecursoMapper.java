@@ -5,7 +5,6 @@ import com.ambrosia.ambrosia.models.Usuario;
 import com.ambrosia.ambrosia.models.Actividad;
 import com.ambrosia.ambrosia.models.CategoriaRecurso;
 import com.ambrosia.ambrosia.models.TestEvaluacion;
-import com.ambrosia.ambrosia.models.Rol;
 import com.ambrosia.ambrosia.models.Pregunta;
 import com.ambrosia.ambrosia.models.Opcion;
 import com.ambrosia.ambrosia.models.dto.RecursoDTO;
@@ -15,6 +14,7 @@ import com.ambrosia.ambrosia.models.dto.CategoriaRecursoDTO;
 import com.ambrosia.ambrosia.models.dto.TestDTO;
 import com.ambrosia.ambrosia.models.dto.PreguntaDTO;
 import com.ambrosia.ambrosia.models.dto.OpcionDTO;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import java.util.stream.Collectors;
@@ -59,9 +59,10 @@ public class RecursoMapper {
         usuarioDTO.setNombre(usuario.getNombre());
         usuarioDTO.setCorreo(usuario.getEmail());
         usuarioDTO.setPassword(usuario.getPassword());
-        if (usuario.getRol() != null) {
-            usuarioDTO.setRol(usuario.getRol().getNombre());
-        }
+        String rol = usuario.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(a -> a.equals("ROLE_ADMIN")) ? "ADMIN" : "USER";
+        usuarioDTO.setRol(rol);
         return usuarioDTO;
     }
 
@@ -75,13 +76,6 @@ public class RecursoMapper {
         actividadDTO.setDescripcion(actividad.getDescripcion());
         actividadDTO.setFecha(actividad.getFecha());
         return actividadDTO;
-    }
-
-    public String map(Rol rol) {
-        if (rol == null) {
-            return null;
-        }
-        return rol.getNombre();
     }
 
     public CategoriaRecursoDTO toDto(CategoriaRecurso categoriaRecurso) {

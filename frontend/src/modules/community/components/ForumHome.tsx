@@ -1,5 +1,5 @@
-import { ChevronRight, Heart, MessageCircle, Search, Users } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { ChevronRight, MessageCircle, Search } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { forumService } from '../services/forum.service';
 
 // Utility function to format date
@@ -27,7 +27,7 @@ const formatRelativeTime = (dateString: string) => {
 const ForumHome = ({ onSelectCategory, searchQuery, setSearchQuery }: any) => {
     const [forumCategories, setForumCategories] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [error, setError] = useState<any>(null);
 
     useEffect(() => {
         const fetchCategories = async () => {

@@ -7,7 +7,8 @@ interface User {
     id: number;
     name: string;
     email: string;
-    role: string;
+    roles: string[];
+    rolPrincipal: string;
 }
 
 interface BackendError {
@@ -38,9 +39,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const loginMutation = useMutation<LoginResponse, BackendError, Parameters<typeof authServiceLogin>[0]>({
         mutationFn: authServiceLogin,
         onSuccess: (data) => {
-            console.log("Login successful, data from backend:", data);
-            const loggedInUser: User = { id: data.id, name: data.nombre, email: data.correo, role: data.rol };
-            console.log("Logged in user object:", loggedInUser);
+            console.log("🔍 RESPUESTA COMPLETA DEL LOGIN:", data);
+            console.log("🔍 data.roles:", data.roles);
+            console.log("🔍 data.rolPrincipal:", data.rolPrincipal);
+            
+            // ✅ Usar data.roles (plural) que viene del backend
+            const roles = Array.isArray(data.roles) ? data.roles : 
+                         data.roles ? [data.roles] : 
+                         ['ROLE_USER']; // Fallback por defecto
+            
+            // ✅ Usar rolPrincipal del backend o calcularlo
+            const rolPrincipal = data.rolPrincipal || 
+                                (roles.includes('ROLE_ADMIN') ? 'ROLE_ADMIN' : 'ROLE_USER');
+            
+            const loggedInUser: User = { 
+                id: data.id, 
+                name: data.nombre, 
+                email: data.correo, 
+                roles: roles,
+                rolPrincipal: rolPrincipal
+            };
+            
+            console.log("🔍 Usuario final guardado:", loggedInUser);
             setUser(loggedInUser);
             localStorage.setItem('user', JSON.stringify(loggedInUser));
             toast.success("¡Inicio de sesión exitoso!");
