@@ -1,5 +1,5 @@
 import { ChevronRight, Plus } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { forumService } from '../services/forum.service';
 
 // TEMP: Forcing Vite re-process
@@ -24,10 +24,10 @@ const formatRelativeTime = (dateString: string) => {
     return `hace ${years} años`;
 };
 
-const ForumCategory = ({ category, onBack, onBackToHome, onSelectThread, onNewThread }: any) => {
+const ForumCategory = ({ category, onBackToHome, onSelectThread, onNewThread }: any) => {
     const [threads, setThreads] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [error, setError] = useState<any>(null);
 
     useEffect(() => {
         const fetchThreads = async () => {

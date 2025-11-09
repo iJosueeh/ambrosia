@@ -9,6 +9,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "usuarios")
@@ -33,16 +35,18 @@ public class Usuario implements UserDetails {
     private Integer articulosLeidos = 0;
     private Integer recursosDescargados = 0;
 
-    @ManyToOne
-    @JoinColumn(name = "rol_id")
-    private Rol rol;
+    @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Administrador administrador;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        if (rol == null) {
-            return Collections.emptyList();
+        Set<GrantedAuthority> authorities = new HashSet<>();
+        // Default role for everyone
+        authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+        if (this.administrador != null) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
         }
-        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + rol.getNombre().toUpperCase()));
+        return authorities;
     }
 
     @Override

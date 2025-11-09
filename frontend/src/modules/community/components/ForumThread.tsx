@@ -1,5 +1,5 @@
-import { ChevronRight, MessageSquare, ThumbsUp, X } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { ChevronRight, MessageSquare, ThumbsUp } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { forumService } from '../services/forum.service';
 
 // Utility function to format date (copied from ForumHome.tsx)
@@ -27,7 +27,7 @@ const formatRelativeTime = (dateString: string) => {
 const ForumThread = ({ thread, onBack, onBackToHome, onReply }: any) => {
     const [comments, setComments] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [error, setError] = useState<any>(null);
 
     useEffect(() => {
         const fetchComments = async () => {

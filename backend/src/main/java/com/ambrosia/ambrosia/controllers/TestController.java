@@ -27,4 +27,8 @@ public class TestController {
         return ResponseEntity.status(201).build();
     }
 
+    @GetMapping("/admin")
+    public ResponseEntity<String> adminAccessTest() {
+        return ResponseEntity.ok("Admin access granted");
+    }
 }

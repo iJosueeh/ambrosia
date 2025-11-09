@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.ByteArrayInputStream;
+import java.util.List; // ¡Importante: Añadir esta importación!
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -26,6 +27,17 @@ public class UsuarioController {
     @GetMapping("/{correo}")
     public ResponseEntity<UsuarioDashboardDTO> obtenerPorCorreo(@PathVariable String correo) {
         return ResponseEntity.ok(usuarioService.getUsuarioDashboardByEmail(correo));
+    }
+
+    /**
+     * Endpoint para obtener la lista de todos los usuarios (solo para ADMIN).
+     * URL: /api/usuarios/admin
+     */
+    @GetMapping("/admin")
+    public ResponseEntity<List<UsuarioDTO>> getAllUsersForAdmin() {
+        // Llama al método del servicio que busca todos los usuarios y verifica el rol ADMIN
+        List<UsuarioDTO> usuarios = usuarioService.findAllUsersForAdmin();
+        return ResponseEntity.ok(usuarios);
     }
 
     @GetMapping("/exportar")

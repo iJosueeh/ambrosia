@@ -6,6 +6,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayInputStream;
@@ -34,7 +35,10 @@ public class ExcelExportStrategy implements ExportStrategy<Usuario> {
                 row.createCell(0).setCellValue(usuario.getId());
                 row.createCell(1).setCellValue(usuario.getNombre());
                 row.createCell(2).setCellValue(usuario.getEmail());
-                row.createCell(3).setCellValue(usuario.getRol() != null ? usuario.getRol().getNombre() : "");
+                String rol = usuario.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .anyMatch(a -> a.equals("ROLE_ADMIN")) ? "ADMIN" : "USER";
+                row.createCell(3).setCellValue(rol);
                 row.createCell(4).setCellValue(usuario.getFecha_registro().toString());
             }
 
@@ -55,3 +59,4 @@ public class ExcelExportStrategy implements ExportStrategy<Usuario> {
         return "xlsx";
     }
 }
+

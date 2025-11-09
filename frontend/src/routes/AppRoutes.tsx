@@ -9,10 +9,12 @@ import ArticleDetailPage from "../modules/resources/pages/ArticleDetailPage"
 import UserDashboard from "../modules/users/components/UserDashboard"
 import { useAuth } from "../shared/hooks/useAuth"
 import type { JSX } from "react/jsx-runtime"
-
 import ContactPage from "../modules/contact/pages/ContactPage";
-
 import CommunityForums from "../modules/community/pages/CommunityForums";
+
+// Admin Imports
+import { AdminRoute } from "./AdminRoute";
+import { AdminDashboard } from "../modules/admin/pages/AdminDashboard";
 
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const { isAuthenticated } = useAuth();
@@ -25,6 +27,7 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
 export const AppRoutes = () => {
   return (
     <Routes>
+      {/* Public Routes */}
       <Route path="/" element={<LandingPage />} />
       <Route path="/auth" element={<AuthUser />} />
       <Route path="/quiz" element={<QuizPage />} />
@@ -35,6 +38,8 @@ export const AppRoutes = () => {
       <Route path="/resources-center" element={<ResourcesPage />} />
       <Route path="/contacto" element={<ContactPage />} />
       <Route path="/community-forums" element={<CommunityForums />} />
+
+      {/* Protected User Route */}
       <Route
         path="/dashboard"
         element={
@@ -43,6 +48,14 @@ export const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
+
+      {/* Protected Admin Routes */}
+      <Route path="/admin" element={<AdminRoute />}>
+        {/* Redirige /admin a /admin/dashboard */}
+        <Route index element={<Navigate to="/admin/dashboard" replace />} /> 
+        <Route path="dashboard" element={<AdminDashboard />} />
+        {/* Add other admin routes here */}
+      </Route>
     </Routes>
   )
 }

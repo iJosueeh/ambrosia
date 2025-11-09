@@ -1,21 +1,36 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 import ForumHome from '../components/ForumHome';
 import ForumCategory from '../components/ForumCategory';
 import ForumThread from '../components/ForumThread';
 import { X } from 'lucide-react';
 import { forumService } from '../services/forum.service';
 
+// Define types for the modal props
+interface NewThreadData {
+  title: string;
+  content: string;
+  categoriaForoId: number | null;
+}
+
+interface NewThreadModalProps {
+  onClose: () => void;
+  data: NewThreadData;
+  setData: Dispatch<SetStateAction<NewThreadData>>;
+  onCreate: () => void;
+}
+
+
 const CommunityForums = () => {
     const [view, setView] = useState('home');
-    const [selectedCategory, setSelectedCategory] = useState(null);
-    const [selectedThread, setSelectedThread] = useState(null);
+    const [selectedCategory, setSelectedCategory] = useState<any>(null);
+    const [selectedThread, setSelectedThread] = useState<any>(null);
     const [showNewThread, setShowNewThread] = useState(false);
     const [showReply, setShowReply] = useState(false);
-    const [replyToComment, setReplyToComment] = useState(null);
-    const [newThreadData, setNewThreadData] = useState({ title: '', content: '', categoriaForoId: null });
+    const [replyToComment, setReplyToComment] = useState<any>(null);
+    const [newThreadData, setNewThreadData] = useState<NewThreadData>({ title: '', content: '', categoriaForoId: null });
     const [replyContent, setReplyContent] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
-
     const handleCreateNewThread = async () => {
         if (!selectedCategory || !selectedCategory.id) return;
         try {
@@ -25,7 +40,7 @@ const CommunityForums = () => {
                 titulo: newThreadData.title,
                 descripcion: newThreadData.content,
                 autor: { id: userId }, // Assuming backend can map this to a User object
-                categoriaForo: { id: selectedCategory.id }
+                categoriaForo: { id: parseInt(selectedCategory.id, 10) }
             };
             await forumService.createForo(newForo);
             setShowNewThread(false);
@@ -37,7 +52,6 @@ const CommunityForums = () => {
             // Handle error, show message to user
         }
     };
-
     const handlePostReply = async () => {
         if (!selectedThread || !selectedThread.id) return;
         try {
@@ -59,7 +73,7 @@ const CommunityForums = () => {
     };
 
     // Modal Nuevo Tema
-    function NewThreadModal({ onClose, data, setData, onCreate }: any) {
+    function NewThreadModal({ onClose, data, setData, onCreate }: NewThreadModalProps) {
         return (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
                 <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
