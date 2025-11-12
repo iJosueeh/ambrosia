@@ -5,9 +5,6 @@ export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
-      colors: {
-        'ambrosia-green': '#00B37E',
-      },
       fontFamily: {
         caligrafia: ['"Dancing Script"', 'cursive'], 
       },

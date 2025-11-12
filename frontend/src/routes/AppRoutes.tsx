@@ -13,14 +13,8 @@ import ContactPage from "../modules/contact/pages/ContactPage";
 import CommunityForums from "../modules/community/pages/CommunityForums";
 
 // Admin Imports
-import AdminLayout from "../modules/admin/components/AdminLayout";
-import AdminDashboard from "../modules/admin/pages/AdminDashboard";
-import UserManagement from "../modules/admin/pages/UserManagement";
-import Resources from "../modules/admin/pages/Resources";
-import Moderation from "../modules/admin/pages/Moderation";
-import Analytics from "../modules/admin/pages/Analytics";
-import Settings from "../modules/admin/pages/Settings";
-
+import { AdminRoute } from "./AdminRoute";
+import { AdminDashboard } from "../modules/admin/pages/AdminDashboard";
 
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const { isAuthenticated } = useAuth();
@@ -56,14 +50,11 @@ export const AppRoutes = () => {
       />
 
       {/* Protected Admin Routes */}
-      <Route path="/admin" element={<AdminLayout />}>
-        <Route index element={<Navigate to="/admin/dashboard" replace />} />
+      <Route path="/admin" element={<AdminRoute />}>
+        {/* Redirige /admin a /admin/dashboard */}
+        <Route index element={<Navigate to="/admin/dashboard" replace />} /> 
         <Route path="dashboard" element={<AdminDashboard />} />
-        <Route path="users" element={<UserManagement />} />
-        <Route path="resources" element={<Resources />} />
-        <Route path="moderation" element={<Moderation />} />
-        <Route path="analytics" element={<Analytics />} />
-        <Route path="settings" element={<Settings />} />
+        {/* Add other admin routes here */}
       </Route>
     </Routes>
   )

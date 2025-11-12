@@ -34,7 +34,7 @@ export const Login: React.FC<LoginProps> = ({ onToggleView }) => {
                     if (storedUser) {
                         const userData = JSON.parse(storedUser);
                         // Redirigir según rol principal
-                        if (userData.rolPrincipal === "ADMIN") { // Keeping "ADMIN" as per user's working code
+                        if (userData.rolPrincipal === "ADMIN") {
                             navigate("/admin/dashboard");
                         } else {
                             navigate("/dashboard");
