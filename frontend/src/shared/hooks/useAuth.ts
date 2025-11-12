@@ -43,7 +43,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             console.log("🔍 data.roles:", data.roles);
             console.log("🔍 data.rolPrincipal:", data.rolPrincipal);
             
-            // ✅ Usar data.roles (plural) que viene del backend
             const roles = Array.isArray(data.roles) ? data.roles : 
                          data.roles ? [data.roles] : 
                          ['ROLE_USER']; // Fallback por defecto
