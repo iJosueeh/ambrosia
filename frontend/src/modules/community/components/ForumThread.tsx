@@ -1,6 +1,7 @@
 import { ChevronRight, MessageSquare, ThumbsUp } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { forumService } from '../services/forum.service';
+import type { ForumThreadType, CommentType } from '../types/forum.types';
 
 // Utility function to format date (copied from ForumHome.tsx)
 const formatRelativeTime = (dateString: string) => {
@@ -24,8 +25,15 @@ const formatRelativeTime = (dateString: string) => {
     return `hace ${years} años`;
 };
 
-const ForumThread = ({ thread, onBack, onBackToHome, onReply }: any) => {
-    const [comments, setComments] = useState([]);
+interface ForumThreadProps {
+    thread: ForumThreadType | null;
+    onBack: () => void;
+    onBackToHome: () => void;
+    onReply: (comment: CommentType | null) => void;
+}
+
+const ForumThread: React.FC<ForumThreadProps> = ({ thread, onBack, onBackToHome, onReply }) => {
+    const [comments, setComments] = useState<CommentType[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<any>(null);
 
@@ -37,13 +45,17 @@ const ForumThread = ({ thread, onBack, onBackToHome, onReply }: any) => {
             }
             try {
                 const data = await forumService.getCommentsByForoId(thread.id);
-                const mappedComments = data.map((comment: any) => ({
+                const mappedComments: CommentType[] = data.map((comment: any) => ({
                     id: comment.id,
-                    author: comment.autorNombre,
-                    authorAvatar: comment.autorNombre ? comment.autorNombre.charAt(0) : 'A',
-                    time: formatRelativeTime(comment.fechaCreacion),
-                    content: comment.contenido,
-                    likes: 0 // Placeholder, if likes are not in backend yet
+                    autor: {
+                        id: comment.autor.id,
+                        nombre: comment.autor.nombre,
+                    },
+                    fechaCreacion: comment.fechaCreacion,
+                    contenido: comment.contenido,
+                    status: comment.status,
+                    foroId: thread.id, // Assuming comment belongs to this thread
+                    foroTitulo: thread.titulo, // Assuming comment belongs to this thread
                 }));
                 setComments(mappedComments);
             } catch (err: any) {
@@ -57,6 +69,7 @@ const ForumThread = ({ thread, onBack, onBackToHome, onReply }: any) => {
 
     if (loading) return <div className="flex justify-center items-center min-h-screen bg-gray-50 text-emerald-600 text-lg font-semibold">Cargando comentarios...</div>;
     if (error) return <div className="flex justify-center items-center min-h-screen bg-gray-50 text-red-600 text-lg font-semibold">Error al cargar comentarios: {error.message}</div>;
+    if (!thread) return <div className="flex justify-center items-center min-h-screen bg-gray-50 text-gray-500 text-lg font-semibold">No se ha seleccionado ningún tema.</div>;
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -64,13 +77,13 @@ const ForumThread = ({ thread, onBack, onBackToHome, onReply }: any) => {
                 <div className="text-sm text-gray-600 mb-6 flex items-center flex-wrap">
                     <button onClick={onBackToHome} className="hover:text-emerald-600">Foros</button>
                     <ChevronRight className="w-4 h-4 mx-2" />
-                    <button onClick={onBack} className="hover:text-emerald-600">{thread.categoryTitle}</button>
+                    <button onClick={onBack} className="hover:text-emerald-600">{thread.categoriaForo.titulo}</button>
                     <ChevronRight className="w-4 h-4 mx-2" />
-                    <span className="font-medium">{thread.title}</span>
+                    <span className="font-medium">{thread.titulo}</span>
                 </div>
                 <div className="mb-6">
-                    <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">{thread.title}</h1>
-                    <p className="text-gray-600">Iniciado por <span className="font-semibold text-emerald-600">{thread.author}</span>, {thread.lastActivity}</p>
+                    <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">{thread.titulo}</h1>
+                    <p className="text-gray-600">Iniciado por <span className="font-semibold text-emerald-600">{thread.autor.nombre}</span>, {formatRelativeTime(thread.fechaCreacion)}</p>
                 </div>
                 <div className="mb-6">
                     <button onClick={() => onReply(null)} className="bg-emerald-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors flex items-center gap-2 shadow-md">
@@ -78,19 +91,19 @@ const ForumThread = ({ thread, onBack, onBackToHome, onReply }: any) => {
                     </button>
                 </div>
                 <div className="space-y-4">
-                    {comments.map((comment: any) => (
+                    {comments.map((comment: CommentType) => (
                         <div key={comment.id} className="bg-white rounded-xl shadow-md p-6">
                             <div className="flex items-start gap-4">
-                                <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center font-semibold text-emerald-700 flex-shrink-0">{comment.authorAvatar}</div>
+                                <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center font-semibold text-emerald-700 flex-shrink-0">{comment.autor.nombre.charAt(0)}</div>
                                 <div className="flex-1">
                                     <div className="flex items-center gap-3 mb-2">
-                                        <span className="font-bold text-gray-900">{comment.author}</span>
-                                        <span className="text-sm text-gray-500">{comment.time}</span>
+                                        <span className="font-bold text-gray-900">{comment.autor.nombre}</span>
+                                        <span className="text-sm text-gray-500">{formatRelativeTime(comment.fechaCreacion)}</span>
                                     </div>
-                                    <p className="text-gray-700 leading-relaxed mb-4">{comment.content}</p>
+                                    <p className="text-gray-700 leading-relaxed mb-4">{comment.contenido}</p>
                                     <div className="flex items-center gap-4">
                                         <button className="flex items-center gap-2 text-gray-600 hover:text-emerald-600 transition-colors">
-                                            <ThumbsUp className="w-4 h-4" /><span className="text-sm">{comment.likes}</span>
+                                            <ThumbsUp className="w-4 h-4" /><span className="text-sm">0</span> {/* Placeholder for likes */}
                                         </button>
                                         <button onClick={() => onReply(comment)} className="flex items-center gap-2 text-gray-600 hover:text-emerald-600 transition-colors">
                                             <MessageSquare className="w-4 h-4" /><span className="text-sm">Responder</span>

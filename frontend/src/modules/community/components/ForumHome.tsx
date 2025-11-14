@@ -1,6 +1,7 @@
 import { ChevronRight, MessageCircle, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { forumService } from '../services/forum.service';
+import type { ForumCategoryType, ForumThreadType } from '../types/forum.types'; // Import ForumCategoryType
 
 // Utility function to format date
 const formatRelativeTime = (dateString: string) => {
@@ -24,8 +25,14 @@ const formatRelativeTime = (dateString: string) => {
     return `hace ${years} años`;
 };
 
-const ForumHome = ({ onSelectCategory, searchQuery, setSearchQuery }: any) => {
-    const [forumCategories, setForumCategories] = useState([]);
+interface ForumHomeProps {
+    onSelectCategory: (category: ForumCategoryType) => void;
+    searchQuery: string;
+    setSearchQuery: (query: string) => void;
+}
+
+const ForumHome = ({ onSelectCategory, searchQuery, setSearchQuery }: ForumHomeProps) => {
+    const [forumCategories, setForumCategories] = useState<ForumCategoryType[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<any>(null);
 
@@ -33,7 +40,7 @@ const ForumHome = ({ onSelectCategory, searchQuery, setSearchQuery }: any) => {
         const fetchCategories = async () => {
             try {
                 const data = await forumService.getAllCategories();
-                const mappedCategories = data.map((cat: any) => {
+                const mappedCategories = data.map((cat: any) => { // cat is from backend, might need a DTO
                     const totalTopics = cat.foros ? cat.foros.length : 0;
                     const totalMessages = cat.foros ? cat.foros.reduce((sum: number, foro: any) => sum + (foro.numeroComentarios || 0), 0) : 0;
                     
@@ -52,11 +59,11 @@ const ForumHome = ({ onSelectCategory, searchQuery, setSearchQuery }: any) => {
 
                     return {
                         id: cat.id,
-                        title: cat.titulo,
-                        icon: MessageCircle, // Default icon for now, can be extended in backend
-                        description: cat.descripcion,
-                        topics: totalTopics,
-                        messages: totalMessages,
+                        titulo: cat.titulo, // Use 'titulo' to match ForumCategoryType
+                        descripcion: cat.descripcion,
+                        // icon: MessageCircle, // Icon is not part of ForumCategoryType, handle separately in JSX
+                        topics: totalTopics, // These are not part of ForumCategoryType, but used for display
+                        messages: totalMessages, // These are not part of ForumCategoryType, but used for display
                         forums: cat.foros || [], // Ensure forums is an array
                         lastPost: lastPostInfo
                     };
@@ -88,21 +95,21 @@ const ForumHome = ({ onSelectCategory, searchQuery, setSearchQuery }: any) => {
                     <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                     <input type="text" placeholder="Buscar en los foros..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-12 pr-4 py-3.5 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm" />
                 </div>
-                {forumCategories.map((category: any) => {
-                    const Icon = category.icon;
+                {forumCategories.map((category: any) => { // category here is the mapped object, not ForumCategoryType directly
+                    // const Icon = category.icon; // Icon is not part of ForumCategoryType
                     return (
                         <div key={category.id} className="mb-8">
-                            <h2 className="text-2xl font-bold text-gray-900 mb-4">{category.title}</h2>
+                            <h2 className="text-2xl font-bold text-gray-900 mb-4">{category.titulo}</h2> {/* Use titulo */}
                             <div className="space-y-4">
                                 {category.forums.map((forum: any) => (
                                     <div key={forum.id} className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all p-6 cursor-pointer" onClick={() => onSelectCategory(category)}>
                                         <div className="flex items-start gap-4">
                                             <div className="w-14 h-14 bg-emerald-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                                                <Icon className="w-7 h-7 text-emerald-600" />
+                                                <MessageCircle className="w-7 h-7 text-emerald-600" /> {/* Use MessageCircle directly */}
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <h3 className="text-xl font-bold text-gray-900 mb-2">{forum.title}</h3>
-                                                <p className="text-gray-600 mb-4">{forum.description}</p>
+                                                <h3 className="text-xl font-bold text-gray-900 mb-2">{forum.titulo}</h3> {/* Use titulo */}
+                                                <p className="text-gray-600 mb-4">{forum.descripcion}</p> {/* Use descripcion */}
                                                 <div className="flex items-center gap-6 text-sm">
                                                     <div><span className="font-bold text-gray-900">{category.topics.toLocaleString()}</span><span className="text-gray-600 ml-1">Temas</span></div>
                                                     <div><span className="font-bold text-gray-900">{category.messages.toLocaleString()}</span><span className="text-gray-600 ml-1">Mensajes</span></div>
