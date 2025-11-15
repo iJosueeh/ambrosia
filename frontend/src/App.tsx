@@ -15,6 +15,7 @@ function App() {
 
 function AppContent() {
   const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
 
   useEffect(() => {
     if (location.hash) {
@@ -32,12 +33,12 @@ function AppContent() {
   return (
     <>
       <Toaster />
-      <Navbar />
+      {!isAdminRoute && <Navbar />}
       {/* Main content wrapper with padding to clear the fixed Navbar */}
-      <div className="pt-16"> {/* Adjust pt-XX based on actual Navbar height */}
+      <div className={!isAdminRoute ? "pt-16" : ""}> {/* Adjust pt-XX based on actual Navbar height */}
         <AppRoutes />
       </div>
-      <Footer />
+      {!isAdminRoute && <Footer />}
     </>
   );
 }
