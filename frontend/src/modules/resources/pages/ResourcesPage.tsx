@@ -99,11 +99,11 @@ export const ResourcesPage = () => {
             setIsLoading(true); // Set loading to true
             try {
                 if (activeTab === 0) {
-                    const fetchedResources = await getAllResources();
-                    setResources(fetchedResources);
+                    const fetchedResources = await getAllResources(0, 10, '');
+                    setResources(fetchedResources.content);
                 } else if (activeTab !== null) {
-                    const fetchedResources = await getResourcesByCategory(activeTab);
-                    setResources(fetchedResources);
+                    const fetchedResources = await getResourcesByCategory(activeTab, 0, 10, '');
+                    setResources(fetchedResources.content);
                 } else {
                     setResources([]);
                 }

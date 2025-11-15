@@ -1,25 +1,26 @@
 package com.ambrosia.ambrosia.services;
 
 import com.ambrosia.ambrosia.models.Actividad;
-import com.ambrosia.ambrosia.models.Rol;
 import com.ambrosia.ambrosia.models.TipoActividad;
 import com.ambrosia.ambrosia.models.Usuario;
 import com.ambrosia.ambrosia.models.dto.ActividadDTO;
 import com.ambrosia.ambrosia.models.dto.UsuarioDTO;
 import com.ambrosia.ambrosia.models.dto.UsuarioDashboardDTO;
 import com.ambrosia.ambrosia.repository.ActividadRepository;
-import com.ambrosia.ambrosia.repository.RolRepository;
+import com.ambrosia.ambrosia.repository.AdministradorRepository;
 import com.ambrosia.ambrosia.repository.RecursoRepository;
 import com.ambrosia.ambrosia.repository.TestRepository;
 import com.ambrosia.ambrosia.repository.UsuarioRepository;
 import com.ambrosia.ambrosia.strategies.ExportStrategy;
 import com.google.common.base.Strings;
 import com.ambrosia.ambrosia.mappers.RecursoMapper;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -32,6 +33,9 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.stream.Collectors; // Importación necesaria para el nuevo método
 
 @Service
 @RequiredArgsConstructor
@@ -40,7 +44,7 @@ public class UsuarioService implements UserDetailsService {
     private static final Logger logger = LoggerFactory.getLogger(UsuarioService.class);
 
     private final UsuarioRepository usuarioRepository;
-    private final RolRepository rolRepository;
+    private final AdministradorRepository administradorRepository;
     private final RecursoRepository recursoRepository;
     private final TestRepository testRepository;
     private final ActividadRepository actividadRepository;
@@ -50,33 +54,69 @@ public class UsuarioService implements UserDetailsService {
     private final PasswordEncoder passwordEncoder;
     private final java.util.Map<String, ExportStrategy<Usuario>> exportStrategies;
 
-    @PostConstruct
-    public void initRoles() {
-        if (rolRepository.findByNombre("USER").isEmpty()) {
-            rolRepository.save(Rol.builder().nombre("USER").build());
-            logger.info("Rol 'USER' creado.");
-        }
-        if (rolRepository.findByNombre("ADMIN").isEmpty()) {
-            rolRepository.save(Rol.builder().nombre("ADMIN").build());
-            logger.info("Rol 'ADMIN' creado.");
-        }
+    // ----------------------------------------------------------------------
+    // NUEVO MÉTODO PARA ADMINISTRACIÓN (SOLUCIONA EL ERROR DEL CONTROLLER)
+    // ----------------------------------------------------------------------
+
+    /**
+     * Obtiene la lista de todos los usuarios registrados, incluyendo su rol (USER o ADMIN).
+     * Este método es usado por el controlador de administración.
+     * @return Una lista de UsuarioDTOs con información de nombre, correo, fecha de registro y rol.
+     */
+    public List<UsuarioDTO> findAllUsersForAdmin() {
+        logger.info("Obteniendo lista completa de usuarios para la vista de administración.");
+
+        // 1. Obtener todos los usuarios
+        List<Usuario> usuarios = usuarioRepository.findAll();
+
+        // 2. Mapear a DTO y determinar el rol de cada uno
+        return usuarios.stream()
+                .map(this::mapUsuarioToAdminDTO)
+                .collect(Collectors.toList());
     }
 
+    /**
+     * Helper para mapear Usuario a UsuarioDTO, agregando la lógica del Rol.
+     */
+    private UsuarioDTO mapUsuarioToAdminDTO(Usuario usuario) {
+        // Determinar el rol
+        String rol = administradorRepository.existsById(usuario.getId()) ? "ADMIN" : "USER";
+
+        // Mapear los campos necesarios
+        return UsuarioDTO.builder()
+                // Asegúrate de incluir los campos que necesita tu frontend, como el ID
+                .id(usuario.getId())
+                .nombre(usuario.getNombre())
+                .correo(usuario.getEmail())
+                .rol(rol) // Asignar el rol dinámicamente
+                .fechaRegistro(usuario.getFecha_registro() != null ? usuario.getFecha_registro().toLocalDate() : null)
+                .build();
+    }
+
+
+    // ----------------------------------------------------------------------
+    // MÉTODOS EXISTENTES
+    // ----------------------------------------------------------------------
+
+    /**
+     * Busca la entidad Usuario completa por email.
+     */
+    public Optional<Usuario> findByEmail(String email) {
+        return usuarioRepository.findByEmail(email);
+    }
+
+
     public UsuarioDTO registrar(UsuarioDTO dto) {
-        if (Strings.isNullOrEmpty(dto.getCorreo()) || Strings.isNullOrEmpty(dto.getRol()) || Strings.isNullOrEmpty(dto.getPassword())) {
-            throw new IllegalArgumentException("El correo, el rol y la contraseña no pueden ser nulos o vacíos");
+        if (Strings.isNullOrEmpty(dto.getCorreo()) || Strings.isNullOrEmpty(dto.getPassword())) {
+            throw new IllegalArgumentException("El correo y la contraseña no pueden ser nulos o vacíos");
         }
 
         logger.info("Registrando usuario con correo: {}", dto.getCorreo());
-
-        Rol rol = rolRepository.findByNombre(dto.getRol())
-                .orElseThrow(() -> new RuntimeException("Rol no encontrado con el nombre: " + dto.getRol()));
 
         Usuario usuario = Usuario.builder()
                 .nombre(dto.getNombre())
                 .email(dto.getCorreo())
                 .password(passwordEncoder.encode(dto.getPassword())) // Encode password
-                .rol(rol)
                 .fecha_registro(LocalDateTime.now())
                 .build();
 
@@ -117,18 +157,18 @@ public class UsuarioService implements UserDetailsService {
         int progresoTests = (totalTests == 0) ? 0 : Math.min(100, (int) Math.round(((double) testsCompletados / totalTests * 100)));
 
         List<com.ambrosia.ambrosia.models.dto.ProgressItemDTO> progreso = List.of(
-            com.ambrosia.ambrosia.models.dto.ProgressItemDTO.builder()
-                .label("Artículos completados")
-                .current(articulosLeidos)
-                .total(totalRecursos)
-                .percentage(progresoArticulos)
-                .build(),
-            com.ambrosia.ambrosia.models.dto.ProgressItemDTO.builder()
-                .label("Tests de seguimiento")
-                .current(testsCompletados)
-                .total(totalTests)
-                .percentage(progresoTests)
-                .build()
+                com.ambrosia.ambrosia.models.dto.ProgressItemDTO.builder()
+                        .label("Artículos completados")
+                        .current(articulosLeidos)
+                        .total(totalRecursos)
+                        .percentage(progresoArticulos)
+                        .build(),
+                com.ambrosia.ambrosia.models.dto.ProgressItemDTO.builder()
+                        .label("Tests de seguimiento")
+                        .current(testsCompletados)
+                        .total(totalTests)
+                        .percentage(progresoTests)
+                        .build()
         );
 
         List<Actividad> actividades = actividadRepository.findTop5ByUsuarioOrderByFechaDesc(usuario);
@@ -178,24 +218,50 @@ public class UsuarioService implements UserDetailsService {
                 .build();
     }
 
+    /**
+     * Lógica crítica de Spring Security para cargar el usuario y sus roles.
+     */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         logger.info("Attempting to load user by username (email): {}", username);
+
+        // 1. Cargar el objeto Usuario de nuestra base de datos
         Usuario user = usuarioRepository.findByEmail(username)
                 .orElseThrow(() -> {
                     logger.warn("User not found with email: {}", username);
                     return new UsernameNotFoundException("Usuario no encontrado con el correo: " + username);
                 });
-        logger.info("User found: {} with roles: {}", user.getEmail(), user.getAuthorities());
-        return user;
+
+        // 2. Asignación de Roles (Authorities)
+        Collection<GrantedAuthority> authorities = new ArrayList<>();
+
+        // Rol base: Todos son usuarios
+        authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+
+        // Verificar si es Administrador
+        if (administradorRepository.existsById(user.getId())) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+            logger.info("Usuario es Administrador. Roles asignados: [ROLE_USER, ROLE_ADMIN]");
+        } else {
+            logger.info("Usuario no es Administrador. Roles asignados: [ROLE_USER]");
+        }
+
+        // 3. Devolver un objeto UserDetails (la implementación de Spring Security)
+        return new User(
+                user.getEmail(),
+                user.getPassword(),
+                authorities
+        );
     }
+
+    // --- Métodos de exportación ---
 
     public ByteArrayInputStream exportUsers(String format) {
         ExportStrategy<Usuario> strategy = exportStrategies.get(format.toLowerCase());
         if (strategy == null) {
             throw new IllegalArgumentException("Formato de exportación no soportado: " + format);
         }
-        List<Usuario> usuarios = usuarioRepository.findAllWithRoles();
+        List<Usuario> usuarios = usuarioRepository.findAll();
         return strategy.export(usuarios);
     }
 

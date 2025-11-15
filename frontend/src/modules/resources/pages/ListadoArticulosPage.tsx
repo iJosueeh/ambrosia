@@ -77,7 +77,7 @@ const ListadoArticulosPage: React.FC = () => {
 
     const { isLoading, isError } = useQuery({
         queryKey: ['allResources'],
-        queryFn: getAllResources,
+        queryFn: () => getAllResources(0, 20, ''),
     });
 
 
