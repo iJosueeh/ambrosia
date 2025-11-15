@@ -20,6 +20,7 @@ public class Comentario {
 
     private String contenido;
     private LocalDateTime fechaCreacion;
+    private String status = "ACTIVE"; // e.g., ACTIVE, HIDDEN, REPORTED
 
     @ManyToOne
     @JoinColumn(name = "autor_id")

@@ -29,6 +29,8 @@ public class Foro {
 
     private LocalDateTime fechaCreacion;
 
+    private String status = "ACTIVE"; // e.g., ACTIVE, CLOSED, HIDDEN, REPORTED
+
     @ManyToOne
     @JoinColumn(name = "categoria_foro_id")
     private CategoriaForo categoriaForo;

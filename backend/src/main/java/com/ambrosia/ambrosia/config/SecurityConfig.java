@@ -82,8 +82,17 @@ public class SecurityConfig {
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authorize -> authorize
+                .requestMatchers("/api/v1/admin/**").hasAuthority("ROLE_ADMIN")
                 .requestMatchers("/api/tests/admin").hasAuthority("ROLE_ADMIN")
-                .requestMatchers("/api/usuarios/registrar", "/api/auth/login", "/api/tests", "/api/tests/resultado", "/api/recursos/**").permitAll()
+                .requestMatchers(
+                        "/api/usuarios/registrar",
+                        "/api/auth/login",
+                        "/api/tests",
+                        "/api/tests/resultado",
+                        "/api/recursos/**",
+                        "/api/resource-categories",
+                        "/api/resource-statuses"
+                ).permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(AbstractHttpConfigurer::disable)

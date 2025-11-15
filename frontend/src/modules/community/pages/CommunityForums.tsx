@@ -5,6 +5,7 @@ import ForumCategory from '../components/ForumCategory';
 import ForumThread from '../components/ForumThread';
 import { X } from 'lucide-react';
 import { forumService } from '../services/forum.service';
+import type { ForumCategoryType, ForumThreadType } from '../types/forum.types';
 
 // Define types for the modal props
 interface NewThreadData {
@@ -23,11 +24,11 @@ interface NewThreadModalProps {
 
 const CommunityForums = () => {
     const [view, setView] = useState('home');
-    const [selectedCategory, setSelectedCategory] = useState<any>(null);
-    const [selectedThread, setSelectedThread] = useState<any>(null);
+    const [selectedCategory, setSelectedCategory] = useState<ForumCategoryType | null>(null);
+    const [selectedThread, setSelectedThread] = useState<ForumThreadType | null>(null);
     const [showNewThread, setShowNewThread] = useState(false);
     const [showReply, setShowReply] = useState(false);
-    const [replyToComment, setReplyToComment] = useState<any>(null);
+    const [replyToComment, setReplyToComment] = useState<any>(null); // Keep any for now, as CommentType is not fully integrated here
     const [newThreadData, setNewThreadData] = useState<NewThreadData>({ title: '', content: '', categoriaForoId: null });
     const [replyContent, setReplyContent] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
@@ -40,7 +41,7 @@ const CommunityForums = () => {
                 titulo: newThreadData.title,
                 descripcion: newThreadData.content,
                 autor: { id: userId }, // Assuming backend can map this to a User object
-                categoriaForo: { id: parseInt(selectedCategory.id, 10) }
+                categoriaForo: { id: selectedCategory.id } // Use selectedCategory.id directly as it's now typed as number
             };
             await forumService.createForo(newForo);
             setShowNewThread(false);
@@ -131,11 +132,11 @@ const CommunityForums = () => {
     }
 
     if (view === 'home') {
-        return <ForumHome onSelectCategory={(cat: any) => { setSelectedCategory(cat); setView('category'); }} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />;
+        return <ForumHome onSelectCategory={(cat: ForumCategoryType) => { setSelectedCategory(cat); setView('category'); }} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />;
     }
 
     if (view === 'category') {
-        return <ForumCategory category={selectedCategory} onBack={() => setView('home')} onBackToHome={() => setView('home')} onSelectThread={(thread: any) => { setSelectedThread(thread); setView('thread'); }} onNewThread={() => setShowNewThread(true)} />;
+        return <ForumCategory category={selectedCategory} onBack={() => setView('home')} onBackToHome={() => setView('home')} onSelectThread={(thread: ForumThreadType) => { setSelectedThread(thread); setView('thread'); }} onNewThread={() => setShowNewThread(true)} />;
     }
 
     if (view === 'thread') {
