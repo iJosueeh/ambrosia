@@ -11,8 +11,21 @@ interface LoginProps {
 
 export const Login: React.FC<LoginProps> = ({ onToggleView }) => {
     const [showPassword, setShowPassword] = useState(false);
-    const { login, loading, error } = useAuth(); // <- 'user' eliminado porque no se usa
+    const { login, loading, error, user } = useAuth(); // <- Añadir 'user' al destructuring
     const navigate = useNavigate();
+
+    React.useEffect(() => {
+        if (user) {
+            console.log("DEBUG: Redirigiendo desde useEffect. user.rolPrincipal:", user.rolPrincipal);
+            if (user.rolPrincipal === "ADMIN") {
+                navigate("/admin/dashboard");
+            } else if (user.rolPrincipal === "PROFESSIONAL") {
+                navigate("/profesional/dashboard");
+            } else {
+                navigate("/dashboard");
+            }
+        }
+    }, [user, navigate]); // Dependencias: user y navigate
 
     const { getFieldProps, validateForm } = useForm({
         email: { value: "", validators: [required, emailValidator] },
@@ -27,24 +40,9 @@ export const Login: React.FC<LoginProps> = ({ onToggleView }) => {
 
         if (validateForm()) {
             const success = await login(emailProps.value, passwordProps.value);
-            if (success) {
-                // Esperamos un momento corto para que el contexto/localStorage se actualice
-                setTimeout(() => {
-                    const storedUser = localStorage.getItem("user");
-                    if (storedUser) {
-                        const userData = JSON.parse(storedUser);
-                        // Redirigir según rol principal
-                        if (userData.rolPrincipal === "ADMIN") { // Keeping "ADMIN" as per user's working code
-                            navigate("/admin/dashboard");
-                        } else {
-                            navigate("/dashboard");
+                        if (success) {
+                            // La redirección se manejará en un useEffect que observa el estado del usuario
                         }
-                    } else {
-                        // Fallback
-                        navigate("/dashboard");
-                    }
-                }, 100);
-            }
         }
     };
 

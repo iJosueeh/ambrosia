@@ -3,11 +3,14 @@ package com.ambrosia.ambrosia.services;
 import com.ambrosia.ambrosia.models.Actividad;
 import com.ambrosia.ambrosia.models.TipoActividad;
 import com.ambrosia.ambrosia.models.Usuario;
+import com.ambrosia.ambrosia.models.Rol; // Importar Rol
 import com.ambrosia.ambrosia.models.dto.ActividadDTO;
 import com.ambrosia.ambrosia.models.dto.UsuarioDTO;
 import com.ambrosia.ambrosia.models.dto.UsuarioDashboardDTO;
 import com.ambrosia.ambrosia.repository.ActividadRepository;
 import com.ambrosia.ambrosia.repository.AdministradorRepository;
+import com.ambrosia.ambrosia.repository.ProfesionalRepository; // Importar ProfesionalRepository
+import com.ambrosia.ambrosia.repository.RolRepository; // Importar RolRepository
 import com.ambrosia.ambrosia.repository.RecursoRepository;
 import com.ambrosia.ambrosia.repository.TestRepository;
 import com.ambrosia.ambrosia.repository.UsuarioRepository;
@@ -44,7 +47,7 @@ public class UsuarioService implements UserDetailsService {
     private static final Logger logger = LoggerFactory.getLogger(UsuarioService.class);
 
     private final UsuarioRepository usuarioRepository;
-    private final AdministradorRepository administradorRepository;
+    private final RolRepository rolRepository; // Inyectar RolRepository
     private final RecursoRepository recursoRepository;
     private final TestRepository testRepository;
     private final ActividadRepository actividadRepository;
@@ -79,8 +82,8 @@ public class UsuarioService implements UserDetailsService {
      * Helper para mapear Usuario a UsuarioDTO, agregando la lógica del Rol.
      */
     private UsuarioDTO mapUsuarioToAdminDTO(Usuario usuario) {
-        // Determinar el rol
-        String rol = administradorRepository.existsById(usuario.getId()) ? "ADMIN" : "USER";
+        // Determinar el rol directamente del objeto Rol asociado
+        String rolNombre = usuario.getRol() != null ? usuario.getRol().getNombre() : "USER";
 
         // Mapear los campos necesarios
         return UsuarioDTO.builder()
@@ -88,7 +91,7 @@ public class UsuarioService implements UserDetailsService {
                 .id(usuario.getId())
                 .nombre(usuario.getNombre())
                 .correo(usuario.getEmail())
-                .rol(rol) // Asignar el rol dinámicamente
+                .rol(rolNombre) // Asignar el rol dinámicamente
                 .fechaRegistro(usuario.getFecha_registro() != null ? usuario.getFecha_registro().toLocalDate() : null)
                 .build();
     }
@@ -113,11 +116,16 @@ public class UsuarioService implements UserDetailsService {
 
         logger.info("Registrando usuario con correo: {}", dto.getCorreo());
 
+        // Asignar el rol por defecto "USER" al registrar
+        Rol defaultRol = rolRepository.findByNombre("USER")
+                .orElseThrow(() -> new RuntimeException("Rol 'USER' no encontrado en la base de datos."));
+
         Usuario usuario = Usuario.builder()
                 .nombre(dto.getNombre())
                 .email(dto.getCorreo())
                 .password(passwordEncoder.encode(dto.getPassword())) // Encode password
                 .fecha_registro(LocalDateTime.now())
+                .rol(defaultRol) // Asignar el rol por defecto
                 .build();
 
         Usuario usuarioGuardado = usuarioRepository.save(usuario);
@@ -235,15 +243,13 @@ public class UsuarioService implements UserDetailsService {
         // 2. Asignación de Roles (Authorities)
         Collection<GrantedAuthority> authorities = new ArrayList<>();
 
-        // Rol base: Todos son usuarios
-        authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
-
-        // Verificar si es Administrador
-        if (administradorRepository.existsById(user.getId())) {
-            authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
-            logger.info("Usuario es Administrador. Roles asignados: [ROLE_USER, ROLE_ADMIN]");
+        // El rol se deriva directamente del objeto Rol asociado al usuario
+        if (user.getRol() != null) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_" + user.getRol().getNombre()));
+            logger.info("Usuario {} tiene el rol: [ROLE_{}]", username, user.getRol().getNombre());
         } else {
-            logger.info("Usuario no es Administrador. Roles asignados: [ROLE_USER]");
+            logger.warn("Usuario {} no tiene un rol asignado. Asignando ROLE_USER por defecto.", username);
+            authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
         }
 
         // 3. Devolver un objeto UserDetails (la implementación de Spring Security)

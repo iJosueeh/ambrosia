@@ -35,16 +35,19 @@ public class Usuario implements UserDetails {
     private Integer articulosLeidos = 0;
     private Integer recursosDescargados = 0;
 
-    @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Administrador administrador;
+    @ManyToOne(fetch = FetchType.EAGER) // Cargar el rol eagerly para que esté disponible
+    @JoinColumn(name = "rol_id", nullable = false)
+    private Rol rol; // Relación con la nueva entidad Rol
+
+    // Ya no necesitamos las relaciones OneToOne con Administrador y Profesional aquí
+    // Esas entidades ahora pueden simplemente tener un Usuario al que se refieren
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         Set<GrantedAuthority> authorities = new HashSet<>();
-        // Default role for everyone
-        authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
-        if (this.administrador != null) {
-            authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        // El rol se deriva directamente del objeto Rol asociado
+        if (this.rol != null) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_" + this.rol.getNombre()));
         }
         return authorities;
     }

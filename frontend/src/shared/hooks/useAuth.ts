@@ -33,7 +33,9 @@ const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = React.useState<User | null>(() => {
         const storedUser = localStorage.getItem('user');
-        return storedUser ? JSON.parse(storedUser) : null;
+        const initialUser = storedUser ? JSON.parse(storedUser) : null;
+        console.log("DEBUG: AuthProvider initial user from localStorage:", initialUser); // Nuevo console.log
+        return initialUser;
     });
 
     const loginMutation = useMutation<LoginResponse, BackendError, Parameters<typeof authServiceLogin>[0]>({
@@ -70,7 +72,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         },
     });
 
-    const login = async (email: string, pass: string): Promise<boolean> => {
+    const login = React.useCallback(async (email: string, pass: string): Promise<boolean> => {
         try {
             await loginMutation.mutateAsync({ correo: email, contrasena: pass });
             return true;
@@ -78,21 +80,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             console.error(error);
             return false;
         }
-    };
+    }, [loginMutation]);
 
-    const logout = () => {
+    const logout = React.useCallback(() => {
         setUser(null);
         localStorage.removeItem('user');
-    };
+    }, []);
 
-    const value = {
+    const value = React.useMemo(() => ({
         user,
         isAuthenticated: !!user,
         login,
         logout,
         loading: loginMutation.isPending,
         error: loginMutation.isError ? loginMutation.error.response?.data?.message || "Error al iniciar sesión." : null,
-    };
+    }), [user, login, logout, loginMutation.isPending, loginMutation.isError, loginMutation.error]);
 
     return React.createElement(AuthContext.Provider, { value }, children);
 };

@@ -1,7 +1,7 @@
 import { ChevronRight, MessageCircle, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { forumService } from '../services/forum.service';
-import type { ForumCategoryType, ForumThreadType } from '../types/forum.types'; // Import ForumCategoryType
+import type { ForumCategoryType } from '../types/forum.types'; // Import ForumCategoryType
 
 // Utility function to format date
 const formatRelativeTime = (dateString: string) => {
