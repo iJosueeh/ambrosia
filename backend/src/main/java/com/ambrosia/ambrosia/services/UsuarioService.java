@@ -3,6 +3,7 @@ package com.ambrosia.ambrosia.services;
 import com.ambrosia.ambrosia.models.Actividad;
 import com.ambrosia.ambrosia.models.TipoActividad;
 import com.ambrosia.ambrosia.models.Usuario;
+import com.ambrosia.ambrosia.models.Profesional; // Importar Profesional
 import com.ambrosia.ambrosia.models.Rol; // Importar Rol
 import com.ambrosia.ambrosia.models.dto.ActividadDTO;
 import com.ambrosia.ambrosia.models.dto.UsuarioDTO;
@@ -53,6 +54,7 @@ public class UsuarioService implements UserDetailsService {
     private final ActividadRepository actividadRepository;
     private final ActividadService actividadService;
     private final RecursoMapper recursoMapper;
+    private final ProfesionalRepository profesionalRepository; // Re-added
 
     private final PasswordEncoder passwordEncoder;
     private final java.util.Map<String, ExportStrategy<Usuario>> exportStrategies;
@@ -253,10 +255,15 @@ public class UsuarioService implements UserDetailsService {
         }
 
         // 3. Devolver un objeto UserDetails (la implementación de Spring Security)
-        return new User(
-                user.getEmail(),
-                user.getPassword(),
-                authorities
+        Long profesionalId = null;
+        if (user.getRol() != null && "PROFESSIONAL".equals(user.getRol().getNombre())) {
+            profesionalId = profesionalRepository.findByUsuarioId(user.getId()).map(Profesional::getId).orElse(null);
+        }
+
+        return new MyUserDetails(
+                user,
+                authorities,
+                profesionalId
         );
     }
 

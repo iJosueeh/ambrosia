@@ -89,7 +89,7 @@ public class SecurityConfig {
                         "/api/auth/login",
                         "/api/tests",
                         "/api/tests/resultado",
-                        "/api/recursos/**",
+                        "/api/v1/recursos/**",
                         "/api/resource-categories",
                         "/api/resource-statuses"
                 ).permitAll()

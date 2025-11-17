@@ -23,4 +23,6 @@ public class RecursoDTO {
     private String nombreCategoria;
     private CategoriaRecursoDTO categoria;
     private String estado;
+    private Long creadorId;
+    private String nombreCreador;
 }

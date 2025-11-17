@@ -12,4 +12,5 @@ public interface RecursoRepository extends JpaRepository<RecursoEducativo, Long>
     Page<RecursoEducativo> findByCategoriaId(Long id, Pageable pageable);
     Page<RecursoEducativo> findByTituloContainingIgnoreCaseOrDescripcionContainingIgnoreCase(String titulo, String descripcion, Pageable pageable);
     Page<RecursoEducativo> findByCategoriaIdAndTituloContainingIgnoreCaseOrCategoriaIdAndDescripcionContainingIgnoreCase(Long categoriaId1, String titulo, Long categoriaId2, String descripcion, Pageable pageable);
+    List<RecursoEducativo> findByCreadorId(Long creadorId);
 }

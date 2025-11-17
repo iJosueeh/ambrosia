@@ -26,3 +26,19 @@ export const updateProfesional = async (id: number, profesional: Omit<Profesiona
 export const deleteProfesional = async (id: number): Promise<void> => {
     await axiosInstance.delete(`${API_URL}/${id}`);
 };
+
+export const uploadProfileImage = async (id: number, file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await axiosInstance.post<string>(`${API_URL}/${id}/upload-profile-picture`, formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    });
+    return response.data;
+};
+
+export const deleteProfileImage = async (id: number): Promise<void> => {
+    await axiosInstance.put(`${API_URL}/${id}/delete-profile-picture`);
+};

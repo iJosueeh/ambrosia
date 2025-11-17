@@ -1,5 +1,6 @@
 package com.ambrosia.ambrosia.config;
 
+import com.ambrosia.ambrosia.services.MyUserDetails;
 import com.ambrosia.ambrosia.services.UsuarioService;
 import com.ambrosia.ambrosia.utils.JwtUtil;
 import jakarta.servlet.FilterChain;
@@ -48,8 +49,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (jwtUtil.validateToken(jwt, userDetails)) {
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
-                usernamePasswordAuthenticationToken
-                        .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                
+                // Set professionalId in authentication details if available
+                if (userDetails instanceof MyUserDetails && ((MyUserDetails) userDetails).getProfesionalId() != null) {
+                    usernamePasswordAuthenticationToken.setDetails(((MyUserDetails) userDetails).getProfesionalId());
+                } else {
+                    usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                }
                 SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
             }
         }

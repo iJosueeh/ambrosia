@@ -48,6 +48,12 @@ public class RecursoMapper {
         if (recursoEducativo.getEstado() != null) {
             recursoDTO.setEstado(recursoEducativo.getEstado().getNombre());
         }
+        if (recursoEducativo.getCreador() != null) {
+            recursoDTO.setCreadorId(recursoEducativo.getCreador().getId());
+            if (recursoEducativo.getCreador().getUsuario() != null) {
+                recursoDTO.setNombreCreador(recursoEducativo.getCreador().getUsuario().getNombre());
+            }
+        }
         return recursoDTO;
     }
 

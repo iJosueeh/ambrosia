@@ -11,7 +11,7 @@ import { useAuth } from '../../../shared/hooks/useAuth';
 const navItems = [
   { to: '/profesional/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/profesional/profile', icon: User, label: 'Mi Perfil' },
-  { to: '/profesional/materials', icon: BookOpen, label: 'Mis Materiales' }, // New route for material management
+  { to: '/profesional/recursos', icon: BookOpen, label: 'Mis Recursos' }, // Updated route and label
   // Add more professional-specific navigation items here
 ];
 

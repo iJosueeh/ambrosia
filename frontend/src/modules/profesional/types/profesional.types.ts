@@ -8,4 +8,5 @@ export interface Profesional {
     habilidades: string[];
     telefono: string;
     ubicacion: string;
+    profileImageUrl?: string | null;
 }

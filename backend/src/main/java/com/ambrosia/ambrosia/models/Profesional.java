@@ -22,6 +22,7 @@ public class Profesional {
     private String descripcion;
     private String telefono;
     private String ubicacion;
+    private String profileImageUrl;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "profesional_habilidades", joinColumns = @JoinColumn(name = "profesional_id"))

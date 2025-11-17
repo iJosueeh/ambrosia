@@ -21,4 +21,5 @@ public class ProfesionalDTO {
     private Long usuarioId;
     private String nombreUsuario;
     private String emailUsuario;
+    private String profileImageUrl;
 }

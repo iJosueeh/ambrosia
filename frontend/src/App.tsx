@@ -4,10 +4,14 @@ import { AppRoutes } from "./routes/AppRoutes";
 import { Navbar } from "./shared/components/Navbar";
 import { Footer } from "./shared/components/Footer";
 
+import { AuthProvider } from "./shared/hooks/useAuth";
+
 function App() {
   return (
     <BrowserRouter>
-      <AppContent />
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
     </BrowserRouter>
   );
 }
