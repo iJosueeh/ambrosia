@@ -7,8 +7,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.util.List;
-import com.ambrosia.ambrosia.models.dto.ActividadDTO;
-import com.ambrosia.ambrosia.models.dto.RecomendacionDTO;
 
 @Data
 @Builder

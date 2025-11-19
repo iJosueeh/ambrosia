@@ -29,12 +29,14 @@ public class Foro {
 
     private LocalDateTime fechaCreacion;
 
-    private String status = "ACTIVE"; // e.g., ACTIVE, CLOSED, HIDDEN, REPORTED
+    @Builder.Default
+    private String status = "ACTIVE";
 
     @ManyToOne
     @JoinColumn(name = "categoria_foro_id")
     private CategoriaForo categoriaForo;
 
     @OneToMany(mappedBy = "foro", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<Comentario> comentarios = new ArrayList<>();
 }

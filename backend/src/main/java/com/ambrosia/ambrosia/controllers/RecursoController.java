@@ -7,13 +7,17 @@ import com.ambrosia.ambrosia.services.RecursoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import com.ambrosia.ambrosia.services.MyUserDetails;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/recursos")
+@RequestMapping("/api/v1/recursos")
 @RequiredArgsConstructor
 public class RecursoController {
 
@@ -21,14 +25,28 @@ public class RecursoController {
     private final CategoriaRecursoService categoriaRecursoService;
 
     @PostMapping
-    public ResponseEntity<RecursoDTO> publicar(@RequestBody RecursoDTO dto) {
-        RecursoDTO recursoPublicado = recursoService.publicarRecurso(dto);
-        return  ResponseEntity.status(201).body(recursoPublicado);
+    public ResponseEntity<RecursoDTO> createRecurso(@RequestBody RecursoDTO dto) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        MyUserDetails userDetails = (MyUserDetails) authentication.getPrincipal();
+        Long profesionalId = userDetails.getProfesionalId();
+
+        if (profesionalId == null) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN); // Or throw an exception
+        }
+
+        RecursoDTO createdRecurso = recursoService.createRecurso(dto, profesionalId);
+        return new ResponseEntity<>(createdRecurso, HttpStatus.CREATED);
     }
 
     @GetMapping
     public ResponseEntity<Page<RecursoDTO>> listarTodos(Pageable pageable, @RequestParam(required = false) String search) {
         return ResponseEntity.ok(recursoService.listarTodosLosRecursos(pageable, search));
+    }
+
+    @GetMapping("/profesional/{profesionalId}")
+    public ResponseEntity<List<RecursoDTO>> getRecursosByProfesionalId(@PathVariable Long profesionalId) {
+        List<RecursoDTO> recursos = recursoService.getRecursosByProfesionalId(profesionalId);
+        return ResponseEntity.ok(recursos);
     }
 
     @GetMapping("/categoria/{id}")
@@ -44,6 +62,34 @@ public class RecursoController {
     @GetMapping("/{id}")
     public ResponseEntity<RecursoDTO> obtenerPorId(@PathVariable Long id) {
         return ResponseEntity.ok(recursoService.obtenerRecursoPorId(id));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<RecursoDTO> updateRecurso(@PathVariable Long id, @RequestBody RecursoDTO dto) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        MyUserDetails userDetails = (MyUserDetails) authentication.getPrincipal();
+        Long profesionalId = userDetails.getProfesionalId();
+
+        if (profesionalId == null) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN); // Or throw an exception
+        }
+
+        RecursoDTO updatedRecurso = recursoService.updateRecurso(id, dto, profesionalId);
+        return ResponseEntity.ok(updatedRecurso);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteRecurso(@PathVariable Long id) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        MyUserDetails userDetails = (MyUserDetails) authentication.getPrincipal();
+        Long profesionalId = userDetails.getProfesionalId();
+
+        if (profesionalId == null) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN); // Or throw an exception
+        }
+
+        recursoService.deleteRecurso(id, profesionalId);
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id}/descargar")

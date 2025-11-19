@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, ChevronLeft, ChevronRight, Trash2, Lock, Unlock, AlertTriangle, MessageSquare } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Trash2, Lock, Unlock, AlertTriangle, MessageSquare } from 'lucide-react';
 import { fetchTopics, updateTopicStatus, deleteTopic, fetchComments, updateCommentStatus, deleteComment } from '../services/moderation.service';
 import type { ForumAdminDTO, CommentAdminDTO, PaginatedForumsResponse, PaginatedCommentsResponse } from '../types/moderation.types';
 

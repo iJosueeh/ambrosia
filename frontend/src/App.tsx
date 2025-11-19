@@ -1,44 +1,30 @@
-import { BrowserRouter, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { Toaster } from 'react-hot-toast';
 import { AppRoutes } from "./routes/AppRoutes";
 import { Navbar } from "./shared/components/Navbar";
 import { Footer } from "./shared/components/Footer";
-import { useEffect } from "react";
+
+// AuthProvider and BrowserRouter are no longer needed here as they are in main.tsx
 
 function App() {
   return (
-    <BrowserRouter>
-      <AppContent />
-    </BrowserRouter>
+    <AppContent />
   );
 }
 
 function AppContent() {
   const location = useLocation();
-  const isAdminRoute = location.pathname.startsWith('/admin');
-
-  useEffect(() => {
-    if (location.hash) {
-      const element = document.getElementById(location.hash.substring(1));
-      if (element) {
-        element.scrollIntoView({ behavior: "smooth" });
-      } else {
-        window.scrollTo(0, 0);
-      }
-    } else {
-      window.scrollTo(0, 0);
-    }
-  }, [location]);
+  const isDashboardRoute = location.pathname.startsWith('/admin') || location.pathname.startsWith('/profesional');
 
   return (
     <>
       <Toaster />
-      {!isAdminRoute && <Navbar />}
+      {!isDashboardRoute && <Navbar />}
       {/* Main content wrapper with padding to clear the fixed Navbar */}
-      <div className={!isAdminRoute ? "pt-16" : ""}> {/* Adjust pt-XX based on actual Navbar height */}
+      <div className={!isDashboardRoute ? "pt-16" : ""}> {/* Adjust pt-XX based on actual Navbar height */}
         <AppRoutes />
       </div>
-      {!isAdminRoute && <Footer />}
+      {!isDashboardRoute && <Footer />}
     </>
   );
 }

@@ -7,7 +7,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Configuration
@@ -17,7 +16,6 @@ public class ExportConfig {
     public Map<String, ExportStrategy<Usuario>> userExportStrategies(ExcelExportStrategy excelExportStrategy) {
         Map<String, ExportStrategy<Usuario>> strategies = new HashMap<>();
         strategies.put("xlsx", excelExportStrategy);
-        // Add other strategies here
         return strategies;
     }
 }
