@@ -26,7 +26,7 @@ const formatRelativeTime = (dateString: string) => {
 };
 
 interface ForumCategoryProps {
-    category: ForumCategoryType;
+    category: ForumCategoryType | null;
     onBackToHome: () => void;
     onSelectThread: (thread: ForumThreadType) => void;
     onNewThread: () => void;
@@ -67,6 +67,10 @@ const ForumCategory: React.FC<ForumCategoryProps> = ({ category, onBackToHome, o
         };
         fetchThreads();
     }, [category]);
+
+    if (!category) {
+        return <div className="flex justify-center items-center min-h-screen bg-gray-50 text-red-600 text-lg font-semibold">Categoría no encontrada.</div>;
+    }
 
     if (loading) return <div className="flex justify-center items-center min-h-screen bg-gray-50 text-emerald-600 text-lg font-semibold">Cargando temas...</div>;
     if (error) return <div className="flex justify-center items-center min-h-screen bg-gray-50 text-red-600 text-lg font-semibold">Error al cargar temas: {error.message}</div>;

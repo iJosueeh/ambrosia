@@ -18,9 +18,13 @@ public class RecursoEducativo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(columnDefinition = "TEXT")
     private String titulo;
+    @Column(columnDefinition = "TEXT")
     private String descripcion;
+    @Column(columnDefinition = "TEXT")
     private String enlace;
+    @Column(columnDefinition = "TEXT")
     private String urlimg;
     @Column(columnDefinition = "TEXT") // Use this for explicit PostgreSQL TEXT type
     private String contenido;

@@ -1,7 +1,5 @@
 package com.ambrosia.ambrosia.services;
 
-import com.ambrosia.ambrosia.models.Opcion;
-import com.ambrosia.ambrosia.models.Pregunta;
 import com.ambrosia.ambrosia.models.ResultadoTest;
 import com.ambrosia.ambrosia.models.TestEvaluacion;
 import com.ambrosia.ambrosia.models.Usuario;
@@ -11,7 +9,6 @@ import com.ambrosia.ambrosia.repository.ResultadoRepository;
 import com.ambrosia.ambrosia.repository.TestRepository;
 import com.ambrosia.ambrosia.repository.UsuarioRepository;
 import com.google.common.base.Preconditions;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import com.ambrosia.ambrosia.mappers.RecursoMapper;
 
@@ -20,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -55,10 +51,9 @@ public class TestService {
         Usuario usuario = usuarioRepository.findById(dto.usuarioId())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con el id: " + dto.usuarioId()));
 
-        // Increment testsCompletados for the user
         Integer testsCompletados = usuario.getTestsCompletados();
         usuario.setTestsCompletados((testsCompletados == null ? 0 : testsCompletados) + 1);
-        Usuario usuarioGuardado = usuarioRepository.save(usuario); // Save the updated user
+        Usuario usuarioGuardado = usuarioRepository.save(usuario);
 
         TestEvaluacion test = testRepository.findById(dto.testId())
                 .orElseThrow(() -> new RuntimeException("Test no encontrado con el id: " + dto.testId()));

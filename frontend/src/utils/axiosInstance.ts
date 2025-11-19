@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { forceLogout } from './authUtils'; // Import the forceLogout utility
 
 const axiosInstance = axios.create({
   baseURL: 'http://localhost:8080/api', // Your backend API base URL
@@ -16,6 +17,20 @@ axiosInstance.interceptors.request.use(
     return config;
   },
   (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Add a response interceptor
+axiosInstance.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      // If 401 Unauthorized, force logout
+      forceLogout();
+    }
     return Promise.reject(error);
   }
 );
