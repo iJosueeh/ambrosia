@@ -3,15 +3,14 @@ package com.ambrosia.ambrosia.services;
 import com.ambrosia.ambrosia.models.Actividad;
 import com.ambrosia.ambrosia.models.TipoActividad;
 import com.ambrosia.ambrosia.models.Usuario;
-import com.ambrosia.ambrosia.models.Profesional; // Importar Profesional
-import com.ambrosia.ambrosia.models.Rol; // Importar Rol
+import com.ambrosia.ambrosia.models.Profesional;
+import com.ambrosia.ambrosia.models.Rol;
 import com.ambrosia.ambrosia.models.dto.ActividadDTO;
 import com.ambrosia.ambrosia.models.dto.UsuarioDTO;
 import com.ambrosia.ambrosia.models.dto.UsuarioDashboardDTO;
 import com.ambrosia.ambrosia.repository.ActividadRepository;
-import com.ambrosia.ambrosia.repository.AdministradorRepository;
-import com.ambrosia.ambrosia.repository.ProfesionalRepository; // Importar ProfesionalRepository
-import com.ambrosia.ambrosia.repository.RolRepository; // Importar RolRepository
+import com.ambrosia.ambrosia.repository.ProfesionalRepository;
+import com.ambrosia.ambrosia.repository.RolRepository;
 import com.ambrosia.ambrosia.repository.RecursoRepository;
 import com.ambrosia.ambrosia.repository.TestRepository;
 import com.ambrosia.ambrosia.repository.UsuarioRepository;
@@ -24,7 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -39,7 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Collection;
 import java.util.Optional;
-import java.util.stream.Collectors; // Importación necesaria para el nuevo método
+import java.util.stream.Collectors; 
 
 @Service
 @RequiredArgsConstructor
@@ -48,20 +46,16 @@ public class UsuarioService implements UserDetailsService {
     private static final Logger logger = LoggerFactory.getLogger(UsuarioService.class);
 
     private final UsuarioRepository usuarioRepository;
-    private final RolRepository rolRepository; // Inyectar RolRepository
+    private final RolRepository rolRepository;
     private final RecursoRepository recursoRepository;
     private final TestRepository testRepository;
     private final ActividadRepository actividadRepository;
     private final ActividadService actividadService;
     private final RecursoMapper recursoMapper;
-    private final ProfesionalRepository profesionalRepository; // Re-added
+    private final ProfesionalRepository profesionalRepository;
 
     private final PasswordEncoder passwordEncoder;
     private final java.util.Map<String, ExportStrategy<Usuario>> exportStrategies;
-
-    // ----------------------------------------------------------------------
-    // NUEVO MÉTODO PARA ADMINISTRACIÓN (SOLUCIONA EL ERROR DEL CONTROLLER)
-    // ----------------------------------------------------------------------
 
     /**
      * Obtiene la lista de todos los usuarios registrados, incluyendo su rol (USER o ADMIN).
@@ -71,10 +65,8 @@ public class UsuarioService implements UserDetailsService {
     public List<UsuarioDTO> findAllUsersForAdmin() {
         logger.info("Obteniendo lista completa de usuarios para la vista de administración.");
 
-        // 1. Obtener todos los usuarios
         List<Usuario> usuarios = usuarioRepository.findAll();
 
-        // 2. Mapear a DTO y determinar el rol de cada uno
         return usuarios.stream()
                 .map(this::mapUsuarioToAdminDTO)
                 .collect(Collectors.toList());
@@ -84,12 +76,9 @@ public class UsuarioService implements UserDetailsService {
      * Helper para mapear Usuario a UsuarioDTO, agregando la lógica del Rol.
      */
     private UsuarioDTO mapUsuarioToAdminDTO(Usuario usuario) {
-        // Determinar el rol directamente del objeto Rol asociado
         String rolNombre = usuario.getRol() != null ? usuario.getRol().getNombre() : "USER";
 
-        // Mapear los campos necesarios
         return UsuarioDTO.builder()
-                // Asegúrate de incluir los campos que necesita tu frontend, como el ID
                 .id(usuario.getId())
                 .nombre(usuario.getNombre())
                 .correo(usuario.getEmail())
@@ -97,11 +86,6 @@ public class UsuarioService implements UserDetailsService {
                 .fechaRegistro(usuario.getFecha_registro() != null ? usuario.getFecha_registro().toLocalDate() : null)
                 .build();
     }
-
-
-    // ----------------------------------------------------------------------
-    // MÉTODOS EXISTENTES
-    // ----------------------------------------------------------------------
 
     /**
      * Busca la entidad Usuario completa por email.
@@ -118,21 +102,19 @@ public class UsuarioService implements UserDetailsService {
 
         logger.info("Registrando usuario con correo: {}", dto.getCorreo());
 
-        // Asignar el rol por defecto "USER" al registrar
         Rol defaultRol = rolRepository.findByNombre("USER")
                 .orElseThrow(() -> new RuntimeException("Rol 'USER' no encontrado en la base de datos."));
 
         Usuario usuario = Usuario.builder()
                 .nombre(dto.getNombre())
                 .email(dto.getCorreo())
-                .password(passwordEncoder.encode(dto.getPassword())) // Encode password
+                .password(passwordEncoder.encode(dto.getPassword())) 
                 .fecha_registro(LocalDateTime.now())
-                .rol(defaultRol) // Asignar el rol por defecto
+                .rol(defaultRol)
                 .build();
 
         Usuario usuarioGuardado = usuarioRepository.save(usuario);
 
-        // Crear actividad de registro
         actividadService.crearActividad(usuarioGuardado, TipoActividad.REGISTRO, "Te uniste a Ambrosia Vital");
 
         return recursoMapper.toDto(usuarioGuardado);
@@ -157,7 +139,6 @@ public class UsuarioService implements UserDetailsService {
             diasActivo = ChronoUnit.DAYS.between(usuario.getFecha_registro().toLocalDate(), LocalDate.now());
         }
 
-        // Calcular Progreso
         long totalRecursos = recursoRepository.count();
         long totalTests = testRepository.count();
         int articulosLeidos = usuario.getArticulosLeidos() != null ? usuario.getArticulosLeidos() : 0;
@@ -235,17 +216,14 @@ public class UsuarioService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         logger.info("Attempting to load user by username (email): {}", username);
 
-        // 1. Cargar el objeto Usuario de nuestra base de datos
         Usuario user = usuarioRepository.findByEmail(username)
                 .orElseThrow(() -> {
                     logger.warn("User not found with email: {}", username);
                     return new UsernameNotFoundException("Usuario no encontrado con el correo: " + username);
                 });
 
-        // 2. Asignación de Roles (Authorities)
         Collection<GrantedAuthority> authorities = new ArrayList<>();
 
-        // El rol se deriva directamente del objeto Rol asociado al usuario
         if (user.getRol() != null) {
             authorities.add(new SimpleGrantedAuthority("ROLE_" + user.getRol().getNombre()));
             logger.info("Usuario {} tiene el rol: [ROLE_{}]", username, user.getRol().getNombre());
@@ -254,7 +232,6 @@ public class UsuarioService implements UserDetailsService {
             authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
         }
 
-        // 3. Devolver un objeto UserDetails (la implementación de Spring Security)
         Long profesionalId = null;
         if (user.getRol() != null && "PROFESSIONAL".equals(user.getRol().getNombre())) {
             profesionalId = profesionalRepository.findByUsuarioId(user.getId()).map(Profesional::getId).orElse(null);
@@ -266,8 +243,6 @@ public class UsuarioService implements UserDetailsService {
                 profesionalId
         );
     }
-
-    // --- Métodos de exportación ---
 
     public ByteArrayInputStream exportUsers(String format) {
         ExportStrategy<Usuario> strategy = exportStrategies.get(format.toLowerCase());

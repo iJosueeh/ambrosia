@@ -94,7 +94,7 @@ const ProfesionalDashboard: React.FC = () => {
                     ) : (
                         <>
                             {/* Filters */}
-                            <div className="flex space-x-4 mb-6">
+                            <div className="flex flex-wrap gap-4 mb-6">
                                 {filterOptions.map(option => (
                                     <button
                                         key={option.category}

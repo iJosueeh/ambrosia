@@ -2,7 +2,6 @@ package com.ambrosia.ambrosia.config;
 
 import com.ambrosia.ambrosia.services.UsuarioService;
 import com.ambrosia.ambrosia.utils.JwtUtil;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -30,8 +29,6 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    // Remove @RequiredArgsConstructor and direct injection of JwtAuthenticationFilter
-
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -58,7 +55,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173")); // Allow your frontend origin
+        configuration.setAllowedOrigins(List.of("http://localhost:5173"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));
         configuration.setAllowCredentials(true);
@@ -84,6 +81,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers("/api/v1/admin/**").hasAuthority("ROLE_ADMIN")
                 .requestMatchers("/api/tests/admin").hasAuthority("ROLE_ADMIN")
+                .requestMatchers("/api/profesionales/**").hasAuthority("ROLE_PROFESSIONAL")
                 .requestMatchers(
                         "/api/usuarios/registrar",
                         "/api/auth/login",

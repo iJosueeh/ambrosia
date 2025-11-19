@@ -1,18 +1,14 @@
-import { BrowserRouter, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { Toaster } from 'react-hot-toast';
 import { AppRoutes } from "./routes/AppRoutes";
 import { Navbar } from "./shared/components/Navbar";
 import { Footer } from "./shared/components/Footer";
 
-import { AuthProvider } from "./shared/hooks/useAuth";
+// AuthProvider and BrowserRouter are no longer needed here as they are in main.tsx
 
 function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <AppContent />
-      </AuthProvider>
-    </BrowserRouter>
+    <AppContent />
   );
 }
 

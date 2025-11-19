@@ -337,11 +337,11 @@ const ProfesionalProfile: React.FC = () => {
                 </div>
 
                 {/* ACTION BUTTONS */}
-                <div className="mt-8 flex justify-end gap-4">
+                <div className="mt-8 flex flex-col-reverse sm:flex-row justify-end gap-3">
                     <button
                         type="button"
                         onClick={handleCancel}
-                        className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 flex items-center gap-2"
+                        className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 flex items-center justify-center gap-2"
                     >
                         <X className="w-5 h-5" />
                         Cancelar
@@ -351,7 +351,7 @@ const ProfesionalProfile: React.FC = () => {
                         type="button"
                         onClick={handleSave}
                         disabled={isSaving}
-                        className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 flex items-center gap-2 disabled:opacity-50 disabled:cursor-wait shadow-md"
+                        className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-wait shadow-md"
                     >
                         {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
                         {isSaving ? "Guardando..." : "Guardar Cambios"}

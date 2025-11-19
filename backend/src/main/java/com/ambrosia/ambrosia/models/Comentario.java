@@ -20,7 +20,9 @@ public class Comentario {
 
     private String contenido;
     private LocalDateTime fechaCreacion;
-    private String status = "ACTIVE"; // e.g., ACTIVE, HIDDEN, REPORTED
+
+    @Builder.Default
+    private String status = "ACTIVE";
 
     @ManyToOne
     @JoinColumn(name = "autor_id")
@@ -33,5 +35,4 @@ public class Comentario {
     @ManyToOne
     @JoinColumn(name = "moderador_id")
     private Administrador moderador;
-
 }

@@ -18,7 +18,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import java.util.stream.Collectors;
-import java.util.List;
 
 @Component
 public class RecursoMapper {
@@ -77,7 +76,6 @@ public class RecursoMapper {
             return null;
         }
         ActividadDTO actividadDTO = new ActividadDTO();
-        // ActividadDTO does not have an 'id' or 'nombre' field based on its definition
         actividadDTO.setTipoActividad(actividad.getTipoActividad());
         actividadDTO.setDescripcion(actividad.getDescripcion());
         actividadDTO.setFecha(actividad.getFecha());

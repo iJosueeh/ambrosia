@@ -4,6 +4,8 @@ import { useAuth } from '../../../shared/hooks/useAuth';
 import { getRecursosByProfesionalId, deleteRecurso } from '../../resources/services/resource.service'; // Use resource service
 import type { RecursoDTO } from '../../resources/types/recurso.types'; // Use RecursoDTO
 import { Plus, Edit, Trash2, BarChart } from 'lucide-react';
+import toast from 'react-hot-toast';
+import Swal from 'sweetalert2';
 
 const RecursoManagement: React.FC = () => {
     const { user } = useAuth();
@@ -36,20 +38,53 @@ const RecursoManagement: React.FC = () => {
         navigate('/profesional/recursos/nuevo'); // Update path
     };
 
+    const handleAnalytics = (id: number) => {
+        navigate(`/profesional/estadisticas/${id}`);
+    };
+
     const handleEdit = (id: number) => {
         navigate(`/profesional/recursos/editar/${id}`); // Update path
     };
 
-    const handleDeleteRecurso = async (id: number) => { // Change function name
-        if (window.confirm('¿Estás seguro de que quieres eliminar este recurso?')) {
-            try {
-                await deleteRecurso(id); // Use new service method
-                fetchRecursos(); // Refresh list
-            } catch (err) {
-                console.error("Error al eliminar recurso:", err);
-                setError("Error al eliminar recurso.");
+    const handleDeleteRecurso = async (id: number, titulo: string) => { // Change function name
+        Swal.fire({
+            title: `¿Estás seguro de eliminar "${titulo}"?`,
+            text: "Esta acción no se puede deshacer.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#00B37E', // Ambrosia Green
+            cancelButtonColor: '#6B7280', // Tailwind gray-500
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar',
+            background: '#ffffff', // White background for the modal
+            color: '#1f2937', // Dark text for the modal
+            customClass: {
+                popup: 'border border-gray-300 shadow-lg', // Lighter border for light background
+                confirmButton: 'bg-ambrosia-green hover:bg-green-700 text-white font-bold py-2 px-4 rounded',
+                cancelButton: 'bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded',
             }
-        }
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    await deleteRecurso(id); // Use new service method
+                    fetchRecursos(); // Refresh list
+                    toast.success(`"${titulo}" eliminado exitosamente.`, {
+                        style: {
+                            background: '#333',
+                            color: '#fff',
+                        },
+                    });
+                } catch (err) {
+                    console.error("Error al eliminar recurso:", err);
+                    toast.error(`Error al eliminar "${titulo}".`, {
+                        style: {
+                            background: '#333',
+                            color: '#fff',
+                        },
+                    });
+                }
+            }
+        });
     };
 
     if (loading) return <div className="text-center py-8">Cargando recursos...</div>;
@@ -64,7 +99,7 @@ const RecursoManagement: React.FC = () => {
                 </button>
             </div>
 
-            <div className="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
+            <div className="bg-white shadow-sm border border-gray-200 rounded-lg overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                         <tr>
@@ -94,9 +129,9 @@ const RecursoManagement: React.FC = () => {
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <button className="text-green-800 hover:text-green-600 mr-3"><BarChart className="w-5 h-5" /></button>
+                                        <button onClick={() => recurso.id && handleAnalytics(recurso.id)} className="text-green-800 hover:text-green-600 mr-3"><BarChart className="w-5 h-5" /></button>
                                         <button onClick={() => recurso.id && handleEdit(recurso.id)} className="text-green-800 hover:text-green-600 mr-3"><Edit className="w-5 h-5" /></button>
-                                        <button onClick={() => recurso.id && handleDeleteRecurso(recurso.id)} className="text-green-800 hover:text-green-600"><Trash2 className="w-5 h-5" /></button>
+                                        <button onClick={() => recurso.id && handleDeleteRecurso(recurso.id, recurso.titulo)} className="text-green-800 hover:text-green-600"><Trash2 className="w-5 h-5" /></button>
                                     </td>
                                 </tr>
                             ))

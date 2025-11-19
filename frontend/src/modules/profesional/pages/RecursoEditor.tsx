@@ -195,13 +195,13 @@ const RecursoEditor: React.FC = () => { // Renamed component
     return (
         <div className="px-4 py-8 md:px-8 bg-gray-50 min-h-screen">
             <header className="max-w-7xl mx-auto mb-8">
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
                     <h1 className="text-3xl md:text-4xl font-bold text-gray-800">
                         <span className="bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent">
                             {isEditing ? 'Editar Recurso' : 'Crear Nuevo Recurso'}
                         </span>
                     </h1>
-                    <div className="flex gap-4">
+                    <div className="flex gap-4 self-end md:self-auto">
                         <button onClick={() => navigate('/profesional/recursos')} className="bg-gray-200 text-gray-800 px-5 py-2.5 rounded-lg font-semibold hover:bg-gray-300 transition-colors">
                             Cancelar
                         </button>

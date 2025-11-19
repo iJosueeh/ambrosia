@@ -8,7 +8,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -31,21 +30,23 @@ public class Usuario implements UserDetails {
     private String email;
     private String password;
     private LocalDateTime fecha_registro;
+
+    @Builder.Default
     private Integer testsCompletados = 0;
+
+    @Builder.Default
     private Integer articulosLeidos = 0;
+
+    @Builder.Default
     private Integer recursosDescargados = 0;
 
-    @ManyToOne(fetch = FetchType.EAGER) // Cargar el rol eagerly para que esté disponible
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "rol_id", nullable = false)
-    private Rol rol; // Relación con la nueva entidad Rol
-
-    // Ya no necesitamos las relaciones OneToOne con Administrador y Profesional aquí
-    // Esas entidades ahora pueden simplemente tener un Usuario al que se refieren
+    private Rol rol; 
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         Set<GrantedAuthority> authorities = new HashSet<>();
-        // El rol se deriva directamente del objeto Rol asociado
         if (this.rol != null) {
             authorities.add(new SimpleGrantedAuthority("ROLE_" + this.rol.getNombre()));
         }

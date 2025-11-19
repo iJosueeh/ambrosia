@@ -1,6 +1,7 @@
 package com.ambrosia.ambrosia.controllers;
 
 import com.ambrosia.ambrosia.models.dto.ProfesionalDTO;
+import com.ambrosia.ambrosia.models.dto.ProfesionalEstadisticasDTO;
 import com.ambrosia.ambrosia.services.ProfesionalService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -69,5 +70,23 @@ public class ProfesionalController {
     public ResponseEntity<Void> deleteProfilePicture(@PathVariable Long id) {
         profesionalService.deleteProfilePicture(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/statistics")
+    public ResponseEntity<ProfesionalEstadisticasDTO> getProfesionalStatistics(@PathVariable Long id) {
+        ProfesionalEstadisticasDTO statistics = profesionalService.getProfesionalStatistics(id);
+        return ResponseEntity.ok(statistics);
+    }
+
+    @GetMapping("/{id}/statistics/export/excel")
+    public ResponseEntity<org.springframework.core.io.Resource> exportStatisticsToExcel(@PathVariable Long id) {
+        java.io.ByteArrayInputStream in = profesionalService.exportStatisticsToExcel(id);
+        org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+        headers.add(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=estadisticas.xlsx");
+
+        return ResponseEntity
+                .ok()
+                .headers(headers)
+                .body(new org.springframework.core.io.InputStreamResource(in));
     }
 }

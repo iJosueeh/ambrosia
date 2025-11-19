@@ -33,7 +33,7 @@ import RecursoEditor from "../modules/profesional/pages/RecursoEditor"; // Renam
 
 import ProfesionalProfile from "../modules/profesional/pages/ProfesionalProfile";
 
-
+import StatisticsDashboard from "../modules/profesional/pages/StatisticsDashboard"; // New import
 
 
 
@@ -154,6 +154,8 @@ export const AppRoutes = () => {
         <Route path="recursos/editar/:id" element={<RecursoEditor />} />
 
         <Route path="profile" element={<ProfesionalProfile />} />
+
+        <Route path="estadisticas/:id" element={<StatisticsDashboard />} /> {/* Route updated to be dynamic */}
 
       </Route>
 
