@@ -1,7 +1,6 @@
 package com.ambrosia.ambrosia.services;
 
 import com.ambrosia.ambrosia.models.CategoriaForo;
-import com.ambrosia.ambrosia.models.Foro;
 import com.ambrosia.ambrosia.models.dto.CategoriaForoDTO;
 import com.ambrosia.ambrosia.models.dto.ForoDTO;
 import com.ambrosia.ambrosia.repository.CategoriaForoRepository;
@@ -20,7 +19,7 @@ public class CategoriaForoService {
     private CategoriaForoRepository categoriaForoRepository;
 
     @Autowired
-    private ForoService foroService; // Inject ForoService to convert Foros to ForoDTOs
+    private ForoService foroService;
 
     public List<CategoriaForo> getAllCategoriasForo() {
         return categoriaForoRepository.findAll();
@@ -60,7 +59,7 @@ public class CategoriaForoService {
 
     private CategoriaForoDTO convertToDTO(CategoriaForo categoriaForo) {
         List<ForoDTO> foroDTOs = categoriaForo.getForos().stream()
-                .map(foroService::convertToDTO) // Use ForoService to convert Foros
+                .map(foroService::convertToDTO)
                 .collect(Collectors.toList());
 
         return CategoriaForoDTO.builder()

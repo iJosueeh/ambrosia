@@ -2,8 +2,8 @@ package com.ambrosia.ambrosia.services;
 
 import com.ambrosia.ambrosia.models.CategoriaRecurso;
 import com.ambrosia.ambrosia.models.EstadoPublicado;
+import com.ambrosia.ambrosia.models.Profesional;
 import com.ambrosia.ambrosia.models.RecursoEducativo;
-import com.ambrosia.ambrosia.models.dto.CategoriaRecursoDTO;
 import com.ambrosia.ambrosia.models.dto.RecursoDTO;
 import com.ambrosia.ambrosia.repository.CategoriaRecursoRepository;
 import com.ambrosia.ambrosia.repository.EstadoPublicadoRepository;
@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -36,12 +37,51 @@ public class RecursoService {
     private final RecursoMapper recursoMapper;
 
 
-    public RecursoDTO publicarRecurso(RecursoDTO dto) {
-        if (Strings.isNullOrEmpty(dto.getTitulo()) || Strings.isNullOrEmpty(dto.getDescripcion())) {
-            throw new IllegalArgumentException("El título y la descripción no pueden ser nulos o vacíos");
+    @Transactional
+    public RecursoDTO createRecurso(RecursoDTO dto, Long profesionalId) {
+        if (Strings.isNullOrEmpty(dto.getTitulo()) || Strings.isNullOrEmpty(dto.getContenido())) {
+            throw new IllegalArgumentException("El título y el contenido no pueden ser nulos o vacíos");
         }
 
-        logger.info("Publicando recurso con título: {}", dto.getTitulo());
+        Profesional creador = profesionalRepository.findById(profesionalId)
+                .orElseThrow(() -> new RuntimeException("Profesional no encontrado con el ID: " + profesionalId));
+
+        CategoriaRecurso categoria = categoriaRecursoRepository.findByNombre(dto.getNombreCategoria())
+                .orElseThrow(() -> new RuntimeException("Categoria no encontrada con el nombre: " + dto.getNombreCategoria()));
+
+        EstadoPublicado estadoBorrador = estadoPublicadoRepository.findByNombre("BORRADOR")
+                .orElseThrow(() -> new RuntimeException("Estado 'BORRADOR' no encontrado."));
+
+        RecursoEducativo recurso = RecursoEducativo.builder()
+                .titulo(dto.getTitulo())
+                .descripcion(dto.getDescripcion())
+                .enlace(dto.getEnlace())
+                .urlimg(dto.getUrlimg())
+                .contenido(dto.getContenido())
+                .size(dto.getSize())
+                .downloads(0L)
+                .fechaPublicacion(LocalDateTime.now())
+                .creador(creador)
+                .categoria(categoria)
+                .estado(estadoBorrador)
+                .build();
+
+        RecursoEducativo recursoGuardado = recursoRepository.save(recurso);
+        return recursoMapper.toDto(recursoGuardado);
+    }
+
+    @Transactional
+    public RecursoDTO updateRecurso(Long recursoId, RecursoDTO dto, Long profesionalId) {
+        RecursoEducativo existingRecurso = recursoRepository.findById(recursoId)
+                .orElseThrow(() -> new RuntimeException("Recurso no encontrado con el ID: " + recursoId));
+
+        if (!existingRecurso.getCreador().getId().equals(profesionalId)) {
+            throw new SecurityException("El profesional no tiene permisos para editar este recurso.");
+        }
+
+        if (Strings.isNullOrEmpty(dto.getTitulo()) || Strings.isNullOrEmpty(dto.getContenido())) {
+            throw new IllegalArgumentException("El título y el contenido no pueden ser nulos o vacíos");
+        }
 
         CategoriaRecurso categoria = categoriaRecursoRepository.findByNombre(dto.getNombreCategoria())
                 .orElseThrow(() -> new RuntimeException("Categoria no encontrada con el nombre: " + dto.getNombreCategoria()));
@@ -49,27 +89,44 @@ public class RecursoService {
         EstadoPublicado estado = estadoPublicadoRepository.findByNombre(dto.getEstado())
                 .orElseThrow(() -> new RuntimeException("Estado no encontrado con el nombre: " + dto.getEstado()));
 
-        RecursoEducativo recurso = RecursoEducativo.builder()
-                .titulo(dto.getTitulo())
-                .descripcion(dto.getDescripcion())
-                .enlace(dto.getEnlace())
-                .urlimg(dto.getUrlimg())
-                .categoria(categoria)
-                .estado(estado)
-                .fechaPublicacion(LocalDateTime.now())
-                .build();
+        existingRecurso.setTitulo(dto.getTitulo());
+        existingRecurso.setDescripcion(dto.getDescripcion());
+        existingRecurso.setEnlace(dto.getEnlace());
+        existingRecurso.setUrlimg(dto.getUrlimg());
+        existingRecurso.setContenido(dto.getContenido());
+        existingRecurso.setSize(dto.getSize());
+        existingRecurso.setCategoria(categoria);
+        existingRecurso.setEstado(estado);
 
-        RecursoEducativo recursoGuardado = recursoRepository.save(recurso);
-        return recursoMapper.toDto(recursoGuardado);
+        RecursoEducativo updatedRecurso = recursoRepository.save(existingRecurso);
+        return recursoMapper.toDto(updatedRecurso);
+    }
+
+    @Transactional
+    public void deleteRecurso(Long recursoId, Long profesionalId) {
+        RecursoEducativo existingRecurso = recursoRepository.findById(recursoId)
+                .orElseThrow(() -> new RuntimeException("Recurso no encontrado con el ID: " + recursoId));
+
+        if (!existingRecurso.getCreador().getId().equals(profesionalId)) {
+            throw new SecurityException("El profesional no tiene permisos para eliminar este recurso.");
+        }
+
+        recursoRepository.delete(existingRecurso);
+    }
+
+    public List<RecursoDTO> getRecursosByProfesionalId(Long profesionalId) {
+        return recursoRepository.findByCreadorId(profesionalId).stream()
+                .map(recursoMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     public Page<RecursoDTO> listarTodosLosRecursos(Pageable pageable, String search) {
         logger.info("Listando todos los recursos con paginación y búsqueda");
         Page<RecursoEducativo> recursosPage;
         if (Strings.isNullOrEmpty(search)) {
-            recursosPage = recursoRepository.findAll(pageable);
+            recursosPage = recursoRepository.findByEstadoNombre("PUBLICADO", pageable);
         } else {
-            recursosPage = recursoRepository.findByTituloContainingIgnoreCaseOrDescripcionContainingIgnoreCase(search, search, pageable);
+            recursosPage = recursoRepository.findByEstadoNombreAndTituloContainingIgnoreCaseOrEstadoNombreAndDescripcionContainingIgnoreCase("PUBLICADO", search, "PUBLICADO", search, pageable);
         }
         return recursosPage.map(recursoMapper::toDto);
     }
@@ -78,9 +135,9 @@ public class RecursoService {
         logger.info("Listando recursos para la categoría con id: {} con paginación y búsqueda", id);
         Page<RecursoEducativo> recursosPage;
         if (Strings.isNullOrEmpty(search)) {
-            recursosPage = recursoRepository.findByCategoriaId(id, pageable);
+            recursosPage = recursoRepository.findByCategoriaIdAndEstadoNombre(id, "PUBLICADO", pageable);
         } else {
-            recursosPage = recursoRepository.findByCategoriaIdAndTituloContainingIgnoreCaseOrCategoriaIdAndDescripcionContainingIgnoreCase(id, search, id, search, pageable);
+            recursosPage = recursoRepository.findByCategoriaIdAndEstadoNombreAndTituloContainingIgnoreCaseOrCategoriaIdAndEstadoNombreAndDescripcionContainingIgnoreCase(id, "PUBLICADO", search, id, "PUBLICADO", search, pageable);
         }
         return recursosPage.map(recursoMapper::toDto);
     }

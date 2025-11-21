@@ -18,7 +18,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import java.util.stream.Collectors;
-import java.util.List;
 
 @Component
 public class RecursoMapper {
@@ -48,6 +47,12 @@ public class RecursoMapper {
         if (recursoEducativo.getEstado() != null) {
             recursoDTO.setEstado(recursoEducativo.getEstado().getNombre());
         }
+        if (recursoEducativo.getCreador() != null) {
+            recursoDTO.setCreadorId(recursoEducativo.getCreador().getId());
+            if (recursoEducativo.getCreador().getUsuario() != null) {
+                recursoDTO.setNombreCreador(recursoEducativo.getCreador().getUsuario().getNombre());
+            }
+        }
         return recursoDTO;
     }
 
@@ -71,7 +76,6 @@ public class RecursoMapper {
             return null;
         }
         ActividadDTO actividadDTO = new ActividadDTO();
-        // ActividadDTO does not have an 'id' or 'nombre' field based on its definition
         actividadDTO.setTipoActividad(actividad.getTipoActividad());
         actividadDTO.setDescripcion(actividad.getDescripcion());
         actividadDTO.setFecha(actividad.getFecha());
