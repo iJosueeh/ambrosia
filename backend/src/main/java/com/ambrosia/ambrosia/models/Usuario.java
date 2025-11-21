@@ -30,7 +30,7 @@ public class Usuario implements UserDetails {
     @Column(unique = true)
     private String email;
     private String password;
-    private LocalDateTime fecha_registro;
+    private LocalDateTime fechaRegistro;
     private Integer testsCompletados = 0;
     private Integer articulosLeidos = 0;
     private Integer recursosDescargados = 0;

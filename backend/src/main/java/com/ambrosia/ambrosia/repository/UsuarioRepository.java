@@ -11,5 +11,5 @@ import java.util.Optional;
 @Repository
 public interface UsuarioRepository extends JpaRepository<Usuario, Long>, JpaSpecificationExecutor<Usuario> {
     Optional<Usuario> findByEmail(String email);
-    long countByFecha_registroBetween(LocalDateTime start, LocalDateTime end);
+    long countByFechaRegistroBetween(LocalDateTime start, LocalDateTime end);
 }

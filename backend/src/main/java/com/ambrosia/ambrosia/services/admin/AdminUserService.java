@@ -105,7 +105,7 @@ public class AdminUserService {
                 usuario.getEmail(),
                 null, // Password should not be sent
                 userRole,
-                usuario.getFecha_registro() != null ? usuario.getFecha_registro().toLocalDate() : null
+                usuario.getFechaRegistro() != null ? usuario.getFechaRegistro().toLocalDate() : null
         );
     }
 }

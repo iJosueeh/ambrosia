@@ -39,7 +39,7 @@ public class ExcelExportStrategy implements ExportStrategy<Usuario> {
                         .map(GrantedAuthority::getAuthority)
                         .anyMatch(a -> a.equals("ROLE_ADMIN")) ? "ADMIN" : "USER";
                 row.createCell(3).setCellValue(rol);
-                row.createCell(4).setCellValue(usuario.getFecha_registro().toString());
+                row.createCell(4).setCellValue(usuario.getFechaRegistro().toString());
             }
 
             workbook.write(out);

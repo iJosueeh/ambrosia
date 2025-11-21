@@ -30,7 +30,7 @@ public class AdminAnalyticsService {
             LocalDate date = today.minusDays(i);
             LocalDateTime startOfDay = date.atStartOfDay();
             LocalDateTime endOfDay = date.plusDays(1).atStartOfDay().minusNanos(1);
-            long count = usuarioRepository.countByFecha_registroBetween(startOfDay, endOfDay);
+            long count = usuarioRepository.countByFechaRegistroBetween(startOfDay, endOfDay);
             growthData.put(date.toString(), count);
         }
         return growthData;

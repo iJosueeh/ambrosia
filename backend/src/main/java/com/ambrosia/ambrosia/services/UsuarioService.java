@@ -89,7 +89,7 @@ public class UsuarioService implements UserDetailsService {
                 .nombre(usuario.getNombre())
                 .correo(usuario.getEmail())
                 .rol(rol) // Asignar el rol dinámicamente
-                .fechaRegistro(usuario.getFecha_registro() != null ? usuario.getFecha_registro().toLocalDate() : null)
+                .fechaRegistro(usuario.getFechaRegistro() != null ? usuario.getFechaRegistro().toLocalDate() : null)
                 .build();
     }
 
@@ -117,7 +117,7 @@ public class UsuarioService implements UserDetailsService {
                 .nombre(dto.getNombre())
                 .email(dto.getCorreo())
                 .password(passwordEncoder.encode(dto.getPassword())) // Encode password
-                .fecha_registro(LocalDateTime.now())
+                .fechaRegistro(LocalDateTime.now())
                 .build();
 
         Usuario usuarioGuardado = usuarioRepository.save(usuario);
@@ -143,8 +143,8 @@ public class UsuarioService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con el correo: " + email));
 
         long diasActivo = 0;
-        if (usuario.getFecha_registro() != null) {
-            diasActivo = ChronoUnit.DAYS.between(usuario.getFecha_registro().toLocalDate(), LocalDate.now());
+        if (usuario.getFechaRegistro() != null) {
+            diasActivo = ChronoUnit.DAYS.between(usuario.getFechaRegistro().toLocalDate(), LocalDate.now());
         }
 
         // Calcular Progreso
@@ -207,7 +207,7 @@ public class UsuarioService implements UserDetailsService {
         return UsuarioDashboardDTO.builder()
                 .nombre(usuario.getNombre())
                 .correo(usuario.getEmail())
-                .fechaRegistro(usuario.getFecha_registro() != null ? usuario.getFecha_registro().toLocalDate() : null)
+                .fechaRegistro(usuario.getFechaRegistro() != null ? usuario.getFechaRegistro().toLocalDate() : null)
                 .diasActivo(diasActivo)
                 .articulosLeidos(articulosLeidos)
                 .testsCompletados(testsCompletados)
