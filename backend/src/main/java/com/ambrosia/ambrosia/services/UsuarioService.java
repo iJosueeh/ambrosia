@@ -82,8 +82,8 @@ public class UsuarioService implements UserDetailsService {
                 .id(usuario.getId())
                 .nombre(usuario.getNombre())
                 .correo(usuario.getEmail())
-                .rol(rolNombre) // Asignar el rol dinámicamente
-                .fechaRegistro(usuario.getFecha_registro() != null ? usuario.getFecha_registro().toLocalDate() : null)
+                .rol(rol) // Asignar el rol dinámicamente
+                .fechaRegistro(usuario.getFechaRegistro() != null ? usuario.getFechaRegistro().toLocalDate() : null)
                 .build();
     }
 
@@ -108,9 +108,8 @@ public class UsuarioService implements UserDetailsService {
         Usuario usuario = Usuario.builder()
                 .nombre(dto.getNombre())
                 .email(dto.getCorreo())
-                .password(passwordEncoder.encode(dto.getPassword())) 
-                .fecha_registro(LocalDateTime.now())
-                .rol(defaultRol)
+                .password(passwordEncoder.encode(dto.getPassword())) // Encode password
+                .fechaRegistro(LocalDateTime.now())
                 .build();
 
         Usuario usuarioGuardado = usuarioRepository.save(usuario);
@@ -135,8 +134,8 @@ public class UsuarioService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con el correo: " + email));
 
         long diasActivo = 0;
-        if (usuario.getFecha_registro() != null) {
-            diasActivo = ChronoUnit.DAYS.between(usuario.getFecha_registro().toLocalDate(), LocalDate.now());
+        if (usuario.getFechaRegistro() != null) {
+            diasActivo = ChronoUnit.DAYS.between(usuario.getFechaRegistro().toLocalDate(), LocalDate.now());
         }
 
         long totalRecursos = recursoRepository.count();
@@ -198,7 +197,7 @@ public class UsuarioService implements UserDetailsService {
         return UsuarioDashboardDTO.builder()
                 .nombre(usuario.getNombre())
                 .correo(usuario.getEmail())
-                .fechaRegistro(usuario.getFecha_registro() != null ? usuario.getFecha_registro().toLocalDate() : null)
+                .fechaRegistro(usuario.getFechaRegistro() != null ? usuario.getFechaRegistro().toLocalDate() : null)
                 .diasActivo(diasActivo)
                 .articulosLeidos(articulosLeidos)
                 .testsCompletados(testsCompletados)
