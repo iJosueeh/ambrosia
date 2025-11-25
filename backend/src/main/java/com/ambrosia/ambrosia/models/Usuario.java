@@ -30,6 +30,7 @@ public class Usuario implements UserDetails {
     private String email;
     private String password;
     private LocalDateTime fechaRegistro;
+    @Builder.Default
     private Integer testsCompletados = 0;
 
     @Builder.Default

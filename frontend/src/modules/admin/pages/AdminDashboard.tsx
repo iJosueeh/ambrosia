@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { Users, BookText, MessageSquare, UserPlus, FilePlus, MessageCircle } from 'lucide-react';
+
+
+import { useState, useEffect } from 'react';
+import type { JSX } from 'react';
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -10,10 +12,13 @@ import {
   Title,
   Tooltip,
   Legend,
-  Filler,
 } from 'chart.js';
+import { FaUsers, FaBook, FaComments, FaUserPlus } from 'react-icons/fa';
 
-// Register Chart.js components
+import { getAdminDashboardData as getDashboardData } from '../services/analytics.service';
+import type { AdminDashboardData } from '../types/dashboard.types';
+
+// Registrar los componentes de Chart.js
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -21,215 +26,110 @@ ChartJS.register(
   LineElement,
   Title,
   Tooltip,
-  Legend,
-  Filler
+  Legend
 );
 
-// --- TypeScript Interfaces ---
-
-interface Stat {
-  icon: React.ElementType;
-  title: string;
-  value: string;
-  change: string;
-  changeType: 'positive' | 'negative';
-}
-
-interface Activity {
-  icon: React.ElementType;
-  text: string;
-  subject: string;
-  time: string;
-}
-
-interface DashboardData {
-  stats: Stat[];
-  growthChart: {
-    labels: string[];
-    data: number[];
-  };
-  recentActivity: Activity[];
-}
-
-// Mock service to fetch data
-const getDashboardData = async (): Promise<DashboardData> => {
-  // Simulate API call delay
-  await new Promise(resolve => setTimeout(resolve, 500));
-
-  return {
-    stats: [
-      { icon: Users, title: 'Usuarios Totales', value: '1,250', change: '+12.5%', changeType: 'positive' },
-      { icon: BookText, title: 'Recursos Publicados', value: '480', change: '+8.2%', changeType: 'positive' },
-      { icon: MessageSquare, title: 'Hilos Activos en Foros', value: '89', change: '-3.1%', changeType: 'negative' },
-      { icon: UserPlus, title: 'Nuevos Registros (Mes)', value: '112', change: '+25%', changeType: 'positive' },
-    ],
-    growthChart: {
-      labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio'],
-      data: [65, 59, 80, 81, 56, 55, 90],
-    },
-    recentActivity: [
-      { icon: UserPlus, text: 'Nuevo usuario registrado: ', subject: 'carlos_dev', time: 'hace 5 minutos' },
-      { icon: FilePlus, text: 'Nuevo artículo publicado: ', subject: '"Ansiedad 101"', time: 'hace 1 hora' },
-      { icon: MessageCircle, text: 'Nuevo comentario en el foro: ', subject: '"Técnicas de Relajación"', time: 'hace 3 horas' },
-      { icon: UserPlus, text: 'Nuevo usuario registrado: ', subject: 'ana_gomez', time: 'hace 5 horas' },
-    ]
-  };
-};
-
-// --- Component Props Interfaces ---
-
-
-
-interface GrowthChartProps {
-  data: {
-    labels: string[];
-    data: number[];
-  };
-}
-
-interface RecentActivityProps {
-  activities: Activity[];
-}
-
-// --- Components ---
-
-const StatCard: React.FC<Stat> = ({ icon: Icon, title, value, change, changeType }) => {
-  const isPositive = changeType === 'positive';
-  return (
-    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 transition-transform hover:scale-105">
-      <div className="flex items-center">
-        <div className="bg-green-100 p-3 rounded-full">
-          <Icon className="h-6 w-6 text-green-700" />
-        </div>
-        <div className="ml-4">
-          <p className="text-sm font-medium text-gray-500">{title}</p>
-          <p className="text-2xl font-bold text-gray-800">{value}</p>
-        </div>
-      </div>
-      <div className="mt-4 text-sm">
-        <span className={`font-semibold ${isPositive ? 'text-green-600' : 'text-red-500'}`}>
-          {change}
-        </span>
-        <span className="text-gray-500"> vs el último mes</span>
-      </div>
+// Un componente pequeño y reutilizable para las tarjetas de estadísticas
+const StatCard = ({ title, value, icon }: { title: string, value: string | number, icon: JSX.Element }) => (
+  <div className="bg-white p-6 rounded-lg shadow-md flex items-center justify-between">
+    <div>
+      <p className="text-sm font-medium text-gray-500">{title}</p>
+      <p className="text-2xl font-bold text-gray-800">{value}</p>
     </div>
-  );
-};
-
-const GrowthChart: React.FC<GrowthChartProps> = ({ data }) => {
-  const chartData = {
-    labels: data.labels,
-    datasets: [
-      {
-        label: 'Nuevos Usuarios',
-        data: data.data,
-        fill: true,
-        backgroundColor: 'rgba(16, 185, 129, 0.2)',
-        borderColor: 'rgba(16, 185, 129, 1)',
-        tension: 0.4,
-        pointBackgroundColor: 'rgba(16, 185, 129, 1)',
-        pointBorderColor: '#fff',
-        pointHoverBackgroundColor: '#fff',
-        pointHoverBorderColor: 'rgba(16, 185, 129, 1)',
-      },
-    ],
-  };
-
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false,
-      },
-    },
-    scales: {
-      x: {
-        grid: {
-          display: false,
-        },
-      },
-      y: {
-        beginAtZero: true,
-      },
-    },
-  };
-
-  return <Line options={options} data={chartData} />;
-};
-
-const RecentActivity: React.FC<RecentActivityProps> = ({ activities }) => (
-  <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-    <h3 className="text-lg font-semibold text-gray-700 mb-4">Actividad Reciente</h3>
-    <ul className="space-y-4">
-      {activities.map((activity, index) => {
-        const Icon = activity.icon;
-        return (
-          <li key={index} className="flex items-center text-sm">
-            <div className="bg-gray-100 p-2 rounded-full mr-3">
-              <Icon className="h-5 w-5 text-gray-500" />
-            </div>
-            <div className="flex-grow">
-              <span className="text-gray-600">{activity.text}</span>
-              <span className="font-semibold text-gray-800">{activity.subject}</span>
-            </div>
-            <span className="text-gray-400 text-xs whitespace-nowrap">{activity.time}</span>
-          </li>
-        );
-      })}
-    </ul>
+    <div className="text-3xl opacity-70">{icon}</div>
   </div>
 );
 
-// --- Main Dashboard Page ---
+// Función para formatear la fecha de forma amigable
+const formatRelativeTime = (isoDate: string) => {
+  const date = new Date(isoDate);
+  const now = new Date();
+  const seconds = Math.round((now.getTime() - date.getTime()) / 1000);
+  const minutes = Math.round(seconds / 60);
+  const hours = Math.round(minutes / 60);
+  const days = Math.round(hours / 24);
 
-export const AdminDashboard: React.FC = () => {
-  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  if (seconds < 60) return `${seconds} seconds ago`;
+  if (minutes < 60) return `${minutes} minutes ago`;
+  if (hours < 24) return `${hours} hours ago`;
+  return `${days} days ago`;
+};
+
+const AdminDashboard = () => {
+  const [dashboardData, setDashboardData] = useState<AdminDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true);
-      const data = await getDashboardData();
-      setDashboardData(data);
-      setLoading(false);
+      try {
+        setLoading(true);
+        const data = await getDashboardData();
+        setDashboardData(data);
+      } catch (err) {
+        setError('Failed to load dashboard data. Please try again later.');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
     };
+
     fetchData();
   }, []);
 
-  if (loading || !dashboardData) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <p>Cargando datos del dashboard...</p>
-      </div>
-    );
+  if (loading) {
+    return <div className="flex justify-center items-center h-screen"><p>Loading Dashboard...</p></div>;
   }
 
-  return (
-    <div>
-      <h1 className="text-3xl font-bold text-gray-800 mb-2">Dashboard</h1>
-      <p className="text-gray-600 mb-8">Bienvenido de nuevo, Administrador.</p>
+  if (error) {
+    return <div className="flex justify-center items-center h-screen"><p className="text-red-500">{error}</p></div>;
+  }
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {dashboardData.stats.map((stat, index) => (
-          <StatCard key={index} {...stat} />
-        ))}
+  // Adaptar los datos para el gráfico
+  const lineChartData = {
+    labels: dashboardData?.userGrowth.labels || [],
+    datasets: [
+      {
+        label: 'New Users',
+        data: dashboardData?.userGrowth.data || [],
+        borderColor: 'rgb(59, 130, 246)',
+        backgroundColor: 'rgba(59, 130, 246, 0.5)',
+        tension: 0.2,
+      },
+    ],
+  };
+
+  return (
+    <div className="p-6 bg-gray-100 min-h-screen font-sans">
+      <h1 className="text-3xl font-bold text-gray-800 mb-8">Admin Dashboard</h1>
+
+      {/* Sección de Estadísticas */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <StatCard title="Total Users" value={dashboardData?.stats.totalUsuarios ?? 0} icon={<FaUsers className="text-blue-500" />} />
+        <StatCard title="Published Resources" value={dashboardData?.stats.recursosPublicados ?? 0} icon={<FaBook className="text-green-500" />} />
+        <StatCard title="Active Threads" value={dashboardData?.stats.hilosActivos ?? 0} icon={<FaComments className="text-yellow-500" />} />
+        <StatCard title="New Users (Month)" value={dashboardData?.stats.nuevosRegistrosMes ?? 0} icon={<FaUserPlus className="text-purple-500" />} />
       </div>
 
-      {/* Main Content Area */}
-      <div className="mt-8 grid grid-cols-1 xl:grid-cols-3 gap-6">
-        {/* Growth Chart (takes 2/3 width on large screens) */}
-        <div className="xl:col-span-2 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-700 mb-4">Crecimiento Mensual de Usuarios</h3>
-          <div className="h-80">
-            <GrowthChart data={dashboardData.growthChart} />
-          </div>
+      {/* Sección de Gráficos y Actividad */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Gráfico de Crecimiento */}
+        <div className="lg:col-span-2 bg-white p-6 rounded-lg shadow-md">
+          <h2 className="text-xl font-semibold text-gray-700 mb-4">User Growth</h2>
+          <Line data={lineChartData} />
         </div>
 
-        {/* Recent Activity (takes 1/3 width on large screens) */}
-        <div className="xl:col-span-1">
-          <RecentActivity activities={dashboardData.recentActivity} />
+        {/* Actividad Reciente */}
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h2 className="text-xl font-semibold text-gray-700 mb-4">Recent Activity</h2>
+          <ul className="space-y-4">
+            {dashboardData?.recentActivity.map((activity, index) => (
+              <li key={index} className="flex flex-col">
+                <span className="text-gray-800">{activity.descripcion}</span>
+                <span className="text-xs text-gray-500 self-end">{formatRelativeTime(activity.fecha)}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </div>

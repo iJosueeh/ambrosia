@@ -6,8 +6,13 @@ import com.ambrosia.ambrosia.models.Usuario;
 import com.ambrosia.ambrosia.models.dto.LoginRequest;
 import com.ambrosia.ambrosia.models.dto.LoginResponseDTO;
 import com.ambrosia.ambrosia.repository.CategoriaForoRepository;
+import com.ambrosia.ambrosia.repository.ComentarioRepository;
+import com.ambrosia.ambrosia.repository.ForoRepository;
+import com.ambrosia.ambrosia.repository.ProfesionalRepository;
+import com.ambrosia.ambrosia.repository.ResultadoRepository;
 import com.ambrosia.ambrosia.repository.UsuarioRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +22,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -28,7 +32,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
-@Transactional
 public class ForoIntegrationTest {
 
     @Autowired
@@ -44,6 +47,18 @@ public class ForoIntegrationTest {
     private CategoriaForoRepository categoriaForoRepository;
 
     @Autowired
+    private ForoRepository foroRepository;
+
+    @Autowired
+    private ComentarioRepository comentarioRepository; // Inyectar ComentarioRepository
+
+    @Autowired
+    private ResultadoRepository resultadoRepository; // Inyectar ResultadoRepository
+
+    @Autowired
+    private ProfesionalRepository profesionalRepository; // Inyectar ProfesionalRepository
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     private String userToken;
@@ -52,10 +67,13 @@ public class ForoIntegrationTest {
 
     @BeforeEach
     void setUp() throws Exception {
+        // Generar un email único para cada ejecución del test
+        String uniqueEmail = "test.user." + System.currentTimeMillis() + "@example.com";
+
         // Create a user
         user = new Usuario();
         user.setNombre("Test User");
-        user.setEmail("test.user@example.com");
+        user.setEmail(uniqueEmail);
         user.setPassword(passwordEncoder.encode("Password123"));
         user = usuarioRepository.save(user);
 
@@ -67,7 +85,7 @@ public class ForoIntegrationTest {
 
         // Log in as the user to get a token
         LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setCorreo("test.user@example.com");
+        loginRequest.setCorreo(uniqueEmail);
         loginRequest.setContrasena("Password123");
 
         MvcResult result = mockMvc.perform(post("/api/auth/login")
@@ -79,6 +97,16 @@ public class ForoIntegrationTest {
         String responseString = result.getResponse().getContentAsString();
         LoginResponseDTO loginResponse = objectMapper.readValue(responseString, LoginResponseDTO.class);
         userToken = loginResponse.getToken();
+    }
+
+    @AfterEach
+    void tearDown() {
+        comentarioRepository.deleteAll(); // Eliminar comentarios primero
+        foroRepository.deleteAll();
+        profesionalRepository.deleteAll(); // Eliminar profesionales antes que usuarios
+        resultadoRepository.deleteAll(); // Eliminar resultados antes que usuarios
+        categoriaForoRepository.deleteAll();
+        usuarioRepository.deleteAll();
     }
 
     @Test

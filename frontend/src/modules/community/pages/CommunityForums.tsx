@@ -85,7 +85,13 @@ const CommunityForums = () => {
                         </div>
                         <div className="mb-6">
                             <label className="block text-sm font-semibold text-gray-800 mb-2">Título</label>
-                            <input type="text" placeholder="Escribe un título..." value={data.title} onChange={(e) => setData({ ...data, title: e.target.value })} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                            <input type="text" placeholder="Escribe un título..." value={String(data.title)} onChange={(e) => setData(prev => {
+  const updatedData = {
+    ...prev,
+    title: e.target.value,
+  } as NewThreadData; // Cast to NewThreadData
+  return updatedData;
+})} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500" />
                         </div>
                         <div className="mb-6">
                             <label className="block text-sm font-semibold text-gray-800 mb-2">Contenido</label>

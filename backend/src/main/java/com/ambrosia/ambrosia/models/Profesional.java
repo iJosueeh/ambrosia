@@ -19,6 +19,7 @@ public class Profesional {
     private Long id;
 
     private String especialidad;
+    @Column(columnDefinition = "TEXT")
     private String descripcion;
     private String telefono;
     private String ubicacion;

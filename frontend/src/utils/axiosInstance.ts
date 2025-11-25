@@ -2,7 +2,7 @@ import axios from 'axios';
 import { forceLogout } from './authUtils'; // Import the forceLogout utility
 
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:8080/api', // Your backend API base URL
+  baseURL: 'http://localhost:8080/api/v1/', // Your backend API base URL
   headers: {
     'Content-Type': 'application/json',
   },
@@ -10,7 +10,7 @@ const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('jwt_token');
+    const token = localStorage.getItem('authToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }

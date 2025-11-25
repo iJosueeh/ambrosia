@@ -8,6 +8,7 @@ import com.ambrosia.ambrosia.services.ForoService;
 import com.ambrosia.ambrosia.services.ComentarioService; // Assuming a ComentarioService exists or will be created
 import com.ambrosia.ambrosia.models.Usuario; // Import Usuario model
 import com.ambrosia.ambrosia.repository.UsuarioRepository; // Import UsuarioRepository
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +19,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/foros")
+@RequestMapping("/api/v1/foros")
+@RequiredArgsConstructor
 public class ForoController {
 
     @Autowired

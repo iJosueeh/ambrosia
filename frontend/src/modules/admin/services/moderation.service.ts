@@ -26,7 +26,7 @@ export const fetchTopics = async ({ page, size, status }: FetchTopicsParams): Pr
     params.append('status', status.toUpperCase());
   }
 
-  const response = await axiosInstance.get<PaginatedForumsResponse>('/api/v1/admin/forum/topics', { params });
+  const response = await axiosInstance.get<PaginatedForumsResponse>('/admin/forum/topics', { params });
   return response.data;
 };
 
@@ -34,7 +34,7 @@ export const fetchTopics = async ({ page, size, status }: FetchTopicsParams): Pr
  * Updates the status of a forum topic.
  */
 export const updateTopicStatus = async (id: number, newStatus: string): Promise<ForumAdminDTO> => {
-    const response = await axiosInstance.put<ForumAdminDTO>(`/api/v1/admin/forum/topics/${id}/status`, null, {
+    const response = await axiosInstance.put<ForumAdminDTO>(`/admin/forum/topics/${id}/status`, null, {
         params: { newStatus: newStatus.toUpperCase() }
     });
     return response.data;
@@ -44,7 +44,7 @@ export const updateTopicStatus = async (id: number, newStatus: string): Promise<
  * Deletes a forum topic.
  */
 export const deleteTopic = async (id: number): Promise<void> => {
-    await axiosInstance.delete(`/api/v1/admin/forum/topics/${id}`);
+    await axiosInstance.delete(`/admin/forum/topics/${id}`);
 };
 
 /**
@@ -60,7 +60,7 @@ export const fetchComments = async ({ page, size, status }: FetchCommentsParams)
         params.append('status', status.toUpperCase());
     }
 
-    const response = await axiosInstance.get<PaginatedCommentsResponse>('/api/v1/admin/forum/comments', { params });
+    const response = await axiosInstance.get<PaginatedCommentsResponse>('/admin/forum/comments', { params });
     return response.data;
 };
 
@@ -68,7 +68,7 @@ export const fetchComments = async ({ page, size, status }: FetchCommentsParams)
  * Updates the status of a comment.
  */
 export const updateCommentStatus = async (id: number, newStatus: string): Promise<CommentAdminDTO> => {
-    const response = await axiosInstance.put<CommentAdminDTO>(`/api/v1/admin/forum/comments/${id}/status`, null, {
+    const response = await axiosInstance.put<CommentAdminDTO>(`/admin/forum/comments/${id}/status`, null, {
         params: { newStatus: newStatus.toUpperCase() }
     });
     return response.data;
@@ -78,5 +78,5 @@ export const updateCommentStatus = async (id: number, newStatus: string): Promis
  * Deletes a comment.
  */
 export const deleteComment = async (id: number): Promise<void> => {
-    await axiosInstance.delete(`/api/v1/admin/forum/comments/${id}`);
+    await axiosInstance.delete(`/admin/forum/comments/${id}`);
 };
