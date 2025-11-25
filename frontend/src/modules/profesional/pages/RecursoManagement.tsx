@@ -5,7 +5,7 @@ import { getRecursosByProfesionalId, deleteRecurso } from '../../resources/servi
 import type { RecursoDTO } from '../../resources/types/recurso.types'; // Use RecursoDTO
 import { Plus, Edit, Trash2, BarChart } from 'lucide-react';
 import toast from 'react-hot-toast';
-import Swal from 'sweetalert2';
+import Swal, { type SweetAlertResult } from 'sweetalert2';
 
 const RecursoManagement: React.FC = () => {
     const { user } = useAuth();
@@ -63,7 +63,7 @@ const RecursoManagement: React.FC = () => {
                 confirmButton: 'bg-ambrosia-green hover:bg-green-700 text-white font-bold py-2 px-4 rounded',
                 cancelButton: 'bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded',
             }
-        }).then(async (result) => {
+        }).then(async (result: SweetAlertResult) => {
             if (result.isConfirmed) {
                 try {
                     await deleteRecurso(id); // Use new service method

@@ -10,6 +10,7 @@ import com.ambrosia.ambrosia.repository.ComentarioRepository;
 import com.ambrosia.ambrosia.repository.ForoRepository;
 import com.ambrosia.ambrosia.repository.ProfesionalRepository;
 import com.ambrosia.ambrosia.repository.ResultadoRepository;
+import com.ambrosia.ambrosia.repository.RolRepository;
 import com.ambrosia.ambrosia.repository.UsuarioRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,8 +32,21 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, properties = {
+	"spring.datasource.url=jdbc:h2:mem:testdb",
+	"spring.datasource.driverClassName=org.h2.Driver",
+	"spring.datasource.username=sa",
+	"spring.datasource.password=",
+	"spring.jpa.database-platform=org.hibernate.dialect.H2Dialect",
+	"jwt.secret=aVeryLongAndSecureSecretKeyForTestingJWTpurposes",
+	"jwt.expiration.ms=3600000",
+	"file.upload-dir=uploads",
+	"supabase.url=http://localhost:8000",
+	"supabase.key=dummy-key",
+	"supabase.service-role-key=dummy-service-role-key"
+})
 @AutoConfigureMockMvc
+@ComponentScan(basePackages = "com.ambrosia.ambrosia")
 public class ForoIntegrationTest {
 
     @Autowired
@@ -59,6 +74,9 @@ public class ForoIntegrationTest {
     private ProfesionalRepository profesionalRepository; // Inyectar ProfesionalRepository
 
     @Autowired
+    private RolRepository rolRepository; // Inyectar RolRepository
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     private String userToken;
@@ -75,7 +93,15 @@ public class ForoIntegrationTest {
         user.setNombre("Test User");
         user.setEmail(uniqueEmail);
         user.setPassword(passwordEncoder.encode("Password123"));
+        user.setRol(rolRepository.findByNombre("USER").orElseGet(() -> {
+            return rolRepository.save(new com.ambrosia.ambrosia.models.Rol(null, "USER"));
+        }));
         user = usuarioRepository.save(user);
+
+        // Ensure "ADMIN" role exists if needed for other tests
+        rolRepository.findByNombre("ADMIN").orElseGet(() -> {
+            return rolRepository.save(new com.ambrosia.ambrosia.models.Rol(null, "ADMIN"));
+        });
 
         // Create a forum category
         categoriaForo = new CategoriaForo();
@@ -88,7 +114,7 @@ public class ForoIntegrationTest {
         loginRequest.setCorreo(uniqueEmail);
         loginRequest.setContrasena("Password123");
 
-        MvcResult result = mockMvc.perform(post("/api/auth/login")
+        MvcResult result = mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
@@ -126,7 +152,7 @@ public class ForoIntegrationTest {
 
         foroJson.put("fechaCreacion", LocalDateTime.now().toString());
 
-        mockMvc.perform(post("/api/foros")
+        mockMvc.perform(post("/api/v1/foros")
                         .header("Authorization", "Bearer " + userToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(foroJson)))
@@ -134,7 +160,7 @@ public class ForoIntegrationTest {
                 .andExpect(jsonPath("$.titulo").value("Mi primer post"));
 
         // Step 2: Retrieve the list of forum posts to verify the new post is present
-        mockMvc.perform(get("/api/foros")
+        mockMvc.perform(get("/api/v1/foros")
                         .header("Authorization", "Bearer " + userToken)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())

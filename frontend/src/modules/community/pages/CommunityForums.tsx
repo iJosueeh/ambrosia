@@ -141,11 +141,11 @@ const CommunityForums = () => {
         return <ForumHome onSelectCategory={(cat: ForumCategoryType) => { setSelectedCategory(cat); setView('category'); }} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />;
     }
 
-    if (view === 'category') {
-        return <ForumCategory category={selectedCategory} onBackToHome={() => setView('home')} onSelectThread={(thread: ForumThreadType) => { setSelectedThread(thread); setView('thread'); }} onNewThread={() => setShowNewThread(true)} />;
+    if (view === 'category' && selectedCategory) {
+        return <ForumCategory category={selectedCategory} onBack={() => setView('home')} onBackToHome={() => setView('home')} onSelectThread={(thread: ForumThreadType) => { setSelectedThread(thread); setView('thread'); }} onNewThread={() => setShowNewThread(true)} />;
     }
 
-    if (view === 'thread') {
+    if (view === 'thread' && selectedThread) {
         return (
             <>
                 <ForumThread thread={selectedThread} onBack={() => setView('category')} onBackToHome={() => setView('home')} onReply={(comment: any) => { setReplyToComment(comment); setShowReply(true); }} />

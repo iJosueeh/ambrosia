@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      # Puedes externalizar estas variables de entorno a un archivo .env
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/postgres
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: your_db_password # ¡Cambia esto por tu contraseña real!
+      JWT_SECRET: aVeryLongAndSecureSecretKeyForTestingJWTpurposes # Usa una clave segura, como la generada antes
+      FILE_UPLOAD_DIR: /app/uploads
+      SUPABASE_URL: http://supabase:8000 # O la URL real de Supabase si la usas
+      SUPABASE_KEY: your_supabase_key # ¡Cambia esto por tu clave real!
+      SUPABASE_SERVICE_ROLE_KEY: your_supabase_service_role_key # ¡Cambia esto por tu clave real!
+    depends_on:
+      - db
+    networks:
+      - ambrosia-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - ambrosia-network
+
+  db:
+    image: postgres:13-alpine
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: your_db_password # ¡Cambia esto por tu contraseña real!
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - ambrosia-network
+
+networks:
+  ambrosia-network:
+    driver: bridge
+
+volumes:
+  db-data:

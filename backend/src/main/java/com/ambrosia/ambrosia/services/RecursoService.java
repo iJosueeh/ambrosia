@@ -8,7 +8,11 @@ import com.ambrosia.ambrosia.models.dto.RecursoDTO;
 import com.ambrosia.ambrosia.repository.CategoriaRecursoRepository;
 import com.ambrosia.ambrosia.repository.EstadoPublicadoRepository;
 import com.ambrosia.ambrosia.repository.RecursoRepository;
+import com.ambrosia.ambrosia.repository.ProfesionalRepository;
 import com.google.common.base.Strings;
+
+import jakarta.validation.constraints.NotNull;
+
 import com.ambrosia.ambrosia.mappers.RecursoMapper;
 import lombok.RequiredArgsConstructor;
 
@@ -32,11 +36,11 @@ public class RecursoService {
     private final RecursoRepository recursoRepository;
     private final CategoriaRecursoRepository categoriaRecursoRepository;
     private final EstadoPublicadoRepository estadoPublicadoRepository;
+    private final ProfesionalRepository profesionalRepository;
     private final RecursoMapper recursoMapper;
 
-
     @Transactional
-    public RecursoDTO createRecurso(RecursoDTO dto, Long profesionalId) {
+    public RecursoDTO createRecurso(@NotNull RecursoDTO dto, Long profesionalId) {
         if (Strings.isNullOrEmpty(dto.getTitulo()) || Strings.isNullOrEmpty(dto.getContenido())) {
             throw new IllegalArgumentException("El título y el contenido no pueden ser nulos o vacíos");
         }
@@ -45,7 +49,8 @@ public class RecursoService {
                 .orElseThrow(() -> new RuntimeException("Profesional no encontrado con el ID: " + profesionalId));
 
         CategoriaRecurso categoria = categoriaRecursoRepository.findByNombre(dto.getNombreCategoria())
-                .orElseThrow(() -> new RuntimeException("Categoria no encontrada con el nombre: " + dto.getNombreCategoria()));
+                .orElseThrow(() -> new RuntimeException(
+                        "Categoria no encontrada con el nombre: " + dto.getNombreCategoria()));
 
         EstadoPublicado estadoBorrador = estadoPublicadoRepository.findByNombre("BORRADOR")
                 .orElseThrow(() -> new RuntimeException("Estado 'BORRADOR' no encontrado."));
@@ -82,7 +87,8 @@ public class RecursoService {
         }
 
         CategoriaRecurso categoria = categoriaRecursoRepository.findByNombre(dto.getNombreCategoria())
-                .orElseThrow(() -> new RuntimeException("Categoria no encontrada con el nombre: " + dto.getNombreCategoria()));
+                .orElseThrow(() -> new RuntimeException(
+                        "Categoria no encontrada con el nombre: " + dto.getNombreCategoria()));
 
         EstadoPublicado estado = estadoPublicadoRepository.findByNombre(dto.getEstado())
                 .orElseThrow(() -> new RuntimeException("Estado no encontrado con el nombre: " + dto.getEstado()));
@@ -125,7 +131,9 @@ public class RecursoService {
         if (Strings.isNullOrEmpty(search)) {
             recursosPage = recursoRepository.findByEstadoNombre("PUBLICADO", pageable);
         } else {
-            recursosPage = recursoRepository.findByEstadoNombreAndTituloContainingIgnoreCaseOrEstadoNombreAndDescripcionContainingIgnoreCase("PUBLICADO", search, "PUBLICADO", search, pageable);
+            recursosPage = recursoRepository
+                    .findByEstadoNombreAndTituloContainingIgnoreCaseOrEstadoNombreAndDescripcionContainingIgnoreCase(
+                            "PUBLICADO", search, "PUBLICADO", search, pageable);
         }
         return recursosPage.map(recursoMapper::toDto);
     }
@@ -137,7 +145,9 @@ public class RecursoService {
         if (Strings.isNullOrEmpty(search)) {
             recursosPage = recursoRepository.findByCategoriaIdAndEstadoNombre(id, "PUBLICADO", pageable);
         } else {
-            recursosPage = recursoRepository.findByCategoriaIdAndEstadoNombreAndTituloContainingIgnoreCaseOrCategoriaIdAndEstadoNombreAndDescripcionContainingIgnoreCase(id, "PUBLICADO", search, id, "PUBLICADO", search, pageable);
+            recursosPage = recursoRepository
+                    .findByCategoriaIdAndEstadoNombreAndTituloContainingIgnoreCaseOrCategoriaIdAndEstadoNombreAndDescripcionContainingIgnoreCase(
+                            id, "PUBLICADO", search, id, "PUBLICADO", search, pageable);
         }
         return recursosPage.map(recursoMapper::toDto);
     }

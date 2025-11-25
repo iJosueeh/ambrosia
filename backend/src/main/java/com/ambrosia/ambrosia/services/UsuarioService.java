@@ -16,6 +16,9 @@ import com.ambrosia.ambrosia.repository.TestRepository;
 import com.ambrosia.ambrosia.repository.UsuarioRepository;
 import com.ambrosia.ambrosia.strategies.ExportStrategy;
 import com.google.common.base.Strings;
+
+import lombok.RequiredArgsConstructor;
+
 import com.ambrosia.ambrosia.mappers.RecursoMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,9 +39,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Collection;
 import java.util.Optional;
-import java.util.stream.Collectors; 
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class UsuarioService implements UserDetailsService {
 
     private static final Logger logger = LoggerFactory.getLogger(UsuarioService.class);
@@ -56,9 +60,12 @@ public class UsuarioService implements UserDetailsService {
     private final java.util.Map<String, ExportStrategy<Usuario>> exportStrategies;
 
     /**
-     * Obtiene la lista de todos los usuarios registrados, incluyendo su rol (USER o ADMIN).
+     * Obtiene la lista de todos los usuarios registrados, incluyendo su rol (USER o
+     * ADMIN).
      * Este método es usado por el controlador de administración.
-     * @return Una lista de UsuarioDTOs con información de nombre, correo, fecha de registro y rol.
+     * 
+     * @return Una lista de UsuarioDTOs con información de nombre, correo, fecha de
+     *         registro y rol.
      */
     public List<UsuarioDTO> findAllUsersForAdmin() {
         logger.info("Obteniendo lista completa de usuarios para la vista de administración.");
@@ -80,7 +87,7 @@ public class UsuarioService implements UserDetailsService {
                 .id(usuario.getId())
                 .nombre(usuario.getNombre())
                 .correo(usuario.getEmail())
-                .rol(rol) // Asignar el rol dinámicamente
+                .rol(rolNombre) // Asignar el rol dinámicamente
                 .fechaRegistro(usuario.getFechaRegistro() != null ? usuario.getFechaRegistro().toLocalDate() : null)
                 .build();
     }
@@ -91,7 +98,6 @@ public class UsuarioService implements UserDetailsService {
     public Optional<Usuario> findByEmail(String email) {
         return usuarioRepository.findByEmail(email);
     }
-
 
     public UsuarioDTO registrar(UsuarioDTO dto) {
         if (Strings.isNullOrEmpty(dto.getCorreo()) || Strings.isNullOrEmpty(dto.getPassword())) {
@@ -141,8 +147,10 @@ public class UsuarioService implements UserDetailsService {
         int articulosLeidos = usuario.getArticulosLeidos() != null ? usuario.getArticulosLeidos() : 0;
         int testsCompletados = usuario.getTestsCompletados() != null ? usuario.getTestsCompletados() : 0;
 
-        int progresoArticulos = (totalRecursos == 0) ? 0 : Math.min(100, (int) Math.round(((double) articulosLeidos / totalRecursos * 100)));
-        int progresoTests = (totalTests == 0) ? 0 : Math.min(100, (int) Math.round(((double) testsCompletados / totalTests * 100)));
+        int progresoArticulos = (totalRecursos == 0) ? 0
+                : Math.min(100, (int) Math.round(((double) articulosLeidos / totalRecursos * 100)));
+        int progresoTests = (totalTests == 0) ? 0
+                : Math.min(100, (int) Math.round(((double) testsCompletados / totalTests * 100)));
 
         List<com.ambrosia.ambrosia.models.dto.ProgressItemDTO> progreso = List.of(
                 com.ambrosia.ambrosia.models.dto.ProgressItemDTO.builder()
@@ -156,8 +164,7 @@ public class UsuarioService implements UserDetailsService {
                         .current(testsCompletados)
                         .total(totalTests)
                         .percentage(progresoTests)
-                        .build()
-        );
+                        .build());
 
         List<Actividad> actividades = actividadRepository.findTop5ByUsuarioOrderByFechaDesc(usuario);
         List<ActividadDTO> actividadReciente = actividades.stream()
@@ -190,7 +197,6 @@ public class UsuarioService implements UserDetailsService {
                 .link("/articulos")
                 .tipo("RECURSO")
                 .build());
-
 
         return UsuarioDashboardDTO.builder()
                 .nombre(usuario.getNombre())
@@ -237,8 +243,7 @@ public class UsuarioService implements UserDetailsService {
         return new MyUserDetails(
                 user,
                 authorities,
-                profesionalId
-        );
+                profesionalId);
     }
 
     public ByteArrayInputStream exportUsers(String format) {

@@ -13,12 +13,17 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     private final JwtUtil jwtUtil;
     private final UsuarioService usuarioService;
@@ -28,7 +33,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         final String path = request.getServletPath();
-        if (path.startsWith("/api/v1/auth/login") || path.startsWith("/api/v1/usuarios/registrar") || path.startsWith("/api/v1/tests")) {
+        if (path.startsWith("/api/v1/auth/login") || path.startsWith("/api/v1/usuarios/registrar")
+                || path.startsWith("/api/v1/tests")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -47,6 +53,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             UserDetails userDetails = this.usuarioService.loadUserByUsername(username);
 
             if (jwtUtil.validateToken(jwt, userDetails)) {
+                logger.debug("User {} authenticated with roles: {}", username, userDetails.getAuthorities());
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
 

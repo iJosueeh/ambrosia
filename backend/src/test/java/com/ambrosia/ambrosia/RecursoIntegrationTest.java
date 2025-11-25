@@ -10,12 +10,15 @@ import com.ambrosia.ambrosia.models.dto.ResourceUpdateDTO;
 import com.ambrosia.ambrosia.repository.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager; // Import EntityManager
+import org.springframework.transaction.annotation.Transactional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
@@ -25,8 +28,22 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, properties = {
+	"spring.datasource.url=jdbc:h2:mem:testdb",
+	"spring.datasource.driverClassName=org.h2.Driver",
+	"spring.datasource.username=sa",
+	"spring.datasource.password=",
+	"spring.jpa.database-platform=org.hibernate.dialect.H2Dialect",
+	"jwt.secret=aVeryLongAndSecureSecretKeyForTestingJWTpurposes",
+	"jwt.expiration.ms=3600000",
+	"file.upload-dir=uploads",
+	"supabase.url=http://localhost:8000",
+	"supabase.key=dummy-key",
+	"supabase.service-role-key=dummy-service-role-key"
+})
 @AutoConfigureMockMvc
+@ComponentScan(basePackages = "com.ambrosia.ambrosia")
+@Transactional
 public class RecursoIntegrationTest {
 
     @Autowired
@@ -57,6 +74,9 @@ public class RecursoIntegrationTest {
     private ProfesionalRepository profesionalRepository; // Inyectar ProfesionalRepository
 
     @Autowired
+    private RolRepository rolRepository; // Inyectar RolRepository
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
@@ -78,30 +98,42 @@ public class RecursoIntegrationTest {
         categoria = categoriaRecursoRepository.save(categoria);
 
         // Create and save an EstadoPublicado
-        estado = new EstadoPublicado();
-        estado.setNombre("Publicado");
-        estado = estadoPublicadoRepository.save(estado);
+        estado = estadoPublicadoRepository.findByNombre("PUBLICADO").orElseGet(() -> {
+            EstadoPublicado publishedState = new EstadoPublicado();
+            publishedState.setNombre("PUBLICADO");
+            return estadoPublicadoRepository.save(publishedState);
+        });
 
         // Create an admin user
         Usuario adminUser = new Usuario();
         adminUser.setNombre("Admin User");
         adminUser.setEmail(uniqueEmail);
         adminUser.setPassword(passwordEncoder.encode("Password123"));
-        adminUser = usuarioRepository.saveAndFlush(adminUser);
+        adminUser.setRol(rolRepository.findByNombre("ADMIN").orElseGet(() -> {
+            return rolRepository.save(new com.ambrosia.ambrosia.models.Rol(null, "ADMIN"));
+        }));
+        entityManager.persist(adminUser); // Use entityManager.persist to ensure it's managed
+
+        // Ensure the "USER" role exists for other tests that might create regular users
+        rolRepository.findByNombre("USER").orElseGet(() -> {
+            return rolRepository.save(new com.ambrosia.ambrosia.models.Rol(null, "USER"));
+        });
 
         Administrador admin = new Administrador();
-        admin.setUsuario(adminUser);
+        admin.setUsuario(adminUser); // Associate with the managed user
         admin.setNivelAcceso(1);
         entityManager.persist(admin); // Use entityManager.persist
-        entityManager.flush(); // Flush to ensure it's in the DB
+
+        entityManager.flush(); // Flush all pending changes
+        entityManager.clear(); // Clear the persistence context
 
         // Log in as the admin user to get a token
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setCorreo(uniqueEmail);
         loginRequest.setContrasena("Password123");
-        MvcResult result = mockMvc.perform(post("/api/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(loginRequest)))
+        MvcResult result = mockMvc.perform(post("/api/v1/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -132,15 +164,15 @@ public class RecursoIntegrationTest {
         resourceDTO.setEstadoId(estado.getId());
 
         mockMvc.perform(post("/api/v1/admin/resources")
-                        .header("Authorization", "Bearer " + adminToken)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(resourceDTO)))
+                .header("Authorization", "Bearer " + adminToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(resourceDTO)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.titulo").value("Test Resource"));
 
         // Step 2: Retrieve the list of resources to verify the new resource is present
-        mockMvc.perform(get("/api/recursos")
-                        .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/api/v1/recursos")
+                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].titulo").value("Test Resource"));
     }
