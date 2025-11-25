@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/resource-categories")
+@RequestMapping("/api/v1/resource-categories")
 @RequiredArgsConstructor
 public class CategoriaRecursoController {
 

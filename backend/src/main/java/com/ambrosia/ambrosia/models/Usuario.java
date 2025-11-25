@@ -31,8 +31,11 @@ public class Usuario implements UserDetails {
     private String email;
     private String password;
     private LocalDateTime fechaRegistro;
+    @Builder.Default
     private Integer testsCompletados = 0;
+    @Builder.Default
     private Integer articulosLeidos = 0;
+    @Builder.Default
     private Integer recursosDescargados = 0;
 
     @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

@@ -85,11 +85,17 @@ const CommunityForums = () => {
                         </div>
                         <div className="mb-6">
                             <label className="block text-sm font-semibold text-gray-800 mb-2">Título</label>
-                            <input type="text" placeholder="Escribe un título..." value={data.title} onChange={(e) => setData({ ...data, title: e.target.value })} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                            <input type="text" placeholder="Escribe un título..." value={String(data.title)} onChange={(e) => setData(prev => {
+  const updatedData = {
+    ...prev,
+    title: e.target.value,
+  } as NewThreadData; // Cast to NewThreadData
+  return updatedData;
+})} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500" />
                         </div>
                         <div className="mb-6">
                             <label className="block text-sm font-semibold text-gray-800 mb-2">Contenido</label>
-                            <textarea placeholder="Comparte tu historia..." value={data.content} onChange={(e) => setData({ ...data, content: e.target.value })} rows="8" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"></textarea>
+                            <textarea placeholder="Comparte tu historia..." value={data.content} onChange={(e) => setData(prev => ({ ...prev, content: e.target.value }))} rows="8" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"></textarea>
                         </div>
                         <div className="flex gap-4">
                             <button onClick={onClose} className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50">Cancelar</button>
@@ -136,7 +142,7 @@ const CommunityForums = () => {
     }
 
     if (view === 'category') {
-        return <ForumCategory category={selectedCategory} onBack={() => setView('home')} onBackToHome={() => setView('home')} onSelectThread={(thread: ForumThreadType) => { setSelectedThread(thread); setView('thread'); }} onNewThread={() => setShowNewThread(true)} />;
+        return <ForumCategory category={selectedCategory!} onBack={() => setView('home')} onBackToHome={() => setView('home')} onSelectThread={(thread: ForumThreadType) => { setSelectedThread(thread); setView('thread'); }} onNewThread={() => setShowNewThread(true)} />;
     }
 
     if (view === 'thread') {

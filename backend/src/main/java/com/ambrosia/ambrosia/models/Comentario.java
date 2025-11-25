@@ -20,6 +20,7 @@ public class Comentario {
 
     private String contenido;
     private LocalDateTime fechaCreacion;
+    @Builder.Default
     private String status = "ACTIVE"; // e.g., ACTIVE, HIDDEN, REPORTED
 
     @ManyToOne

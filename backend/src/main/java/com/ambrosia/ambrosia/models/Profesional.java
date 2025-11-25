@@ -17,6 +17,7 @@ public class Profesional {
     private Long id;
 
     private String especialidad;
+    @Column(columnDefinition = "TEXT")
     private String descripcion;
 
     @OneToOne

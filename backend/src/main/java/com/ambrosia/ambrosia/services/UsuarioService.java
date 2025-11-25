@@ -14,10 +14,9 @@ import com.ambrosia.ambrosia.repository.UsuarioRepository;
 import com.ambrosia.ambrosia.strategies.ExportStrategy;
 import com.google.common.base.Strings;
 import com.ambrosia.ambrosia.mappers.RecursoMapper;
-import lombok.RequiredArgsConstructor;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -35,10 +34,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Collection;
 import java.util.Optional;
-import java.util.stream.Collectors; // Importación necesaria para el nuevo método
+import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class UsuarioService implements UserDetailsService {
 
     private static final Logger logger = LoggerFactory.getLogger(UsuarioService.class);
@@ -50,9 +48,28 @@ public class UsuarioService implements UserDetailsService {
     private final ActividadRepository actividadRepository;
     private final ActividadService actividadService;
     private final RecursoMapper recursoMapper;
-
     private final PasswordEncoder passwordEncoder;
     private final java.util.Map<String, ExportStrategy<Usuario>> exportStrategies;
+
+    public UsuarioService(UsuarioRepository usuarioRepository,
+                          AdministradorRepository administradorRepository,
+                          RecursoRepository recursoRepository,
+                          TestRepository testRepository,
+                          ActividadRepository actividadRepository,
+                          ActividadService actividadService,
+                          RecursoMapper recursoMapper,
+                          @Lazy PasswordEncoder passwordEncoder,
+                          java.util.Map<String, ExportStrategy<Usuario>> exportStrategies) {
+        this.usuarioRepository = usuarioRepository;
+        this.administradorRepository = administradorRepository;
+        this.recursoRepository = recursoRepository;
+        this.testRepository = testRepository;
+        this.actividadRepository = actividadRepository;
+        this.actividadService = actividadService;
+        this.recursoMapper = recursoMapper;
+        this.passwordEncoder = passwordEncoder;
+        this.exportStrategies = exportStrategies;
+    }
 
     // ----------------------------------------------------------------------
     // NUEVO MÉTODO PARA ADMINISTRACIÓN (SOLUCIONA EL ERROR DEL CONTROLLER)

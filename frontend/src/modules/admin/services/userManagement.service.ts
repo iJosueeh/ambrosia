@@ -25,7 +25,7 @@ export const fetchUsers = async ({ page, size, role, search }: FetchUsersParams)
     params.append('role', role);
   }
 
-  const response = await axiosInstance.get<PaginatedUsersResponse>('/api/v1/admin/users', { params });
+  const response = await axiosInstance.get<PaginatedUsersResponse>('/admin/users', { params });
   return response.data;
 };
 
@@ -33,7 +33,7 @@ export const fetchUsers = async ({ page, size, role, search }: FetchUsersParams)
  * Updates a user's details.
  */
 export const updateUser = async (user: AdminUser): Promise<AdminUser> => {
-    const response = await axiosInstance.put<AdminUser>(`/api/v1/admin/users/${user.id}`, user);
+    const response = await axiosInstance.put<AdminUser>(`/admin/users/${user.id}`, user);
     return response.data;
 }
 
@@ -41,5 +41,5 @@ export const updateUser = async (user: AdminUser): Promise<AdminUser> => {
  * Deletes a user by their ID.
  */
 export const deleteUser = async (userId: number): Promise<void> => {
-    await axiosInstance.delete(`/api/v1/admin/users/${userId}`);
+    await axiosInstance.delete(`/admin/users/${userId}`);
 }

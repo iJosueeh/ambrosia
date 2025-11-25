@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Plus, Search, ChevronLeft, ChevronRight, Trash2, Edit, Eye } from 'lucide-react';
 import { fetchUsers, updateUser, deleteUser } from '../services/userManagement.service';
 import type { AdminUser, PaginatedUsersResponse } from '../types/user.types';
@@ -81,7 +81,7 @@ const UserManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
 
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     setLoading(true);
     try {
       const data: PaginatedUsersResponse = await fetchUsers({
@@ -99,11 +99,11 @@ const UserManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, roleFilter, searchQuery]);
 
   useEffect(() => {
     loadUsers();
-  }, [currentPage, roleFilter, searchQuery]);
+  }, [loadUsers]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);

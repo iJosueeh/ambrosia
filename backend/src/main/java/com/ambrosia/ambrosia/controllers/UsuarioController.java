@@ -13,7 +13,7 @@ import java.io.ByteArrayInputStream;
 import java.util.List; // ¡Importante: Añadir esta importación!
 
 @RestController
-@RequestMapping("/api/usuarios")
+@RequestMapping("/api/v1/usuarios")
 @RequiredArgsConstructor
 public class UsuarioController {
 

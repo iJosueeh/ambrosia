@@ -29,6 +29,7 @@ public class Foro {
 
     private LocalDateTime fechaCreacion;
 
+    @Builder.Default
     private String status = "ACTIVE"; // e.g., ACTIVE, CLOSED, HIDDEN, REPORTED
 
     @ManyToOne
@@ -36,5 +37,6 @@ public class Foro {
     private CategoriaForo categoriaForo;
 
     @OneToMany(mappedBy = "foro", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<Comentario> comentarios = new ArrayList<>();
 }

@@ -7,7 +7,6 @@ import com.ambrosia.ambrosia.models.dto.CategoriaRecursoDTO;
 import com.ambrosia.ambrosia.models.dto.RecursoDTO;
 import com.ambrosia.ambrosia.repository.CategoriaRecursoRepository;
 import com.ambrosia.ambrosia.repository.EstadoPublicadoRepository;
-import com.ambrosia.ambrosia.repository.ProfesionalRepository;
 import com.ambrosia.ambrosia.repository.RecursoRepository;
 import com.google.common.base.Strings;
 import com.ambrosia.ambrosia.mappers.RecursoMapper;
@@ -18,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -32,10 +32,10 @@ public class RecursoService {
     private final RecursoRepository recursoRepository;
     private final CategoriaRecursoRepository categoriaRecursoRepository;
     private final EstadoPublicadoRepository estadoPublicadoRepository;
-    private final ProfesionalRepository profesionalRepository;
     private final RecursoMapper recursoMapper;
 
 
+    @Transactional
     public RecursoDTO publicarRecurso(RecursoDTO dto) {
         if (Strings.isNullOrEmpty(dto.getTitulo()) || Strings.isNullOrEmpty(dto.getDescripcion())) {
             throw new IllegalArgumentException("El título y la descripción no pueden ser nulos o vacíos");
@@ -63,6 +63,7 @@ public class RecursoService {
         return recursoMapper.toDto(recursoGuardado);
     }
 
+    @Transactional(readOnly = true)
     public Page<RecursoDTO> listarTodosLosRecursos(Pageable pageable, String search) {
         logger.info("Listando todos los recursos con paginación y búsqueda");
         Page<RecursoEducativo> recursosPage;
@@ -74,6 +75,7 @@ public class RecursoService {
         return recursosPage.map(recursoMapper::toDto);
     }
 
+    @Transactional(readOnly = true)
     public Page<RecursoDTO> listarRecursosPorCategoria(Long id, Pageable pageable, String search) {
         logger.info("Listando recursos para la categoría con id: {} con paginación y búsqueda", id);
         Page<RecursoEducativo> recursosPage;
@@ -85,6 +87,7 @@ public class RecursoService {
         return recursosPage.map(recursoMapper::toDto);
     }
 
+    @Transactional(readOnly = true)
     public RecursoDTO obtenerRecursoPorId(Long id) {
         logger.info("Obteniendo recurso con id: {}", id);
         RecursoEducativo recurso = recursoRepository.findById(id)
@@ -93,6 +96,7 @@ public class RecursoService {
         return recursoMapper.toDto(recurso);
     }
 
+    @Transactional
     public void incrementarDescargas(Long id) {
         logger.info("Incrementando descargas para el recurso con id: {}", id);
         RecursoEducativo recurso = recursoRepository.findById(id)
@@ -101,7 +105,6 @@ public class RecursoService {
             recurso.setDownloads(0L);
         }
         recurso.setDownloads(recurso.getDownloads() + 1);
-        recursoRepository.save(recurso);
     }
 
 }

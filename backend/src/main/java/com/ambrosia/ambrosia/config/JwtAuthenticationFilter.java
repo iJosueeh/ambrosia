@@ -16,6 +16,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+@Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -27,7 +28,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         final String path = request.getServletPath();
-        if (path.equals("/api/auth/login") || path.equals("/api/usuarios/registrar") || path.startsWith("/api/tests")) {
+        if (path.startsWith("/api/v1/auth/login") || path.startsWith("/api/v1/usuarios/registrar") || path.startsWith("/api/v1/tests")) {
             filterChain.doFilter(request, response);
             return;
         }
