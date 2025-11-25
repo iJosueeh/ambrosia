@@ -55,7 +55,7 @@ const ResourceItemCard: React.FC<ResourceItemCardProps> = ({ resource, handleDow
                 <span>{resource.downloads?.toLocaleString()} descargas</span>
             </div>
 
-            <a href={resource.enlace} onClick={(e) => handleDownload(e, resource.id, resource.enlace)} target="_blank" rel="noopener noreferrer" className="w-full bg-emerald-500 text-white py-2.5 rounded-lg font-semibold hover:bg-emerald-600 transition-colors flex items-center justify-center gap-2">
+            <a href={resource.enlace || '#'} onClick={(e) => resource.id && resource.enlace && handleDownload(e, resource.id, resource.enlace)} target="_blank" rel="noopener noreferrer" className="w-full bg-emerald-500 text-white py-2.5 rounded-lg font-semibold hover:bg-emerald-600 transition-colors flex items-center justify-center gap-2">
                 <Download className="w-4 h-4" />
                 Descargar
             </a>

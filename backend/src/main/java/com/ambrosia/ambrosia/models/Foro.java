@@ -30,7 +30,7 @@ public class Foro {
     private LocalDateTime fechaCreacion;
 
     @Builder.Default
-    private String status = "ACTIVE"; // e.g., ACTIVE, CLOSED, HIDDEN, REPORTED
+    private String status = "ACTIVE";
 
     @ManyToOne
     @JoinColumn(name = "categoria_foro_id")

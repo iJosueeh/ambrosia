@@ -1,15 +1,15 @@
-import type { ReactNode } from "react";
-
 export interface RecursoDTO {
-    size: ReactNode;
-    downloads: any;
-    id: number;
+    id?: number; // Make optional for creation
     titulo: string;
     descripcion: string;
-    enlace: string;
-    urlimg: string;
+    enlace?: string; // Make optional
+    urlimg?: string; // Make optional
     contenido: string;
-    fechaPublicacion: string; // ISO date string
+    size?: string; // Changed to string, make optional
+    downloads?: number; // Changed to number, make optional
+    fechaPublicacion?: string; // ISO date string, make optional
     nombreCategoria: string;
     estado: string;
+    creadorId?: number; // Added
+    nombreCreador?: string; // Added
 }

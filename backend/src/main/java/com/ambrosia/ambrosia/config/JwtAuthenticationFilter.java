@@ -1,5 +1,6 @@
 package com.ambrosia.ambrosia.config;
 
+import com.ambrosia.ambrosia.services.MyUserDetails;
 import com.ambrosia.ambrosia.services.UsuarioService;
 import com.ambrosia.ambrosia.utils.JwtUtil;
 import jakarta.servlet.FilterChain;
@@ -7,7 +8,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -49,8 +49,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (jwtUtil.validateToken(jwt, userDetails)) {
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
-                usernamePasswordAuthenticationToken
-                        .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                if (userDetails instanceof MyUserDetails && ((MyUserDetails) userDetails).getProfesionalId() != null) {
+                    usernamePasswordAuthenticationToken.setDetails(((MyUserDetails) userDetails).getProfesionalId());
+                } else {
+                    usernamePasswordAuthenticationToken
+                            .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                }
                 SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
             }
         }

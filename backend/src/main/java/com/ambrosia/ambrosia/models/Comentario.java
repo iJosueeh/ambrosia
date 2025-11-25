@@ -34,5 +34,4 @@ public class Comentario {
     @ManyToOne
     @JoinColumn(name = "moderador_id")
     private Administrador moderador;
-
 }

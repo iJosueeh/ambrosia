@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react"; // Import useEffect
 import { Heart, Mail, Lock, Eye, EyeOff, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "../../../shared/hooks/useAuth";
 import { useForm, required, emailValidator } from "../../../shared/hooks/useForm";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom"; // Import useLocation
+import { toast } from 'react-hot-toast'; // Import toast
 
 interface LoginProps {
     onToggleView: () => void;
@@ -11,9 +12,33 @@ interface LoginProps {
 
 export const Login: React.FC<LoginProps> = ({ onToggleView }) => {
     const [showPassword, setShowPassword] = useState(false);
-    const { login, loading, error } = useAuth(); // <- 'user' eliminado porque no se usa
+    const { login, loading, error, user } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation(); // Get location
 
+    // Effect to show session expired message
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        if (params.get('sessionExpired') === 'true') {
+            toast.error("Tu sesión ha expirado. Por favor, inicia sesión de nuevo.");
+            // Optional: remove the query param from URL without reloading the page
+            navigate(location.pathname, { replace: true });
+        }
+    }, [location, navigate]);
+
+    // Effect for redirection after login
+    React.useEffect(() => {
+        if (user) {
+            console.log("DEBUG: Redirigiendo desde useEffect. user.rolPrincipal:", user.rolPrincipal);
+            if (user.rolPrincipal === "ADMIN") {
+                navigate("/admin/dashboard");
+            } else if (user.rolPrincipal === "PROFESSIONAL") {
+                navigate("/profesional/dashboard");
+            } else {
+                navigate("/dashboard");
+            }
+        }
+    }, [user, navigate]);
     const { getFieldProps, validateForm } = useForm({
         email: { value: "", validators: [required, emailValidator] },
         password: { value: "", validators: [required] },
@@ -27,24 +52,9 @@ export const Login: React.FC<LoginProps> = ({ onToggleView }) => {
 
         if (validateForm()) {
             const success = await login(emailProps.value, passwordProps.value);
-            if (success) {
-                // Esperamos un momento corto para que el contexto/localStorage se actualice
-                setTimeout(() => {
-                    const storedUser = localStorage.getItem("user");
-                    if (storedUser) {
-                        const userData = JSON.parse(storedUser);
-                        // Redirigir según rol principal
-                        if (userData.rolPrincipal === "ADMIN") { // Keeping "ADMIN" as per user's working code
-                            navigate("/admin/dashboard");
-                        } else {
-                            navigate("/dashboard");
+                        if (success) {
+                            // La redirección se manejará en un useEffect que observa el estado del usuario
                         }
-                    } else {
-                        // Fallback
-                        navigate("/dashboard");
-                    }
-                }, 100);
-            }
         }
     };
 

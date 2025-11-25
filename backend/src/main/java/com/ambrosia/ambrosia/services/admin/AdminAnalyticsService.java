@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -39,7 +38,6 @@ public class AdminAnalyticsService {
     public Map<String, Long> getResourcesStats() {
         Map<String, Long> stats = new LinkedHashMap<>();
         stats.put("totalResources", recursoRepository.count());
-        // Add more specific resource stats if needed, e.g., by category, by status
         return stats;
     }
 
@@ -47,7 +45,6 @@ public class AdminAnalyticsService {
         Map<String, Long> stats = new LinkedHashMap<>();
         stats.put("totalTopics", foroRepository.count());
         stats.put("totalComments", comentarioRepository.count());
-        // Add more specific forum stats if needed, e.g., reported topics/comments
         return stats;
     }
 
@@ -57,7 +54,6 @@ public class AdminAnalyticsService {
         summary.put("totalResources", recursoRepository.count());
         summary.put("totalTopics", foroRepository.count());
         summary.put("totalComments", comentarioRepository.count());
-        // Add more summary stats
         return summary;
     }
 }

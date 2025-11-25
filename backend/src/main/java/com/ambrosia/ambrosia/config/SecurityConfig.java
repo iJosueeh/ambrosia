@@ -2,7 +2,6 @@ package com.ambrosia.ambrosia.config;
 
 import com.ambrosia.ambrosia.services.UsuarioService;
 import com.ambrosia.ambrosia.utils.JwtUtil;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -31,8 +30,6 @@ import java.util.List;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -63,7 +60,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173")); // Allow your frontend origin
+        configuration.setAllowedOrigins(List.of("http://localhost:5173"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));
         configuration.setAllowCredentials(true);
@@ -83,15 +80,16 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers("/api/v1/admin/**").hasAuthority("ROLE_ADMIN")
-                .requestMatchers("/api/v1/tests/admin").hasAuthority("ROLE_ADMIN")
+                .requestMatchers("/api/tests/admin").hasAuthority("ROLE_ADMIN")
+                .requestMatchers("/api/profesionales/**").hasAuthority("ROLE_PROFESSIONAL")
                 .requestMatchers(
-                        "/api/v1/usuarios/registrar",
-                        "/api/v1/auth/login",
-                        "/api/v1/tests",
-                        "/api/v1/tests/resultado",
+                        "/api/usuarios/registrar",
+                        "/api/auth/login",
+                        "/api/tests",
+                        "/api/tests/resultado",
                         "/api/v1/recursos/**",
-                        "/api/v1/resource-categories",
-                        "/api/v1/resource-statuses"
+                        "/api/resource-categories",
+                        "/api/resource-statuses"
                 ).permitAll()
                 .anyRequest().authenticated()
             )

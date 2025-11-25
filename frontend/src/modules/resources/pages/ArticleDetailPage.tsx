@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Share2, Bookmark, Calendar, Tag, CheckCircle, FileText, Video, BookOpen, LoaderCircle } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getArticleById } from '../services/resource.service';
+import { getRecursoById } from '../services/resource.service';
 import type { RecursoDTO } from '../types/recurso.types';
 import { ShareModal } from "@shared/components/ShareModal";
 
@@ -24,7 +24,7 @@ export default function ArticleDetailPage() {
       }
       try {
         setIsLoading(true);
-        const fetchedArticle = await getArticleById(parseInt(articleId));
+        const fetchedArticle = await getRecursoById(parseInt(articleId));
         setArticle(fetchedArticle);
       } catch (err) {
         console.error("Error fetching article:", err);
@@ -128,7 +128,7 @@ export default function ArticleDetailPage() {
                 <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-6">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
-                    <span>Publicado el {new Date(article.fechaPublicacion).toLocaleDateString()}</span>
+                    <span>Publicado el {article.fechaPublicacion ? new Date(article.fechaPublicacion).toLocaleDateString() : 'Fecha no disponible'}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Bookmark className="w-4 h-4" />

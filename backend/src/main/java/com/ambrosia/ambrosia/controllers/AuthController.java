@@ -55,8 +55,15 @@ public class AuthController {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
 
-        // 6. ✅ DETERMINAR EL ROL PRINCIPAL (priorizar ADMIN)
-        String rolPrincipal = roles.contains("ROLE_ADMIN") ? "ADMIN" : "USER";
+        // 6. ✅ DETERMINAR EL ROL PRINCIPAL (priorizar ADMIN, luego PROFESSIONAL)
+        String rolPrincipal;
+        if (roles.contains("ROLE_ADMIN")) {
+            rolPrincipal = "ADMIN";
+        } else if (roles.contains("ROLE_PROFESSIONAL")) {
+            rolPrincipal = "PROFESSIONAL";
+        } else {
+            rolPrincipal = "USER";
+        }
 
         // 7. Construir la respuesta DTO
         LoginResponseDTO responseDTO = new LoginResponseDTO(
