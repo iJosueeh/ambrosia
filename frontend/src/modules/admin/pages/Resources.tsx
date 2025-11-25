@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Search, ChevronLeft, ChevronRight, Trash2, Edit } from 'lucide-react';
 import { fetchAdminResources, fetchResourceCategories, fetchResourceStatuses, deleteResource } from '../services/resources.service';
 import type { ResourceAdminDTO, ResourceCategory, ResourceStatus } from '../types/resource.types';
@@ -121,7 +121,7 @@ const Resources = () => {
 
   useEffect(() => {
     loadResources();
-  }, [currentPage, categoryId, statusId, searchQuery]);
+  }, [loadResources]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);

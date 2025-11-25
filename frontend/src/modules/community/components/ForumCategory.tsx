@@ -26,7 +26,8 @@ const formatRelativeTime = (dateString: string) => {
 };
 
 interface ForumCategoryProps {
-    category: ForumCategoryType | null;
+    category: ForumCategoryType;
+    onBack: () => void; // Added this line
     onBackToHome: () => void;
     onSelectThread: (thread: ForumThreadType) => void;
     onNewThread: () => void;

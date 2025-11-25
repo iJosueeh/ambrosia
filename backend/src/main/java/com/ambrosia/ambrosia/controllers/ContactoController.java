@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/contact")
+@RequestMapping("/api/v1/contact")
 public class ContactoController {
 
     private static final Logger logger = LoggerFactory.getLogger(ContactoController.class);

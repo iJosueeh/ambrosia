@@ -25,30 +25,30 @@ export const fetchAdminResources = async ({ page, size, categoryId, statusId, se
     params.append('statusId', statusId.toString());
   }
 
-  const response = await axiosInstance.get<PaginatedAdminResources>('/api/v1/admin/resources', { params });
+  const response = await axiosInstance.get<PaginatedAdminResources>('/admin/resources', { params });
   return response.data;
 };
 
 export const fetchResourceCategories = async (): Promise<ResourceCategory[]> => {
-    const response = await axiosInstance.get<ResourceCategory[]>('/api/resource-categories');
+    const response = await axiosInstance.get<ResourceCategory[]>('/resource-categories');
     return response.data;
 };
 
 export const fetchResourceStatuses = async (): Promise<ResourceStatus[]> => {
-    const response = await axiosInstance.get<ResourceStatus[]>('/api/resource-statuses');
+    const response = await axiosInstance.get<ResourceStatus[]>('/resource-statuses');
     return response.data;
 };
 
 export const createResource = async (resource: ResourceUpdateDTO): Promise<ResourceAdminDTO> => {
-    const response = await axiosInstance.post<ResourceAdminDTO>('/api/v1/admin/resources', resource);
+    const response = await axiosInstance.post<ResourceAdminDTO>('/admin/resources', resource);
     return response.data;
 };
 
 export const updateResource = async (id: number, resource: ResourceUpdateDTO): Promise<ResourceAdminDTO> => {
-    const response = await axiosInstance.put<ResourceAdminDTO>(`/api/v1/admin/resources/${id}`, resource);
+    const response = await axiosInstance.put<ResourceAdminDTO>(`/admin/resources/${id}`, resource);
     return response.data;
 };
 
 export const deleteResource = async (id: number): Promise<void> => {
-    await axiosInstance.delete(`/api/v1/admin/resources/${id}`);
+    await axiosInstance.delete(`/admin/resources/${id}`);
 };

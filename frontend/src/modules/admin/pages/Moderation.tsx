@@ -111,12 +111,6 @@ const Moderation = () => {
     }
   };
 
-  useEffect(() => {
-    if (activeTab === 'topics') {
-      loadTopics();
-    }
-  }, [currentPageTopics, topicStatusFilter, activeTab]);
-
   // --- Comments Fetching ---
   const loadComments = async () => {
     setLoadingComments(true);
@@ -136,6 +130,10 @@ const Moderation = () => {
       setLoadingComments(false);
     }
   };
+
+  useEffect(() => {
+    loadTopics();
+  }, [currentPageTopics, topicStatusFilter, activeTab]);
 
   useEffect(() => {
     if (activeTab === 'comments') {
