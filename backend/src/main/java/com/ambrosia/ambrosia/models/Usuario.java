@@ -29,9 +29,7 @@ public class Usuario implements UserDetails {
     @Column(unique = true)
     private String email;
     private String password;
-    private LocalDateTime fecha_registro;
-
-    @Builder.Default
+    private LocalDateTime fechaRegistro;
     private Integer testsCompletados = 0;
 
     @Builder.Default

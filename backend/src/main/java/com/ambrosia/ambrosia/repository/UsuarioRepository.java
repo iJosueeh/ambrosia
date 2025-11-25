@@ -13,6 +13,5 @@ import java.util.Optional;
 @Repository
 public interface UsuarioRepository extends JpaRepository<Usuario, Long>, JpaSpecificationExecutor<Usuario> {
     Optional<Usuario> findByEmail(String email);
-    @Query("SELECT COUNT(u) FROM Usuario u WHERE u.fecha_registro BETWEEN :start AND :end")
-    long countByFecha_registroBetween(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+    long countByFechaRegistroBetween(LocalDateTime start, LocalDateTime end);
 }
