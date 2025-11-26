@@ -1,19 +1,17 @@
 package com.ambrosia.ambrosia;
 
-import com.ambrosia.ambrosia.models.CategoriaForo;
-import com.ambrosia.ambrosia.models.Foro;
-import com.ambrosia.ambrosia.models.Usuario;
-import com.ambrosia.ambrosia.models.dto.LoginRequest;
-import com.ambrosia.ambrosia.models.dto.LoginResponseDTO;
-import com.ambrosia.ambrosia.repository.CategoriaForoRepository;
-import com.ambrosia.ambrosia.repository.ComentarioRepository;
-import com.ambrosia.ambrosia.repository.ForoRepository;
-import com.ambrosia.ambrosia.repository.ProfesionalRepository;
-import com.ambrosia.ambrosia.repository.ResultadoRepository;
-import com.ambrosia.ambrosia.repository.RolRepository;
-import com.ambrosia.ambrosia.repository.UsuarioRepository;
+import com.ambrosia.ambrosia.domain.model.CategoriaForo;
+import com.ambrosia.ambrosia.domain.model.Usuario;
+import com.ambrosia.ambrosia.infrastructure.adapter.in.web.dto.LoginRequest;
+import com.ambrosia.ambrosia.infrastructure.adapter.in.web.dto.LoginResponseDTO;
+import com.ambrosia.ambrosia.domain.repository.CategoriaForoRepositoryPort;
+import com.ambrosia.ambrosia.domain.repository.ComentarioRepositoryPort;
+import com.ambrosia.ambrosia.domain.repository.ForoRepositoryPort;
+import com.ambrosia.ambrosia.domain.repository.ProfesionalRepositoryPort;
+import com.ambrosia.ambrosia.domain.repository.ResultadoTestRepositoryPort;
+import com.ambrosia.ambrosia.domain.repository.RolRepositoryPort;
+import com.ambrosia.ambrosia.domain.repository.UsuarioRepositoryPort;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,10 +20,9 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-
-import java.time.LocalDateTime;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -33,20 +30,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, properties = {
-	"spring.datasource.url=jdbc:h2:mem:testdb",
-	"spring.datasource.driverClassName=org.h2.Driver",
-	"spring.datasource.username=sa",
-	"spring.datasource.password=",
-	"spring.jpa.database-platform=org.hibernate.dialect.H2Dialect",
-	"jwt.secret=aVeryLongAndSecureSecretKeyForTestingJWTpurposes",
-	"jwt.expiration.ms=3600000",
-	"file.upload-dir=uploads",
-	"supabase.url=http://localhost:8000",
-	"supabase.key=dummy-key",
-	"supabase.service-role-key=dummy-service-role-key"
+        "spring.datasource.url=jdbc:h2:mem:testdb",
+        "spring.datasource.driverClassName=org.h2.Driver",
+        "spring.datasource.username=sa",
+        "spring.datasource.password=",
+        "spring.jpa.database-platform=org.hibernate.dialect.H2Dialect",
+        "jwt.secret=aVeryLongAndSecureSecretKeyForTestingJWTpurposes",
+        "jwt.expiration.ms=3600000",
+        "file.upload-dir=uploads",
+        "supabase.url=http://localhost:8000",
+        "supabase.key=dummy-key",
+        "supabase.service-role-key=dummy-service-role-key"
 })
 @AutoConfigureMockMvc
 @ComponentScan(basePackages = "com.ambrosia.ambrosia")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class ForoIntegrationTest {
 
     @Autowired
@@ -56,25 +54,25 @@ public class ForoIntegrationTest {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private UsuarioRepository usuarioRepository;
+    private UsuarioRepositoryPort usuarioRepository;
 
     @Autowired
-    private CategoriaForoRepository categoriaForoRepository;
+    private CategoriaForoRepositoryPort categoriaForoRepository;
 
     @Autowired
-    private ForoRepository foroRepository;
+    private ForoRepositoryPort foroRepository;
 
     @Autowired
-    private ComentarioRepository comentarioRepository; // Inyectar ComentarioRepository
+    private ComentarioRepositoryPort comentarioRepository;
 
     @Autowired
-    private ResultadoRepository resultadoRepository; // Inyectar ResultadoRepository
+    private ResultadoTestRepositoryPort resultadoTestRepository;
 
     @Autowired
-    private ProfesionalRepository profesionalRepository; // Inyectar ProfesionalRepository
+    private ProfesionalRepositoryPort profesionalRepository;
 
     @Autowired
-    private RolRepository rolRepository; // Inyectar RolRepository
+    private RolRepositoryPort rolRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -94,18 +92,18 @@ public class ForoIntegrationTest {
         user.setEmail(uniqueEmail);
         user.setPassword(passwordEncoder.encode("Password123"));
         user.setRol(rolRepository.findByNombre("USER").orElseGet(() -> {
-            return rolRepository.save(new com.ambrosia.ambrosia.models.Rol(null, "USER"));
+            return rolRepository.save(com.ambrosia.ambrosia.domain.model.Rol.builder().nombre("USER").build());
         }));
         user = usuarioRepository.save(user);
 
         // Ensure "ADMIN" role exists if needed for other tests
         rolRepository.findByNombre("ADMIN").orElseGet(() -> {
-            return rolRepository.save(new com.ambrosia.ambrosia.models.Rol(null, "ADMIN"));
+            return rolRepository.save(com.ambrosia.ambrosia.domain.model.Rol.builder().nombre("ADMIN").build());
         });
 
         // Create a forum category
         categoriaForo = new CategoriaForo();
-        categoriaForo.setTitulo("General");
+        categoriaForo.setNombre("General Test " + System.currentTimeMillis());
         categoriaForo.setDescripcion("Discusión general");
         categoriaForo = categoriaForoRepository.save(categoriaForo);
 
@@ -115,8 +113,8 @@ public class ForoIntegrationTest {
         loginRequest.setContrasena("Password123");
 
         MvcResult result = mockMvc.perform(post("/api/v1/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(loginRequest)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -125,45 +123,27 @@ public class ForoIntegrationTest {
         userToken = loginResponse.getToken();
     }
 
-    @AfterEach
-    void tearDown() {
-        comentarioRepository.deleteAll(); // Eliminar comentarios primero
-        foroRepository.deleteAll();
-        profesionalRepository.deleteAll(); // Eliminar profesionales antes que usuarios
-        resultadoRepository.deleteAll(); // Eliminar resultados antes que usuarios
-        categoriaForoRepository.deleteAll();
-        usuarioRepository.deleteAll();
-    }
-
     @Test
     void testCreateAndRetrieveForumPost() throws Exception {
         // Step 1: Create a new forum post
         java.util.Map<String, Object> foroJson = new java.util.HashMap<>();
         foroJson.put("titulo", "Mi primer post");
         foroJson.put("descripcion", "Este es el contenido de mi primer post.");
-        
-        java.util.Map<String, Object> authorJson = new java.util.HashMap<>();
-        authorJson.put("id", user.getId());
-        foroJson.put("autor", authorJson);
-
-        java.util.Map<String, Object> categoryJson = new java.util.HashMap<>();
-        categoryJson.put("id", categoriaForo.getId());
-        foroJson.put("categoriaForo", categoryJson);
-
-        foroJson.put("fechaCreacion", LocalDateTime.now().toString());
+        foroJson.put("autorId", user.getId());
+        foroJson.put("categoriaForoId", categoriaForo.getId());
 
         mockMvc.perform(post("/api/v1/foros")
-                        .header("Authorization", "Bearer " + userToken)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(foroJson)))
+                .header("Authorization", "Bearer " + userToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(foroJson)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.titulo").value("Mi primer post"));
 
         // Step 2: Retrieve the list of forum posts to verify the new post is present
         mockMvc.perform(get("/api/v1/foros")
-                        .header("Authorization", "Bearer " + userToken)
-                        .contentType(MediaType.APPLICATION_JSON))
+                .header("Authorization", "Bearer " + userToken)
+                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].titulo").value("Mi primer post"));
+                .andExpect(jsonPath("$.content[0].titulo").value("Mi primer post"));
     }
 }

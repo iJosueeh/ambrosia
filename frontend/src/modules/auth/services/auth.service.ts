@@ -1,37 +1,49 @@
 import axiosInstance from '@utils/axiosInstance';
+import {
+  LoginResponse,
+  LoginCredentials,
+  RegisterRequest,
+  RegisterResponse,
+  RefreshTokenRequest,
+  RefreshTokenResponse,
+} from '../../../types/auth.types';
+import { tokenUtils } from '../../../utils/tokenUtils';
 
-export interface LoginResponse {
-  id: number;
-  nombre: string;
-  correo: string;
-  roles: string[];        // ✅ Array de roles
-  rolPrincipal: string;   // ✅ Rol principal (ADMIN o USER)
-  token: string;
-}
+/**
+ * Servicio de autenticación
+ */
 
-export const login = async (credentials: { correo: string; contrasena: string }): Promise<LoginResponse> => {
-  const response = await axiosInstance.post('/auth/login', {
+export const login = async (credentials: LoginCredentials): Promise<LoginResponse> => {
+  const response = await axiosInstance.post<LoginResponse>('/auth/login', {
     correo: credentials.correo,
     contrasena: credentials.contrasena,
   });
 
-  const loginResponse = response.data;
-  localStorage.setItem('jwt_token', loginResponse.token);
-  return loginResponse;
+  return response.data;
 };
 
-export interface RegisterResponse {
-  message: string;
-}
-
-interface RegisterRequest {
-  nombre: string;
-  correo: string;
-  password: string;
-  rol: string;
-}
-
 export const register = async (userData: RegisterRequest): Promise<RegisterResponse> => {
-  const response = await axiosInstance.post('/usuarios/registrar', userData);
+  const response = await axiosInstance.post<RegisterResponse>('/usuarios/registrar', userData);
   return response.data;
+};
+
+export const refreshToken = async (refreshToken: string): Promise<RefreshTokenResponse> => {
+  const response = await axiosInstance.post<RefreshTokenResponse>('/auth/refresh', {
+    refreshToken,
+  });
+  return response.data;
+};
+
+export const logout = async (refreshToken: string): Promise<void> => {
+  try {
+    await axiosInstance.post('/auth/logout', { refreshToken });
+  } catch (error) {
+    console.error('Error during logout:', error);
+    // No lanzar error, solo loguearlo
+  }
+};
+
+export const isAuthenticated = (): boolean => {
+  const token = tokenUtils.getAccessToken();
+  return token !== null && !tokenUtils.isTokenExpired(token);
 };

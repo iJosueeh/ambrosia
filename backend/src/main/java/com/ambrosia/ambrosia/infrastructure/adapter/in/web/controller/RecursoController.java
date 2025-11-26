@@ -1,0 +1,119 @@
+package com.ambrosia.ambrosia.infrastructure.adapter.in.web.controller;
+
+import com.ambrosia.ambrosia.application.port.in.recurso.CrearRecursoCommand;
+import com.ambrosia.ambrosia.infrastructure.adapter.in.web.dto.CategoriaRecursoDTO;
+import com.ambrosia.ambrosia.infrastructure.adapter.in.web.dto.RecursoDTO;
+import com.ambrosia.ambrosia.application.service.CategoriaRecursoService;
+import com.ambrosia.ambrosia.application.service.RecursoService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import com.ambrosia.ambrosia.application.service.MyUserDetails;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.UUID;
+
+@RestController
+@RequestMapping("/api/v1/recursos")
+@RequiredArgsConstructor
+public class RecursoController {
+
+    private final RecursoService recursoService;
+    private final CategoriaRecursoService categoriaRecursoService;
+
+    @PostMapping
+    public ResponseEntity<RecursoDTO> createRecurso(@Valid @RequestBody CrearRecursoCommand command) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        MyUserDetails userDetails = (MyUserDetails) authentication.getPrincipal();
+        UUID profesionalId = userDetails.getProfesionalId();
+
+        if (profesionalId == null) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
+        // Crear nuevo command con el profesionalId del usuario autenticado
+        CrearRecursoCommand commandWithProfesional = new CrearRecursoCommand(
+                command.getTitulo(),
+                command.getDescripcion(),
+                command.getEnlace(),
+                command.getUrlimg(),
+                command.getContenido(),
+                command.getSize(),
+                command.getNombreCategoria(),
+                profesionalId);
+
+        RecursoDTO createdRecurso = recursoService.crear(commandWithProfesional);
+        return new ResponseEntity<>(createdRecurso, HttpStatus.CREATED);
+    }
+
+    @GetMapping
+    public ResponseEntity<Page<RecursoDTO>> listarTodos(
+            Pageable pageable,
+            @RequestParam(required = false) String search) {
+        return ResponseEntity.ok(recursoService.listarTodos(pageable, search));
+    }
+
+    @GetMapping("/profesional/{profesionalId}")
+    public ResponseEntity<List<RecursoDTO>> getRecursosByProfesionalId(@PathVariable UUID profesionalId) {
+        List<RecursoDTO> recursos = recursoService.getRecursosByProfesionalId(profesionalId);
+        return ResponseEntity.ok(recursos);
+    }
+
+    @GetMapping("/categoria/{id}")
+    public ResponseEntity<Page<RecursoDTO>> listarPorCategoria(
+            @PathVariable UUID id,
+            Pageable pageable,
+            @RequestParam(required = false) String search) {
+        return ResponseEntity.ok(recursoService.listarPorCategoria(id, pageable, search));
+    }
+
+    @GetMapping("/categorias")
+    public ResponseEntity<List<CategoriaRecursoDTO>> listarCategorias() {
+        return ResponseEntity.ok(categoriaRecursoService.listarCategorias());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<RecursoDTO> obtenerPorId(@PathVariable UUID id) {
+        return ResponseEntity.ok(recursoService.obtenerPorId(id));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<RecursoDTO> updateRecurso(@PathVariable UUID id, @RequestBody RecursoDTO dto) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        MyUserDetails userDetails = (MyUserDetails) authentication.getPrincipal();
+        UUID profesionalId = userDetails.getProfesionalId();
+
+        if (profesionalId == null) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
+        RecursoDTO updatedRecurso = recursoService.updateRecurso(id, dto, profesionalId);
+        return ResponseEntity.ok(updatedRecurso);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteRecurso(@PathVariable UUID id) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        MyUserDetails userDetails = (MyUserDetails) authentication.getPrincipal();
+        UUID profesionalId = userDetails.getProfesionalId();
+
+        if (profesionalId == null) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
+        recursoService.deleteRecurso(id, profesionalId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}/descargar")
+    public ResponseEntity<Void> incrementarDescargas(@PathVariable UUID id) {
+        recursoService.incrementarDescargas(id);
+        return ResponseEntity.ok().build();
+    }
+}
