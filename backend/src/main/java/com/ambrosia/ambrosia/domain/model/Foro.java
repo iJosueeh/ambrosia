@@ -19,14 +19,13 @@ public class Foro {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(columnDefinition = "BINARY(16)")
     private UUID id;
 
     private String titulo;
     private String descripcion;
 
     @ManyToOne
-    @JoinColumn(name = "autor_id", columnDefinition = "BINARY(16)")
+    @JoinColumn(name = "autor_id")
     private Usuario autor;
 
     private LocalDateTime fechaCreacion;
@@ -35,7 +34,7 @@ public class Foro {
     private String status = "ACTIVE";
 
     @ManyToOne
-    @JoinColumn(name = "categoria_foro_id", columnDefinition = "BINARY(16)")
+    @JoinColumn(name = "categoria_foro_id")
     private CategoriaForo categoriaForo;
 
     @OneToMany(mappedBy = "foro", cascade = CascadeType.ALL, orphanRemoval = true)

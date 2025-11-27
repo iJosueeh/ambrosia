@@ -13,8 +13,8 @@ public class AmbrosiaApplication {
 		SpringApplication.run(AmbrosiaApplication.class, args);
 	}
 
-	@Bean
-	public PasswordEncoder passwordEncoder() {
+    @Bean
+    PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
 	}
 

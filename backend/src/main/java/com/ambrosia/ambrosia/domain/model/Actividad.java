@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.UUID; // Importar UUID
+import java.util.UUID;
 
 @Data
 @Builder
@@ -19,11 +19,10 @@ public class Actividad {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(columnDefinition = "BINARY(16)")
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuario_id", nullable = false, columnDefinition = "BINARY(16)") // Añadir columnDefinition
+    @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
 
     @Enumerated(EnumType.STRING)

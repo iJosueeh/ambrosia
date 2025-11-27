@@ -17,7 +17,6 @@ public class RecursoEducativo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(columnDefinition = "BINARY(16)")
     private UUID id;
 
     @Column(columnDefinition = "TEXT")
@@ -39,20 +38,20 @@ public class RecursoEducativo {
     private Long downloads;
 
     @ManyToOne
-    @JoinColumn(name = "categoria_id", columnDefinition = "BINARY(16)")
+    @JoinColumn(name = "categoria_id")
     private CategoriaRecurso categoria;
 
     @ManyToOne
-    @JoinColumn(name = "estado_id", columnDefinition = "BINARY(16)")
+    @JoinColumn(name = "estado_id")
     private EstadoPublicado estado;
 
     private LocalDateTime fechaPublicacion;
 
     @ManyToOne
-    @JoinColumn(name = "creador_id", nullable = true, columnDefinition = "BINARY(16)")
+    @JoinColumn(name = "creador_id", nullable = true)
     private Profesional creador;
 
     @ManyToOne
-    @JoinColumn(name = "aprobador_id", nullable = true, columnDefinition = "BINARY(16)")
+    @JoinColumn(name = "aprobador_id", nullable = true)
     private Usuario aprobador;
 }

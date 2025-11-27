@@ -17,7 +17,6 @@ public class ResultadoTest {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(columnDefinition = "BINARY(16)")
     private UUID id;
 
     private Integer puntaje;
@@ -25,10 +24,10 @@ public class ResultadoTest {
     private LocalDateTime fechaRealizacion;
 
     @ManyToOne
-    @JoinColumn(name = "usuario_id", columnDefinition = "BINARY(16)")
+    @JoinColumn(name = "usuario_id")
     private Usuario usuario;
 
     @ManyToOne
-    @JoinColumn(name = "test_id", columnDefinition = "BINARY(16)")
+    @JoinColumn(name = "test_id")
     private TestEvaluacion test;
 }

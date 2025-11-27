@@ -41,14 +41,6 @@ public class CategoriaForoService {
     }
 
     public void deleteCategoriaForo(UUID id) {
-        // Assuming deleteById exists in port or we find and delete
-        // Port usually has delete(entity) or deleteById(id)
-        // Let's check port definition if possible, but standard is delete(entity) often
-        // in DDD ports or deleteById.
-        // UsuarioRepositoryPort had delete(Usuario).
-        // Let's assume we fetch and delete for safety if deleteById is missing, or
-        // check port.
-        // I'll assume find and delete pattern for now to be safe with common DDD ports.
         categoriaForoRepository.findById(id).ifPresent(categoriaForoRepository::delete);
     }
 

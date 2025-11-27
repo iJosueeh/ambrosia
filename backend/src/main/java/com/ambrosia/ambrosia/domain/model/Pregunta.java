@@ -17,13 +17,12 @@ public class Pregunta {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(columnDefinition = "BINARY(16)")
     private UUID id;
 
     private String texto;
 
     @ManyToOne
-    @JoinColumn(name = "test_id", columnDefinition = "BINARY(16)")
+    @JoinColumn(name = "test_id")
     private TestEvaluacion test;
 
     @OneToMany(mappedBy = "pregunta", cascade = CascadeType.ALL, orphanRemoval = true)

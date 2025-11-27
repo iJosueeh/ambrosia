@@ -17,7 +17,6 @@ public class Profesional {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(columnDefinition = "BINARY(16)")
     private UUID id;
 
     private String especialidad;
@@ -30,11 +29,11 @@ public class Profesional {
     private String profileImageUrl;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "profesional_habilidades", joinColumns = @JoinColumn(name = "profesional_id", columnDefinition = "BINARY(16)"))
+    @CollectionTable(name = "profesional_habilidades", joinColumns = @JoinColumn(name = "profesional_id"))
     @Column(name = "habilidad")
     private List<String> habilidades;
 
     @OneToOne
-    @JoinColumn(name = "usuario_id", columnDefinition = "BINARY(16)")
+    @JoinColumn(name = "usuario_id")
     private Usuario usuario;
 }
