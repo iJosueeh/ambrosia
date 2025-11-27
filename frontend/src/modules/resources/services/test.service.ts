@@ -21,7 +21,7 @@ export interface TestDTO {
 }
 
 export interface ResultadoDTO {
-    usuarioId: number;
+    usuarioId: string;
     testId: number;
     respuestas: {
         preguntaId: number;

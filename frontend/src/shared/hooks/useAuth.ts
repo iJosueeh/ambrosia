@@ -2,18 +2,16 @@ import * as React from "react";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from 'react-hot-toast';
 import { login as authServiceLogin, type LoginResponse } from "../../modules/auth/services/auth.service";
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
-import { jwtDecode } from 'jwt-decode'; // Import jwtDecode
+import { useNavigate } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
 
 interface User {
-    id: number;
+    id: string;
     name: string;
     email: string;
     roles: string[];
     rolPrincipal: string;
 }
-
-
 
 interface AuthContextType {
     user: User | null;
@@ -22,54 +20,47 @@ interface AuthContextType {
     logout: () => void;
     loading: boolean;
     error: string | null;
-    checkTokenExpiration: () => void; // Add this to context type
+    checkTokenExpiration: () => void;
 }
 
 const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const navigate = useNavigate(); // Initialize useNavigate
+    const navigate = useNavigate();
     const [user, setUser] = React.useState<User | null>(() => {
         const storedUser = localStorage.getItem('user');
         const initialUser = storedUser ? JSON.parse(storedUser) : null;
-        // console.log("DEBUG: AuthProvider initial user from localStorage:", initialUser);
         return initialUser;
     });
 
     const logout = React.useCallback(() => {
         setUser(null);
         localStorage.removeItem('user');
-        localStorage.removeItem('jwt_token'); // Clear the JWT token
-        // Also remove any other relevant items if they exist
+        localStorage.removeItem('jwt_token');
     }, []);
 
-    const loginMutation = useMutation<LoginResponse, any, Parameters<typeof authServiceLogin>[0]>({ // Changed BackendError to any
+    const loginMutation = useMutation<LoginResponse, any, Parameters<typeof authServiceLogin>[0]>({
         mutationFn: authServiceLogin,
         onSuccess: (data) => {
-            // console.log("🔍 RESPUESTA COMPLETA DEL LOGIN:", data);
-            // console.log("🔍 data.roles:", data.roles);
-            // console.log("🔍 data.rolPrincipal:", data.rolPrincipal);
-            
-            const roles = Array.isArray(data.roles) ? data.roles : 
-                         data.roles ? [data.roles] : 
-                         ['ROLE_USER']; // Fallback por defecto
-            
-            // ✅ Usar rolPrincipal del backend o calcularlo
-            const rolPrincipal = data.rolPrincipal || 
-                                (roles.includes('ROLE_ADMIN') ? 'ROLE_ADMIN' : 'ROLE_USER');
-            
-            const loggedInUser: User = { 
-                id: data.id, 
-                name: data.nombre, 
-                email: data.correo, 
+            const roles = Array.isArray(data.roles) ? data.roles :
+                data.roles ? [data.roles] :
+                    ['ROLE_USER'];
+
+            // Use data.rol as per LoginResponse interface
+            const rolPrincipal = data.rol ||
+                (roles.includes('ROLE_ADMIN') ? 'ROLE_ADMIN' : 'ROLE_USER');
+
+            const loggedInUser: User = {
+                id: data.id,
+                name: data.nombre,
+                email: data.correo,
                 roles: roles,
                 rolPrincipal: rolPrincipal
             };
-            
-            // console.log("🔍 Usuario final guardado:", loggedInUser);
+
             setUser(loggedInUser);
             localStorage.setItem('user', JSON.stringify(loggedInUser));
-            localStorage.setItem('jwt_token', data.token); // Ensure token is explicitly stored here as well
+            localStorage.setItem('jwt_token', data.token);
             toast.success("¡Inicio de sesión exitoso!");
         },
         onError: (err) => {
@@ -93,8 +84,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (token) {
             try {
                 const decodedToken: any = jwtDecode(token);
-                // console.log("Token expiration (exp):", new Date(decodedToken.exp * 1000));
-                // console.log("Current time:", new Date());
                 if (decodedToken.exp * 1000 < Date.now()) {
                     toast.error("Tu sesión ha expirado.");
                     logout();
@@ -108,13 +97,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     }, [navigate, logout]);
 
-    // Periodically check token expiration
     React.useEffect(() => {
         const interval = setInterval(() => {
             checkTokenExpiration();
-        }, 60 * 1000); // Check every minute
+        }, 60 * 1000);
 
-        // Initial check on mount
         checkTokenExpiration();
 
         return () => clearInterval(interval);

@@ -1,7 +1,7 @@
 import axiosInstance from '../../../utils/axiosInstance';
 import type { StatisticData } from '../types/statistics.types';
 
-export const getStatistics = async (professionalId: number): Promise<StatisticData> => {
+export const getStatistics = async (professionalId: string): Promise<StatisticData> => {
     try {
         const response = await axiosInstance.get(`/profesionales/${professionalId}/statistics`);
         return response.data;
@@ -11,7 +11,7 @@ export const getStatistics = async (professionalId: number): Promise<StatisticDa
     }
 };
 
-export const exportStatisticsToExcel = async (professionalId: number): Promise<Blob> => {
+export const exportStatisticsToExcel = async (professionalId: string): Promise<Blob> => {
     try {
         const response = await axiosInstance.get(`/profesionales/${professionalId}/statistics/export/excel`, {
             responseType: 'blob', // Important for downloading files

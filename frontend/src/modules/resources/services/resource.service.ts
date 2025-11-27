@@ -26,7 +26,7 @@ export const deleteRecurso = async (id: number): Promise<void> => {
     await axiosInstance.delete(`${API_URL}/${id}`);
 };
 
-export const getRecursosByProfesionalId = async (profesionalId: number): Promise<RecursoDTO[]> => {
+export const getRecursosByProfesionalId = async (profesionalId: string): Promise<RecursoDTO[]> => {
     const response = await axiosInstance.get<RecursoDTO[]>(`${API_URL}/profesional/${profesionalId}`);
     return response.data;
 };

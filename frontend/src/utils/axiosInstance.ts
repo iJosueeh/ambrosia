@@ -1,5 +1,5 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios';
-import { API_CONFIG, TOKEN_KEYS } from '../config/api.config';
+import { API_CONFIG } from '../config/api.config';
 import { tokenUtils } from './tokenUtils';
 import type { RefreshTokenResponse } from '../types/auth.types';
 

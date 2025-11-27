@@ -1,8 +1,8 @@
 export interface Profesional {
-    id: number;
+    id: string;
     especialidad: string;
     descripcion: string;
-    usuarioId: number;
+    usuarioId: string;
     nombreUsuario: string;
     emailUsuario: string;
     habilidades: string[];

@@ -10,6 +10,6 @@ export interface RecursoDTO {
     fechaPublicacion?: string; // ISO date string, make optional
     nombreCategoria: string;
     estado: string;
-    creadorId?: number; // Added
+    creadorId?: string; // Added
     nombreCreador?: string; // Added
 }

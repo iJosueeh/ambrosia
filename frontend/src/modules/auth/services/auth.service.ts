@@ -1,13 +1,14 @@
 import axiosInstance from '@utils/axiosInstance';
-import {
+import type {
   LoginResponse,
   LoginCredentials,
   RegisterRequest,
   RegisterResponse,
-  RefreshTokenRequest,
   RefreshTokenResponse,
 } from '../../../types/auth.types';
 import { tokenUtils } from '../../../utils/tokenUtils';
+
+export type { LoginResponse, RegisterResponse };
 
 /**
  * Servicio de autenticación
