@@ -25,6 +25,7 @@ public class DataInitializer implements CommandLineRunner {
 
         private final SpringDataRolRepository rolRepository;
         private final SpringDataUsuarioRepository usuarioRepository;
+        private final SpringDataProfesionalRepository profesionalRepository;
         private final SpringDataCategoriaRecursoRepository categoriaRecursoRepository;
         private final SpringDataEstadoPublicadoRepository estadoPublicadoRepository;
         private final SpringDataCategoriaForoRepository categoriaForoRepository;
@@ -46,6 +47,11 @@ public class DataInitializer implements CommandLineRunner {
                         if (usuarioRepository.count() == 0) {
                                 log.info("👤 Inicializando usuarios de prueba...");
                                 initializeUsers();
+                        }
+
+                        if (profesionalRepository.count() == 0) {
+                                log.info("👨‍⚕️ Inicializando perfiles profesionales...");
+                                initializeProfesionales();
                         }
 
                         if (estadoPublicadoRepository.count() == 0) {
@@ -149,6 +155,23 @@ public class DataInitializer implements CommandLineRunner {
                 log.info("✓ 3 usuarios creados (admin@ambrosia.com, user@ambrosia.com, professional@ambrosia.com)");
         }
 
+        private void initializeProfesionales() {
+                Usuario userProfessional = usuarioRepository.findByEmail("professional@ambrosia.com")
+                                .orElseThrow(() -> new RuntimeException("Usuario Profesional no encontrado"));
+
+                Profesional profesional = Profesional.builder()
+                                .usuario(userProfessional)
+                                .especialidad("Psicología Clínica")
+                                .descripcion("Especialista en ansiedad y depresión con 10 años de experiencia.")
+                                .telefono("555-0123")
+                                .ubicacion("Madrid, España")
+                                .habilidades(List.of("Terapia Cognitivo-Conductual", "Mindfulness"))
+                                .build();
+
+                profesionalRepository.save(profesional);
+                log.info("✓ 1 perfil profesional creado");
+        }
+
         private void initializeEstados() {
                 List<EstadoPublicado> estados = List.of(
                                 EstadoPublicado.builder()
@@ -229,41 +252,54 @@ public class DataInitializer implements CommandLineRunner {
                 CategoriaRecurso autoestima = categoriaRecursoRepository.findByNombre("Autoestima")
                                 .orElseThrow(() -> new RuntimeException("Categoría Autoestima no encontrada"));
 
+                Usuario userProfessional = usuarioRepository.findByEmail("professional@ambrosia.com")
+                                .orElseThrow(() -> new RuntimeException("Usuario Profesional no encontrado"));
+
+                Profesional profesional = profesionalRepository.findByUsuarioId(userProfessional.getId())
+                                .orElseThrow(() -> new RuntimeException("Perfil Profesional no encontrado"));
+
                 List<RecursoEducativo> recursos = List.of(
                                 RecursoEducativo.builder()
                                                 .titulo("Guía Completa de Respiración para la Ansiedad")
-                                                .descripcion(
-                                                                "Aprende técnicas de respiración profunda y controlada para manejar momentos de ansiedad y estrés")
-                                                .contenido(
-                                                                "<h2>Introducción</h2><p>La respiración es una herramienta poderosa para manejar la ansiedad. En esta guía aprenderás técnicas efectivas.</p>")
-                                                .urlimg("https://images.unsplash.com/photo-1506126613408-eca07ce68773")
-                                                .estado(published)
+                                                .slug("guia-respiracion-para-ansiedad")
+                                                .descripcion("Aprende técnicas de respiración diafragmática para controlar ataques de pánico y ansiedad generalizada.")
+                                                .contenido("<p>La respiración es una herramienta fundamental...</p>")
+                                                .enlace("https://ejemplo.com/guia-respiracion")
+                                                .urlimg("https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80")
                                                 .categoria(ansiedad)
-                                                .fechaPublicacion(LocalDateTime.now())
-                                                .downloads(0L)
+                                                .creador(profesional)
+                                                .estado(published)
+                                                .fechaPublicacion(LocalDateTime.now().minusDays(5))
+                                                .downloads(120L)
+                                                .size("2.5 MB")
                                                 .build(),
                                 RecursoEducativo.builder()
                                                 .titulo("Mindfulness: Vivir en el Presente")
-                                                .descripcion(
-                                                                "Descubre cómo la atención plena puede transformar tu vida diaria y reducir el estrés")
-                                                .contenido(
-                                                                "<h2>¿Qué es Mindfulness?</h2><p>Mindfulness es la práctica de estar presente en el momento actual sin juzgar.</p>")
-                                                .urlimg("https://images.unsplash.com/photo-1499209974431-9dddcece7f88")
-                                                .estado(published)
+                                                .slug("mindfulness-vivir-en-el-presente")
+                                                .descripcion("Ejercicios prácticos de mindfulness para reducir el estrés y mejorar tu enfoque diario.")
+                                                .contenido("<p>El mindfulness nos invita a estar presentes...</p>")
+                                                .enlace("https://ejemplo.com/mindfulness-guia")
+                                                .urlimg("https://images.unsplash.com/photo-1518531933037-9a82bf55f363?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80")
                                                 .categoria(mindfulness)
-                                                .fechaPublicacion(LocalDateTime.now())
-                                                .downloads(0L)
+                                                .creador(profesional)
+                                                .estado(published)
+                                                .fechaPublicacion(LocalDateTime.now().minusDays(2))
+                                                .downloads(85L)
+                                                .size("1.8 MB")
                                                 .build(),
                                 RecursoEducativo.builder()
                                                 .titulo("Construyendo una Autoestima Saludable")
-                                                .descripcion("Estrategias prácticas para mejorar tu autoestima y confianza personal")
-                                                .contenido(
-                                                                "<h2>La Importancia de la Autoestima</h2><p>La autoestima es fundamental para nuestro bienestar emocional y mental.</p>")
-                                                .urlimg("https://images.unsplash.com/photo-1517960413843-0aee8e2b3285")
-                                                .estado(published)
+                                                .slug("construyendo-autoestima-saludable")
+                                                .descripcion("Estrategias para fortalecer tu autoconcepto y desarrollar una relación positiva contigo mismo.")
+                                                .contenido("<p>La autoestima se construye día a día...</p>")
+                                                .enlace("https://ejemplo.com/autoestima-pdf")
+                                                .urlimg("https://images.unsplash.com/photo-1499209974431-9dddcece7f88?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80")
                                                 .categoria(autoestima)
-                                                .fechaPublicacion(LocalDateTime.now())
-                                                .downloads(0L)
+                                                .creador(profesional)
+                                                .estado(published)
+                                                .fechaPublicacion(LocalDateTime.now().minusDays(10))
+                                                .downloads(210L)
+                                                .size("3.2 MB")
                                                 .build());
 
                 recursoRepository.saveAll(recursos);
@@ -281,4 +317,5 @@ public class DataInitializer implements CommandLineRunner {
                 testRepository.save(test);
                 log.info("✓ 1 test de evaluación creado (sin preguntas por ahora)");
         }
+
 }

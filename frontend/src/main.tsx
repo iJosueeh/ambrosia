@@ -6,7 +6,7 @@ import './styles/main.css'
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider } from './contexts/AuthContext';
+import { AuthProvider } from './shared/hooks/useAuth';
 
 const queryClient = new QueryClient();
 

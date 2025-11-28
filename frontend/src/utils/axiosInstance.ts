@@ -1,6 +1,5 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { API_CONFIG } from '../config/api.config';
-import { tokenUtils } from './tokenUtils';
 import type { RefreshTokenResponse } from '../types/auth.types';
 
 const axiosInstance = axios.create(API_CONFIG);
@@ -8,53 +7,47 @@ const axiosInstance = axios.create(API_CONFIG);
 // Variable para controlar el proceso de refresh
 let isRefreshing = false;
 let failedQueue: Array<{
-  resolve: (value: string | null) => void;
+  resolve: (value: unknown) => void;
   reject: (error: any) => void;
 }> = [];
 
-const processQueue = (error: any, token: string | null = null) => {
+const processQueue = (error: any) => {
   failedQueue.forEach(prom => {
     if (error) {
       prom.reject(error);
     } else {
-      prom.resolve(token);
+      prom.resolve(null);
     }
   });
   failedQueue = [];
 };
 
-// Request interceptor - Agregar token a todas las peticiones
-axiosInstance.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    const token = tokenUtils.getAccessToken();
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-// Response interceptor - Manejar errores y refresh automático
+// Response interceptor - Manejar errores 401 y refresh automático
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
-    // Si es 401 y no hemos intentado refresh
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // Excluir ciertos endpoints del manejo automático de 401
+    const excludedPaths = ['/auth/me', '/auth/refresh', '/auth/login'];
+    const isExcluded = excludedPaths.some(path => originalRequest.url?.includes(path));
+
+    // Si es un endpoint excluido con 401, retornar error silenciosamente
+    if (error.response?.status === 401 && isExcluded) {
+      // Retornar el error sin procesarlo (será manejado por el catch en useAuth)
+      return Promise.reject(error);
+    }
+
+    // Si es 401 y no hemos intentado refresh y no es un endpoint excluido
+    if (error.response?.status === 401 && !originalRequest._retry && !isExcluded) {
 
       // Si ya estamos refrescando, agregar a la cola
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         })
-          .then(token => {
-            if (originalRequest.headers && token) {
-              originalRequest.headers.Authorization = `Bearer ${token}`;
-            }
+          .then(() => {
+            // Reintentar request original (las cookies se envían automáticamente)
             return axiosInstance(originalRequest);
           })
           .catch(err => {
@@ -65,39 +58,23 @@ axiosInstance.interceptors.response.use(
       originalRequest._retry = true;
       isRefreshing = true;
 
-      const refreshToken = tokenUtils.getRefreshToken();
-
-      if (!refreshToken) {
-        // No hay refresh token, hacer logout
-        processQueue(error, null);
-        forceLogout();
-        return Promise.reject(error);
-      }
-
       try {
-        // Intentar refresh
-        const response = await axios.post<RefreshTokenResponse>(
+        // Intentar refresh - las cookies se envían automáticamente
+        await axios.post<RefreshTokenResponse>(
           `${API_CONFIG.baseURL}/auth/refresh`,
-          { refreshToken }
+          {}, // Body vacío, el refresh token va en la cookie
+          { withCredentials: true } // Importante: enviar cookies en esta petición
         );
 
-        const { accessToken, refreshToken: newRefreshToken } = response.data;
-
-        // Guardar nuevos tokens
-        tokenUtils.setTokens(accessToken, newRefreshToken);
-
         // Procesar cola de requests
-        processQueue(null, accessToken);
+        processQueue(null);
 
-        // Reintentar request original
-        if (originalRequest.headers) {
-          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-        }
+        // Reintentar request original (las cookies se envían automáticamente)
         return axiosInstance(originalRequest);
 
       } catch (refreshError) {
         // Refresh falló, hacer logout
-        processQueue(refreshError, null);
+        processQueue(refreshError);
         forceLogout();
         return Promise.reject(refreshError);
       } finally {
@@ -113,7 +90,6 @@ axiosInstance.interceptors.response.use(
  * Fuerza el logout del usuario
  */
 const forceLogout = () => {
-  tokenUtils.clearTokens();
   window.location.href = '/login';
 };
 

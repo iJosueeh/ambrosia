@@ -18,16 +18,16 @@ export interface Recomendacion {
     link: string;
 }
 
+// DTO que coincide con UsuarioDashboardDTO del backend
 export interface UsuarioDTO {
-    id: number;
     nombre: string;
     correo: string;
-    rol: string;
+    fechaRegistro: string; // ISO date string
+    diasActivo: number;
     articulosLeidos: number;
     testsCompletados: number;
     recursosDescargados: number;
-    diasActivo: number;
-    actividadReciente: ActividadReciente[];
     progreso: ProgresoItem[];
+    actividadReciente: ActividadReciente[];
     recomendaciones: Recomendacion[];
 }

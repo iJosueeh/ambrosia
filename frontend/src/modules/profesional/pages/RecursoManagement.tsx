@@ -38,15 +38,15 @@ const RecursoManagement: React.FC = () => {
         navigate('/profesional/recursos/nuevo'); // Update path
     };
 
-    const handleAnalytics = (id: number) => {
+    const handleAnalytics = (id: string) => {
         navigate(`/profesional/estadisticas/${id}`);
     };
 
-    const handleEdit = (id: number) => {
+    const handleEdit = (id: string) => {
         navigate(`/profesional/recursos/editar/${id}`); // Update path
     };
 
-    const handleDeleteRecurso = async (id: number, titulo: string) => { // Change function name
+    const handleDeleteRecurso = async (id: string, titulo: string) => { // Change function name
         Swal.fire({
             title: `¿Estás seguro de eliminar "${titulo}"?`,
             text: "Esta acción no se puede deshacer.",
@@ -120,11 +120,10 @@ const RecursoManagement: React.FC = () => {
                                     <td className="px-6 py-4 whitespace-nowrap text-sm bg-green-50 text-green-800">{recurso.nombreCategoria}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm bg-green-50 text-green-800">{recurso.fechaPublicacion ? new Date(recurso.fechaPublicacion).toLocaleDateString() : 'Fecha no disponible'}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                            recurso.estado === 'PUBLICADO' ? 'bg-green-100 text-green-800' :
-                                            recurso.estado === 'REVISION' ? 'bg-yellow-100 text-yellow-800' :
-                                            'bg-gray-100 text-gray-800'
-                                        }`}>
+                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${recurso.estado === 'PUBLICADO' ? 'bg-green-100 text-green-800' :
+                                                recurso.estado === 'REVISION' ? 'bg-yellow-100 text-yellow-800' :
+                                                    'bg-gray-100 text-gray-800'
+                                            }`}>
                                             {recurso.estado || 'BORRADOR'}
                                         </span>
                                     </td>

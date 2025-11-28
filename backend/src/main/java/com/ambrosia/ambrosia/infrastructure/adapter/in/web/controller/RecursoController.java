@@ -83,6 +83,11 @@ public class RecursoController {
         return ResponseEntity.ok(recursoService.obtenerPorId(id));
     }
 
+    @GetMapping("/slug/{slug}")
+    public ResponseEntity<RecursoDTO> obtenerPorSlug(@PathVariable String slug) {
+        return ResponseEntity.ok(recursoService.obtenerPorSlug(slug));
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<RecursoDTO> updateRecurso(@PathVariable UUID id, @RequestBody RecursoDTO dto) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

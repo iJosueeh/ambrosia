@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../shared/hooks/useAuth';
 
 /**
  * Hook que requiere autenticación y opcionalmente un rol específico

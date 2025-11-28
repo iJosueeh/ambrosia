@@ -4,9 +4,8 @@ import type {
   LoginCredentials,
   RegisterRequest,
   RegisterResponse,
-  RefreshTokenResponse,
+  CurrentUser,
 } from '../../../types/auth.types';
-import { tokenUtils } from '../../../utils/tokenUtils';
 
 export type { LoginResponse, RegisterResponse };
 
@@ -28,23 +27,24 @@ export const register = async (userData: RegisterRequest): Promise<RegisterRespo
   return response.data;
 };
 
-export const refreshToken = async (refreshToken: string): Promise<RefreshTokenResponse> => {
-  const response = await axiosInstance.post<RefreshTokenResponse>('/auth/refresh', {
-    refreshToken,
-  });
-  return response.data;
-};
-
-export const logout = async (refreshToken: string): Promise<void> => {
+/**
+ * Llama al endpoint de logout para revocar tokens.
+ * Las cookies se eliminan automáticamente por el backend.
+ */
+export const logout = async (): Promise<void> => {
   try {
-    await axiosInstance.post('/auth/logout', { refreshToken });
+    await axiosInstance.post('/auth/logout');
   } catch (error) {
     console.error('Error during logout:', error);
     // No lanzar error, solo loguearlo
   }
 };
 
-export const isAuthenticated = (): boolean => {
-  const token = tokenUtils.getAccessToken();
-  return token !== null && !tokenUtils.isTokenExpired(token);
+/**
+ * Obtiene la información del usuario autenticado actual.
+ * Lee desde el endpoint /auth/me que usa el token de la cookie.
+ */
+export const getCurrentUser = async (): Promise<CurrentUser> => {
+  const response = await axiosInstance.get<CurrentUser>('/auth/me');
+  return response.data;
 };

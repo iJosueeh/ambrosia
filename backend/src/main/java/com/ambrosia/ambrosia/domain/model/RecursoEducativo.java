@@ -37,6 +37,9 @@ public class RecursoEducativo {
     private String size;
     private Long downloads;
 
+    @Column(unique = true, nullable = false)
+    private String slug;
+
     @ManyToOne
     @JoinColumn(name = "categoria_id")
     private CategoriaRecurso categoria;
@@ -54,4 +57,26 @@ public class RecursoEducativo {
     @ManyToOne
     @JoinColumn(name = "aprobador_id", nullable = true)
     private Usuario aprobador;
+
+    @PrePersist
+    @PreUpdate
+    private void generateSlug() {
+        if (this.slug == null || this.slug.isEmpty()) {
+            this.slug = generateSlugFromTitle(this.titulo);
+        }
+    }
+
+    private String generateSlugFromTitle(String title) {
+        if (title == null || title.isEmpty()) {
+            return "recurso-" + UUID.randomUUID().toString().substring(0, 8);
+        }
+
+        return java.text.Normalizer.normalize(title, java.text.Normalizer.Form.NFD)
+                .replaceAll("[\\p{InCombiningDiacriticalMarks}]", "") // Eliminar acentos
+                .toLowerCase()
+                .replaceAll("[^a-z0-9\\s-]", "") // Solo letras, números, espacios y guiones
+                .trim()
+                .replaceAll("\\s+", "-") // Reemplazar espacios por guiones
+                .replaceAll("-+", "-"); // Eliminar guiones duplicados
+    }
 }

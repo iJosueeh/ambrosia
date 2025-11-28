@@ -44,13 +44,18 @@ public class RecursoRepositoryAdapter implements RecursoRepositoryPort {
     }
 
     @Override
-    public Page<RecursoEducativo> findByTituloContainingIgnoreCaseOrDescripcionContainingIgnoreCase(String titulo, String descripcion, Pageable pageable) {
-        return springDataRecursoRepository.findByTituloContainingIgnoreCaseOrDescripcionContainingIgnoreCase(titulo, descripcion, pageable);
+    public Page<RecursoEducativo> findByTituloContainingIgnoreCaseOrDescripcionContainingIgnoreCase(String titulo,
+            String descripcion, Pageable pageable) {
+        return springDataRecursoRepository.findByTituloContainingIgnoreCaseOrDescripcionContainingIgnoreCase(titulo,
+                descripcion, pageable);
     }
 
     @Override
-    public Page<RecursoEducativo> findByCategoriaIdAndTituloContainingIgnoreCaseOrCategoriaIdAndDescripcionContainingIgnoreCase(UUID categoriaId1, String titulo, UUID categoriaId2, String descripcion, Pageable pageable) {
-        return springDataRecursoRepository.findByCategoriaIdAndTituloContainingIgnoreCaseOrCategoriaIdAndDescripcionContainingIgnoreCase(categoriaId1, titulo, categoriaId2, descripcion, pageable);
+    public Page<RecursoEducativo> findByCategoriaIdAndTituloContainingIgnoreCaseOrCategoriaIdAndDescripcionContainingIgnoreCase(
+            UUID categoriaId1, String titulo, UUID categoriaId2, String descripcion, Pageable pageable) {
+        return springDataRecursoRepository
+                .findByCategoriaIdAndTituloContainingIgnoreCaseOrCategoriaIdAndDescripcionContainingIgnoreCase(
+                        categoriaId1, titulo, categoriaId2, descripcion, pageable);
     }
 
     @Override
@@ -59,13 +64,21 @@ public class RecursoRepositoryAdapter implements RecursoRepositoryPort {
     }
 
     @Override
+    public Optional<RecursoEducativo> findBySlug(String slug) {
+        return springDataRecursoRepository.findBySlug(slug);
+    }
+
+    @Override
     public Page<RecursoEducativo> findByEstadoNombre(String estadoNombre, Pageable pageable) {
         return springDataRecursoRepository.findByEstadoNombre(estadoNombre, pageable);
     }
 
     @Override
-    public Page<RecursoEducativo> findByEstadoNombreAndTituloContainingIgnoreCaseOrEstadoNombreAndDescripcionContainingIgnoreCase(String estadoNombre1, String titulo, String estadoNombre2, String descripcion, Pageable pageable) {
-        return springDataRecursoRepository.findByEstadoNombreAndTituloContainingIgnoreCaseOrEstadoNombreAndDescripcionContainingIgnoreCase(estadoNombre1, titulo, estadoNombre2, descripcion, pageable);
+    public Page<RecursoEducativo> findByEstadoNombreAndTituloContainingIgnoreCaseOrEstadoNombreAndDescripcionContainingIgnoreCase(
+            String estadoNombre1, String titulo, String estadoNombre2, String descripcion, Pageable pageable) {
+        return springDataRecursoRepository
+                .findByEstadoNombreAndTituloContainingIgnoreCaseOrEstadoNombreAndDescripcionContainingIgnoreCase(
+                        estadoNombre1, titulo, estadoNombre2, descripcion, pageable);
     }
 
     @Override
@@ -74,8 +87,12 @@ public class RecursoRepositoryAdapter implements RecursoRepositoryPort {
     }
 
     @Override
-    public Page<RecursoEducativo> findByCategoriaIdAndEstadoNombreAndTituloContainingIgnoreCaseOrCategoriaIdAndEstadoNombreAndDescripcionContainingIgnoreCase(UUID categoriaId1, String estadoNombre1, String titulo, UUID categoriaId2, String estadoNombre2, String descripcion, Pageable pageable) {
-        return springDataRecursoRepository.findByCategoriaIdAndEstadoNombreAndTituloContainingIgnoreCaseOrCategoriaIdAndEstadoNombreAndDescripcionContainingIgnoreCase(categoriaId1, estadoNombre1, titulo, categoriaId2, estadoNombre2, descripcion, pageable);
+    public Page<RecursoEducativo> findByCategoriaIdAndEstadoNombreAndTituloContainingIgnoreCaseOrCategoriaIdAndEstadoNombreAndDescripcionContainingIgnoreCase(
+            UUID categoriaId1, String estadoNombre1, String titulo, UUID categoriaId2, String estadoNombre2,
+            String descripcion, Pageable pageable) {
+        return springDataRecursoRepository
+                .findByCategoriaIdAndEstadoNombreAndTituloContainingIgnoreCaseOrCategoriaIdAndEstadoNombreAndDescripcionContainingIgnoreCase(
+                        categoriaId1, estadoNombre1, titulo, categoriaId2, estadoNombre2, descripcion, pageable);
     }
 
     @Override

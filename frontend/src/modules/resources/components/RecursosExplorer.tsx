@@ -19,7 +19,7 @@ const iconMap: { [key: string]: React.ElementType } = {
 
 export const RecursosExplorer: React.FC = () => {
   const { categoryId } = useParams<{ categoryId?: string }>();
-  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [categories, setCategories] = useState<CategoriaRecursoDTO[]>([]);
   const [resources, setResources] = useState<RecursoDTO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -31,16 +31,16 @@ export const RecursosExplorer: React.FC = () => {
   const articlesPerPage = 6;
 
   useEffect(() => {
-    console.log("URL categoryId:", categoryId);
+
     const loadData = async () => {
       setIsLoading(true);
       try {
         const fetchedCategories = await getCategories();
         setCategories(fetchedCategories);
 
-        let currentSelectedCategory: number | null = null;
-        if (categoryId && fetchedCategories.some(c => c.id === parseInt(categoryId))) {
-          currentSelectedCategory = parseInt(categoryId);
+        let currentSelectedCategory: string | null = null;
+        if (categoryId && fetchedCategories.some(c => c.id === categoryId)) {
+          currentSelectedCategory = categoryId;
           console.log("setSelectedCategory from URL:", currentSelectedCategory);
         } else {
           console.log("setSelectedCategory to null (no categoryId or invalid):");
@@ -53,7 +53,7 @@ export const RecursosExplorer: React.FC = () => {
         } else {
           fetchedPaginatedResources = await getAllResources(currentPage - 1, articlesPerPage, searchQuery);
         }
-        
+
         console.log("Fetched paginated resources:", fetchedPaginatedResources);
         setResources(fetchedPaginatedResources.content);
         setTotalElements(fetchedPaginatedResources.totalElements);
@@ -74,7 +74,7 @@ export const RecursosExplorer: React.FC = () => {
   const totalPages = Math.ceil(totalElements / articlesPerPage);
   const displayedArticles = resources; // Resources are already paginated by the backend
 
-  const handleCategoryClick = (id: number | null) => {
+  const handleCategoryClick = (id: string | null) => {
     setSelectedCategory(id);
     setCurrentPage(1); // Reset page when category changes
     console.log("handleCategoryClick: Resetting currentPage to 1.");
@@ -99,47 +99,47 @@ export const RecursosExplorer: React.FC = () => {
     if (displayedArticles.length > 0) {
       return (
         <>
-                                <motion.div 
-                                  key={currentPage} // Add key to force re-render and re-animation on page change
-                                  variants={{
-                                      hidden: { opacity: 0 },
-                                      show: {
-                                          opacity: 1,
-                                          transition: {
-                                              staggerChildren: 0.2
-                                          }
-                                      }
-                                  }}
-                                  initial="hidden"
-                                  animate="show"
-                                  className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 min-h-[500px]"
-                                >            {displayedArticles.map((article) => (
-              <motion.article
-                key={article.id}
-                variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }}
-                className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 group cursor-pointer flex flex-col h-full"
-              >
-                <div className="relative h-52 overflow-hidden bg-gray-200">
-                  <img
-                    src={article.urlimg}
-                    alt={article.titulo}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
-                </div>
-                <div className="p-6 flex flex-col flex-1">
-                  <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-emerald-600 transition-colors leading-snug">
-                    {article.titulo}
-                  </h3>
-                  <p className="text-gray-600 mb-4 line-clamp-3 text-sm flex-1">
-                    {article.descripcion}
-                  </p>
-                  <Link to={`/articulos/${article.id}`} className="inline-flex items-center gap-2 text-emerald-600 font-semibold hover:text-emerald-700 text-sm group/link">
-                    <span>Leer más</span>
-                    <ChevronRight className="w-4 h-4 ml-1 group-hover/link:translate-x-1 transition-transform" />
-                  </Link>
-                </div>
-              </motion.article>
-            ))}
+          <motion.div
+            key={currentPage} // Add key to force re-render and re-animation on page change
+            variants={{
+              hidden: { opacity: 0 },
+              show: {
+                opacity: 1,
+                transition: {
+                  staggerChildren: 0.2
+                }
+              }
+            }}
+            initial="hidden"
+            animate="show"
+            className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 min-h-[500px]"
+          >            {displayedArticles.map((article) => (
+            <motion.article
+              key={article.id}
+              variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }}
+              className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 group cursor-pointer flex flex-col h-full"
+            >
+              <div className="relative h-52 overflow-hidden bg-gray-200">
+                <img
+                  src={article.urlimg}
+                  alt={article.titulo}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                />
+              </div>
+              <div className="p-6 flex flex-col flex-1">
+                <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-emerald-600 transition-colors leading-snug">
+                  {article.titulo}
+                </h3>
+                <p className="text-gray-600 mb-4 line-clamp-3 text-sm flex-1">
+                  {article.descripcion}
+                </p>
+                <Link to={`/articulos/${article.slug}`} className="inline-flex items-center gap-2 text-emerald-600 font-semibold hover:text-emerald-700 text-sm group/link">
+                  <span>Leer más</span>
+                  <ChevronRight className="w-4 h-4 ml-1 group-hover/link:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+            </motion.article>
+          ))}
           </motion.div>
 
           {totalPages > 1 && (
@@ -153,11 +153,10 @@ export const RecursosExplorer: React.FC = () => {
                   <button
                     key={pageNum}
                     onClick={() => setCurrentPage(pageNum)}
-                    className={`w-10 h-10 rounded-lg font-semibold transition-all duration-200 ${
-                      currentPage === pageNum
-                        ? 'bg-emerald-500 text-white shadow-md'
-                        : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
-                    }`}
+                    className={`w-10 h-10 rounded-lg font-semibold transition-all duration-200 ${currentPage === pageNum
+                      ? 'bg-emerald-500 text-white shadow-md'
+                      : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+                      }`}
                   >
                     {pageNum}
                   </button>
@@ -181,156 +180,152 @@ export const RecursosExplorer: React.FC = () => {
     );
   };
 
-    return (
+  return (
 
-      <>
+    <>
 
-        <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50">
 
-          <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="max-w-7xl mx-auto px-4 py-8">
 
-            <div className="flex flex-col lg:flex-row gap-8">
+          <div className="flex flex-col lg:flex-row gap-8">
 
-              {/* Sidebar - Categories */}
+            {/* Sidebar - Categories */}
 
-              <motion.aside 
-                initial={{ opacity: 0, x: -100 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5 }}
-                className="lg:w-64 flex-shrink-0"
-              >
+            <motion.aside
+              initial={{ opacity: 0, x: -100 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+              className="lg:w-64 flex-shrink-0"
+            >
 
-                <div className="bg-white rounded-xl shadow-md p-6 lg:sticky lg:top-8">
+              <div className="bg-white rounded-xl shadow-md p-6 lg:sticky lg:top-8">
 
-                  <h2 className="text-lg font-bold text-gray-800 mb-4">Categorías</h2>
+                <h2 className="text-lg font-bold text-gray-800 mb-4">Categorías</h2>
 
-                  <nav className="space-y-2">
+                <nav className="space-y-2">
 
-                    <button
+                  <button
 
-                      onClick={() => handleCategoryClick(null)}
+                    onClick={() => handleCategoryClick(null)}
 
-                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-left ${
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-left ${selectedCategory === null
 
-                        selectedCategory === null
+                      ? 'bg-emerald-50 text-emerald-700 font-semibold border-l-4 border-emerald-500'
+
+                      : 'text-gray-600 hover:bg-gray-50 border-l-4 border-transparent'
+
+                      }`}
+
+                  >
+
+                    <FileText className="w-5 h-5 flex-shrink-0" />
+
+                    <span>Todos</span>
+
+                  </button>
+
+                  {categories.map((category) => {
+
+                    const Icon = iconMap[category.nombre.toLowerCase()] || iconMap['default'];
+
+                    const isActive = selectedCategory === category.id;
+
+                    return (
+
+                      <button
+
+                        key={category.id}
+
+                        onClick={() => handleCategoryClick(category.id)}
+
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-left ${isActive
 
                           ? 'bg-emerald-50 text-emerald-700 font-semibold border-l-4 border-emerald-500'
 
                           : 'text-gray-600 hover:bg-gray-50 border-l-4 border-transparent'
 
-                      }`}
-
-                    >
-
-                      <FileText className="w-5 h-5 flex-shrink-0" />
-
-                      <span>Todos</span>
-
-                    </button>
-
-                    {categories.map((category) => {
-
-                      const Icon = iconMap[category.nombre.toLowerCase()] || iconMap['default'];
-
-                      const isActive = selectedCategory === category.id;
-
-                      return (
-
-                        <button
-
-                          key={category.id}
-
-                          onClick={() => handleCategoryClick(category.id)}
-
-                          className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-left ${
-
-                            isActive
-
-                              ? 'bg-emerald-50 text-emerald-700 font-semibold border-l-4 border-emerald-500'
-
-                              : 'text-gray-600 hover:bg-gray-50 border-l-4 border-transparent'
-
                           }`}
 
-                        >
+                      >
 
-                          <Icon className="w-5 h-5 flex-shrink-0" />
+                        <Icon className="w-5 h-5 flex-shrink-0" />
 
-                          <span>{category.nombre}</span>
+                        <span>{category.nombre}</span>
 
-                        </button>
+                      </button>
 
-                      );
+                    );
 
-                    })}
+                  })}
 
-                  </nav>
+                </nav>
 
-                </div>
+              </div>
 
-              </motion.aside>
+            </motion.aside>
 
-  
 
-              {/* Main Content */}
 
-              <motion.main 
-                initial={{ opacity: 0, x: 100 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5 }}
-                className="flex-1 min-w-0"
-              >
+            {/* Main Content */}
 
-                <div className="mb-8">
+            <motion.main
+              initial={{ opacity: 0, x: 100 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+              className="flex-1 min-w-0"
+            >
 
-                  <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              <div className="mb-8">
 
-                    Explora Nuestros Recursos
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
 
-                  </h1>
+                  Explora Nuestros Recursos
 
-                  <div className="relative max-w-2xl">
+                </h1>
 
-                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <div className="relative max-w-2xl">
 
-                    <input
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
 
-                      type="text"
+                  <input
 
-                      placeholder="Buscar por palabra clave"
+                    type="text"
 
-                      value={searchQuery}
+                    placeholder="Buscar por palabra clave"
 
-                      onChange={(e) => {
+                    value={searchQuery}
 
-                        setSearchQuery(e.target.value);
+                    onChange={(e) => {
 
-                        setCurrentPage(1);
+                      setSearchQuery(e.target.value);
 
-                      }}
+                      setCurrentPage(1);
 
-                      className="w-full pl-12 pr-4 py-3.5 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent shadow-sm"
+                    }}
 
-                    />
+                    className="w-full pl-12 pr-4 py-3.5 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent shadow-sm"
 
-                  </div>
+                  />
 
                 </div>
 
-                {renderContent()}
+              </div>
 
-              </motion.main>
+              {renderContent()}
 
-            </div>
+            </motion.main>
 
           </div>
 
         </div>
 
-      </>
+      </div>
 
-    );
+    </>
 
-  }
+  );
 
-  
+}
+
+

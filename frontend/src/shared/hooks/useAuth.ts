@@ -1,11 +1,10 @@
 import * as React from "react";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from 'react-hot-toast';
-import { login as authServiceLogin, type LoginResponse } from "../../modules/auth/services/auth.service";
-import { useNavigate } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode';
+import { login as authServiceLogin, logout as authServiceLogout, getCurrentUser, type LoginResponse } from "../../modules/auth/services/auth.service";
+import type { CurrentUser } from "../../types/auth.types";
 
-interface User {
+export interface User {
     id: string;
     name: string;
     email: string;
@@ -19,24 +18,65 @@ interface AuthContextType {
     login: (email: string, pass: string) => Promise<boolean>;
     logout: () => void;
     loading: boolean;
+    isLoading: boolean; // Alias para compatibilidad
     error: string | null;
-    checkTokenExpiration: () => void;
 }
 
 const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const navigate = useNavigate();
-    const [user, setUser] = React.useState<User | null>(() => {
-        const storedUser = localStorage.getItem('user');
-        const initialUser = storedUser ? JSON.parse(storedUser) : null;
-        return initialUser;
-    });
+    const [user, setUser] = React.useState<User | null>(null);
+    const [isLoading, setIsLoading] = React.useState(true);
+
+    // Inicializar usuario desde el backend al cargar
+    React.useEffect(() => {
+        const initializeAuth = async () => {
+            try {
+                // Verificar si hay cookies de sesión antes de llamar al backend
+                // Esto evita el error 401 innecesario cuando no hay sesión activa
+                const hasCookies = document.cookie.includes('accessToken') || document.cookie.includes('refreshToken');
+
+                if (!hasCookies) {
+                    // No hay cookies, no hay sesión activa
+                    setUser(null);
+                    setIsLoading(false);
+                    return;
+                }
+
+                // Intentar obtener el usuario actual desde /auth/me
+                // Si hay una cookie válida, el backend retornará el usuario
+                const currentUser: CurrentUser = await getCurrentUser();
+
+                setUser({
+                    id: currentUser.id,
+                    name: currentUser.nombre,
+                    email: currentUser.correo,
+                    roles: currentUser.roles,
+                    rolPrincipal: currentUser.rol,
+                });
+            } catch (error: any) {
+                // Error al verificar sesión (cookie expirada, error de red, etc.)
+                // Solo mostramos errores que NO sean 401 (otros errores sí son importantes)
+                if (error?.response?.status !== 401) {
+                    console.error('Error al verificar sesión:', error);
+                }
+                setUser(null);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        initializeAuth();
+    }, []);
 
     const logout = React.useCallback(() => {
+        // Llamar al backend para revocar tokens y eliminar cookies
+        authServiceLogout().catch((err: any) => {
+            console.error('Error during logout:', err);
+        });
+
+        // Limpiar estado local
         setUser(null);
-        localStorage.removeItem('user');
-        localStorage.removeItem('jwt_token');
     }, []);
 
     const loginMutation = useMutation<LoginResponse, any, Parameters<typeof authServiceLogin>[0]>({
@@ -46,7 +86,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 data.roles ? [data.roles] :
                     ['ROLE_USER'];
 
-            // Use data.rol as per LoginResponse interface
             const rolPrincipal = data.rol ||
                 (roles.includes('ROLE_ADMIN') ? 'ROLE_ADMIN' : 'ROLE_USER');
 
@@ -59,11 +98,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             };
 
             setUser(loggedInUser);
-            localStorage.setItem('user', JSON.stringify(loggedInUser));
-            localStorage.setItem('jwt_token', data.token);
+            // Ya no guardamos en localStorage, las cookies se manejan automáticamente
             toast.success("¡Inicio de sesión exitoso!");
         },
-        onError: (err) => {
+        onError: (err: any) => {
             const errorMessage = err.response?.data?.message || "Error al iniciar sesión.";
             toast.error(errorMessage);
         },
@@ -79,44 +117,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     }, [loginMutation]);
 
-    const checkTokenExpiration = React.useCallback(() => {
-        const token = localStorage.getItem('jwt_token');
-        if (token) {
-            try {
-                const decodedToken: any = jwtDecode(token);
-                if (decodedToken.exp * 1000 < Date.now()) {
-                    toast.error("Tu sesión ha expirado.");
-                    logout();
-                    navigate('/login?sessionExpired=true');
-                }
-            } catch (error) {
-                console.error("Error decoding token:", error);
-                logout();
-                navigate('/login?sessionExpired=true');
-            }
-        }
-    }, [navigate, logout]);
-
-    React.useEffect(() => {
-        const interval = setInterval(() => {
-            checkTokenExpiration();
-        }, 60 * 1000);
-
-        checkTokenExpiration();
-
-        return () => clearInterval(interval);
-    }, [checkTokenExpiration]);
-
-
     const value = React.useMemo(() => ({
         user,
         isAuthenticated: !!user,
         login,
         logout,
-        loading: loginMutation.isPending,
+        loading: isLoading || loginMutation.isPending,
+        isLoading: isLoading || loginMutation.isPending, // Alias para compatibilidad
         error: loginMutation.isError ? loginMutation.error.response?.data?.message || "Error al iniciar sesión." : null,
-        checkTokenExpiration,
-    }), [user, login, logout, loginMutation.isPending, loginMutation.isError, loginMutation.error, checkTokenExpiration]);
+    }), [user, login, logout, isLoading, loginMutation.isPending, loginMutation.isError, loginMutation.error]);
 
     return React.createElement(AuthContext.Provider, { value }, children);
 };

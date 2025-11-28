@@ -113,6 +113,14 @@ public class RecursoService implements
         return recursoMapper.toDto(recurso);
     }
 
+    @Transactional(readOnly = true)
+    public RecursoDTO obtenerPorSlug(String slug) {
+        logger.info("Obteniendo recurso por slug: {}", slug);
+        RecursoEducativo recurso = recursoRepository.findBySlug(slug)
+                .orElseThrow(() -> new RuntimeException("Recurso no encontrado con el slug: " + slug));
+        return recursoMapper.toDto(recurso);
+    }
+
     // ========== MÉTODOS ADICIONALES ==========
 
     @Transactional(readOnly = true)

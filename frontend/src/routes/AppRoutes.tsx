@@ -42,7 +42,7 @@ export const AppRoutes = () => {
       <Route path="/articulos" element={<ListadoArticulosPage />} />
       <Route path="/explorar-recursos" element={<RecursosExplorer />} />
       <Route path="/explorar-recursos/:categoryId" element={<RecursosExplorer />} />
-      <Route path="/articulos/:articleId" element={<ArticleDetailPage />} />
+      <Route path="/articulos/:slug" element={<ArticleDetailPage />} />
       <Route path="/resources-center" element={<ResourcesPage />} />
       <Route path="/contacto" element={<ContactPage />} />
       <Route path="/community-forums" element={<CommunityForums />} />

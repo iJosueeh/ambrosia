@@ -99,11 +99,10 @@ const ProfesionalDashboard: React.FC = () => {
                                     <button
                                         key={option.category}
                                         onClick={() => setActiveFilter(option.category as 'Todos' | 'Articulo' | 'Video')}
-                                        className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
-                                            activeFilter === option.category
+                                        className={`px-4 py-2 rounded-lg font-semibold transition-colors ${activeFilter === option.category
                                                 ? 'bg-green-600 text-white'
                                                 : 'bg-white border border-gray-300 text-gray-600 hover:bg-gray-100'
-                                        }`}
+                                            }`}
                                     >
                                         {option.name}
                                     </button>
@@ -119,7 +118,7 @@ const ProfesionalDashboard: React.FC = () => {
                                             <p className="text-sm text-gray-500 mb-2">{recurso.fechaPublicacion ? new Date(recurso.fechaPublicacion).toLocaleDateString() : 'Fecha no disponible'}</p>
                                             <h3 className="text-lg font-bold text-gray-800 mb-2">{recurso.titulo}</h3>
                                             <p className="text-gray-600 text-sm mb-4 line-clamp-2">{recurso.descripcion}</p>
-                                            <Link to={`/articulos/${recurso.id}`} className="font-semibold text-green-600 hover:text-green-700">
+                                            <Link to={`/articulos/${recurso.slug}`} className="font-semibold text-green-600 hover:text-green-700">
                                                 Leer artículo &rarr;
                                             </Link>
                                         </div>

@@ -10,8 +10,7 @@ export interface LoginResponse {
     correo: string;
     roles: string[];
     rol: string; // Rol principal
-    token: string; // Access token
-    refreshToken: string; // Refresh token
+    // Los tokens ahora se envían como cookies HttpOnly, no en el body
 }
 
 export interface DecodedToken {
@@ -41,6 +40,18 @@ export interface RefreshTokenResponse {
     refreshToken: string;
     tokenType: string;
     expiresIn: number;
+}
+
+/**
+ * Respuesta del endpoint /auth/me
+ */
+export interface CurrentUser {
+    id: string;
+    nombre: string;
+    correo: string;
+    roles: string[];
+    rol: string;
+    profesionalId?: string;
 }
 
 export interface RegisterRequest {

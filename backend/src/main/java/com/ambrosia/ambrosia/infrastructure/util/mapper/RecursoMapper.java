@@ -36,6 +36,7 @@ public class RecursoMapper {
         recursoDTO.setSize(recursoEducativo.getSize());
         recursoDTO.setDownloads(recursoEducativo.getDownloads());
         recursoDTO.setFechaPublicacion(recursoEducativo.getFechaPublicacion());
+        recursoDTO.setSlug(recursoEducativo.getSlug());
         if (recursoEducativo.getCategoria() != null) {
             recursoDTO.setNombreCategoria(recursoEducativo.getCategoria().getNombre());
             CategoriaRecursoDTO categoriaDTO = new CategoriaRecursoDTO();

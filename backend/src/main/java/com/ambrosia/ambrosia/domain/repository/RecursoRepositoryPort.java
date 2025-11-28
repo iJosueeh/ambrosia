@@ -10,38 +10,41 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface RecursoRepositoryPort {
-    RecursoEducativo save(RecursoEducativo recursoEducativo);
+        RecursoEducativo save(RecursoEducativo recursoEducativo);
 
-    Optional<RecursoEducativo> findById(UUID id);
+        Optional<RecursoEducativo> findById(UUID id);
 
-    void delete(RecursoEducativo recursoEducativo);
+        void delete(RecursoEducativo recursoEducativo);
 
-    boolean existsById(UUID id);
+        boolean existsById(UUID id);
 
-    Page<RecursoEducativo> findByCategoriaId(UUID id, Pageable pageable);
+        Page<RecursoEducativo> findByCategoriaId(UUID id, Pageable pageable);
 
-    Page<RecursoEducativo> findByTituloContainingIgnoreCaseOrDescripcionContainingIgnoreCase(String titulo,
-            String descripcion, Pageable pageable);
+        Page<RecursoEducativo> findByTituloContainingIgnoreCaseOrDescripcionContainingIgnoreCase(String titulo,
+                        String descripcion, Pageable pageable);
 
-    Page<RecursoEducativo> findByCategoriaIdAndTituloContainingIgnoreCaseOrCategoriaIdAndDescripcionContainingIgnoreCase(
-            UUID categoriaId1, String titulo, UUID categoriaId2, String descripcion, Pageable pageable);
+        Page<RecursoEducativo> findByCategoriaIdAndTituloContainingIgnoreCaseOrCategoriaIdAndDescripcionContainingIgnoreCase(
+                        UUID categoriaId1, String titulo, UUID categoriaId2, String descripcion, Pageable pageable);
 
-    List<RecursoEducativo> findByCreadorId(UUID creadorId);
+        List<RecursoEducativo> findByCreadorId(UUID creadorId);
 
-    Page<RecursoEducativo> findByEstadoNombre(String estadoNombre, Pageable pageable);
+        Optional<RecursoEducativo> findBySlug(String slug);
 
-    Page<RecursoEducativo> findByEstadoNombreAndTituloContainingIgnoreCaseOrEstadoNombreAndDescripcionContainingIgnoreCase(
-            String estadoNombre1, String titulo, String estadoNombre2, String descripcion, Pageable pageable);
+        Page<RecursoEducativo> findByEstadoNombre(String estadoNombre, Pageable pageable);
 
-    Page<RecursoEducativo> findByCategoriaIdAndEstadoNombre(UUID id, String estadoNombre, Pageable pageable);
+        Page<RecursoEducativo> findByEstadoNombreAndTituloContainingIgnoreCaseOrEstadoNombreAndDescripcionContainingIgnoreCase(
+                        String estadoNombre1, String titulo, String estadoNombre2, String descripcion,
+                        Pageable pageable);
 
-    Page<RecursoEducativo> findByCategoriaIdAndEstadoNombreAndTituloContainingIgnoreCaseOrCategoriaIdAndEstadoNombreAndDescripcionContainingIgnoreCase(
-            UUID categoriaId1, String estadoNombre1, String titulo, UUID categoriaId2, String estadoNombre2,
-            String descripcion, Pageable pageable);
+        Page<RecursoEducativo> findByCategoriaIdAndEstadoNombre(UUID id, String estadoNombre, Pageable pageable);
 
-    Page<RecursoEducativo> findAll(Pageable pageable);
+        Page<RecursoEducativo> findByCategoriaIdAndEstadoNombreAndTituloContainingIgnoreCaseOrCategoriaIdAndEstadoNombreAndDescripcionContainingIgnoreCase(
+                        UUID categoriaId1, String estadoNombre1, String titulo, UUID categoriaId2, String estadoNombre2,
+                        String descripcion, Pageable pageable);
 
-    Page<RecursoEducativo> findAll(Specification<RecursoEducativo> spec, Pageable pageable);
+        Page<RecursoEducativo> findAll(Pageable pageable);
 
-    long count();
+        Page<RecursoEducativo> findAll(Specification<RecursoEducativo> spec, Pageable pageable);
+
+        long count();
 }

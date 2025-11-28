@@ -1,5 +1,5 @@
 export interface CategoriaRecursoDTO {
-    id: number;
+    id: string; // UUID from backend
     nombre: string;
     descripcion: string;
 }

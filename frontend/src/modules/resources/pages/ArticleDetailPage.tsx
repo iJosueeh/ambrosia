@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Share2, Bookmark, Calendar, Tag, CheckCircle, FileText, Video, BookOpen, LoaderCircle } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getRecursoById } from '../services/resource.service';
+import { getRecursoBySlug } from '../services/resource.service';
 import type { RecursoDTO } from '../types/recurso.types';
 import { ShareModal } from "@shared/components/ShareModal";
 
 import { motion } from "framer-motion";
 
 export default function ArticleDetailPage() {
-  const { articleId } = useParams<{ articleId: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const [article, setArticle] = useState<RecursoDTO | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -17,14 +17,14 @@ export default function ArticleDetailPage() {
 
   useEffect(() => {
     const fetchArticle = async () => {
-      if (!articleId) {
-        setError("ID de artículo no proporcionado.");
+      if (!slug) {
+        setError("Slug de artículo no proporcionado.");
         setIsLoading(false);
         return;
       }
       try {
         setIsLoading(true);
-        const fetchedArticle = await getRecursoById(parseInt(articleId));
+        const fetchedArticle = await getRecursoBySlug(slug);
         setArticle(fetchedArticle);
       } catch (err) {
         console.error("Error fetching article:", err);
@@ -34,9 +34,7 @@ export default function ArticleDetailPage() {
       }
     };
     fetchArticle();
-  }, [articleId]);
-
-  console.log("ArticleDetailPage: article object received:", article);
+  }, [slug]);
 
   const relatedResources = [
     {
@@ -98,7 +96,7 @@ export default function ArticleDetailPage() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content */}
-          <motion.article 
+          <motion.article
             initial={{ opacity: 0, x: -100 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
@@ -177,7 +175,7 @@ export default function ArticleDetailPage() {
           </motion.article>
 
           {/* Sidebar */}
-          <motion.aside 
+          <motion.aside
             initial={{ opacity: 0, x: 100 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
@@ -224,7 +222,7 @@ export default function ArticleDetailPage() {
                 <p className="text-emerald-50 text-sm mb-6">
                   Si sientes que necesitas apoyo profesional, estamos aquí para ayudarte.
                 </p>
-                <button 
+                <button
                   onClick={() => navigate('/contacto')}
                   className="w-full bg-white text-emerald-600 py-3 rounded-lg font-semibold hover:bg-emerald-50 transition-colors shadow-md"
                 >

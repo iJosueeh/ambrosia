@@ -1,4 +1,4 @@
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../shared/hooks/useAuth';
 
 /**
  * Hook para verificar si el usuario tiene permisos para una ruta

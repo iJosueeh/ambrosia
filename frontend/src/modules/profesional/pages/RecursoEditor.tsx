@@ -15,7 +15,7 @@ const RecursoEditor: React.FC = () => { // Renamed component
     const navigate = useNavigate();
     const { user } = useAuth();
     const quillRef = useRef<ReactQuill>(null);
-    
+
     const [recursoData, setRecursoData] = useState<RecursoDTO>({ // Change to RecursoDTO
         id: undefined,
         titulo: '',
@@ -81,7 +81,7 @@ const RecursoEditor: React.FC = () => { // Renamed component
             container: [
                 [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
                 ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-                [{'list': 'ordered'}, {'list': 'bullet'}, {'indent': '-1'}, {'indent': '+1'}],
+                [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'indent': '-1' }, { 'indent': '+1' }],
                 ['link', 'image', 'video'],
                 ['clean']
             ],
@@ -120,7 +120,7 @@ const RecursoEditor: React.FC = () => { // Renamed component
 
         if (isEditing) {
             setLoading(true);
-            getRecursoById(parseInt(id, 10))
+            getRecursoById(id)
                 .then(data => {
                     setRecursoData({
                         ...data,
@@ -163,8 +163,8 @@ const RecursoEditor: React.FC = () => { // Renamed component
         }
         setLoading(true);
         try {
-            const dataToSave: RecursoDTO = { 
-                ...recursoData, 
+            const dataToSave: RecursoDTO = {
+                ...recursoData,
                 creadorId: user.id,
                 // Ensure required fields are present for the backend
                 nombreCategoria: recursoData.nombreCategoria || (categories.length > 0 ? categories[0].nombre : ''),
@@ -174,7 +174,7 @@ const RecursoEditor: React.FC = () => { // Renamed component
                 descripcion: recursoData.descripcion || '',
             };
             if (isEditing) {
-                await updateRecurso(parseInt(id!, 10), dataToSave); // Use new service method
+                await updateRecurso(id!, dataToSave); // Use new service method
                 toast.success("Recurso actualizado con éxito!");
             } else {
                 await createRecurso(dataToSave); // Use new service method
@@ -303,9 +303,9 @@ const RecursoEditor: React.FC = () => { // Renamed component
                         <div>
                             <label className="block text-sm font-semibold text-gray-800 mb-2">Contenido</label>
                             <div className="h-96 pb-10">
-                                <ReactQuill 
+                                <ReactQuill
                                     ref={quillRef}
-                                    theme="snow" 
+                                    theme="snow"
                                     value={recursoData.contenido} // Use contenido
                                     onChange={handleContentChange}
                                     modules={modules}
@@ -320,7 +320,7 @@ const RecursoEditor: React.FC = () => { // Renamed component
                 <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
                     <h2 className="text-2xl font-bold text-gray-800 mb-4 border-b pb-3">Vista Previa</h2>
                     {recursoData.contenido ? (
-                        <div 
+                        <div
                             className="prose prose-lg max-w-none mt-6"
                             dangerouslySetInnerHTML={{ __html: recursoData.contenido }}
                         />

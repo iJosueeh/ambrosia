@@ -1,26 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Heart, Phone, Mail, MessageCircle, FileText, Download, ChevronDown, BookOpen, Video, Mic, Zap, Smile, Baby } from 'lucide-react';
+import { ArrowLeft, Heart, Phone, Mail, MessageCircle, FileText, Download, ChevronDown, Zap, Smile } from 'lucide-react';
 import { getAllResources, getCategories, getResourcesByCategory, incrementDownloadCount } from '../services/resource.service';
 import type { CategoriaRecursoDTO } from '../types/categoria.types';
 import type { RecursoDTO } from '../types/recurso.types';
-
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
 interface ResourceItemCardProps {
     resource: RecursoDTO;
-    handleDownload: (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>, resourceId: number, enlace: string) => void;
+    handleDownload: (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>, resourceId: string, enlace: string) => void;
 }
 
 const categoryIconMap: Record<string, { icon: React.ElementType, color: string, bgColor: string }> = {
-    'Artículos': { icon: FileText, color: 'text-blue-600', bgColor: 'bg-blue-50' },
-    'Podcast': { icon: Mic, color: 'text-purple-600', bgColor: 'bg-purple-50' },
-    'Videos': { icon: Video, color: 'text-red-600', bgColor: 'bg-red-50' },
-    'Libros': { icon: BookOpen, color: 'text-yellow-600', bgColor: 'bg-yellow-50' },
-    'Mitos y Realidades': { icon: Zap, color: 'text-indigo-600', bgColor: 'bg-indigo-50' },
-    'Salud Mental': { icon: Smile, color: 'text-green-600', bgColor: 'bg-green-50' },
-    'Desarrollo Infantil': { icon: Baby, color: 'text-pink-600', bgColor: 'bg-pink-50' },
-    'Sin Categoría': { icon: FileText, color: 'text-gray-600', bgColor: 'bg-gray-50' }, // Default
+    'Ansiedad': { icon: Heart, color: 'text-blue-600', bgColor: 'bg-blue-50' },
+    'Depresión': { icon: Smile, color: 'text-purple-600', bgColor: 'bg-purple-50' },
+    'Mindfulness': { icon: Zap, color: 'text-green-600', bgColor: 'bg-green-50' },
+    'Autoestima': { icon: Heart, color: 'text-pink-600', bgColor: 'bg-pink-50' },
+    'Relaciones': { icon: Heart, color: 'text-red-600', bgColor: 'bg-red-50' },
+    'Sin Categoría': { icon: FileText, color: 'text-gray-600', bgColor: 'bg-gray-50' },
 };
 
 const ResourceItemCard: React.FC<ResourceItemCardProps> = ({ resource, handleDownload }) => {
@@ -66,29 +63,28 @@ const ResourceItemCard: React.FC<ResourceItemCardProps> = ({ resource, handleDow
 export const ResourcesPage = () => {
     const navigate = useNavigate();
 
-    const [activeTab, setActiveTab] = useState<number | null>(null);
+    const [activeTab, setActiveTab] = useState<string | null>(null);
     const [openFaq, setOpenFaq] = useState<number | null>(null);
     const [resources, setResources] = useState<RecursoDTO[]>([]);
     const [categories, setCategories] = useState<CategoriaRecursoDTO[]>([]);
-    const [isLoading, setIsLoading] = useState(true); // Added isLoading state
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const fetchCategories = async () => {
-            setIsLoading(true); // Set loading to true
+            setIsLoading(true);
             try {
                 const fetchedCategories = await getCategories();
-                console.log("Fetched categories:", fetchedCategories); // Add this
+                console.log("Fetched categories:", fetchedCategories);
                 setCategories(fetchedCategories);
                 if (fetchedCategories.length > 0) {
-                    // Find the "Artículos" category
-                    setActiveTab(0); // Set to 0 for 'Todos' by default
+                    setActiveTab('0');
                 } else {
-                    setActiveTab(0); // Ensure activeTab is 0 if no categories
+                    setActiveTab('0');
                 }
             } catch (error) {
                 console.error("Error fetching categories:", error);
             } finally {
-                setIsLoading(false); // Set loading to false after fetch
+                setIsLoading(false);
             }
         };
         fetchCategories();
@@ -96,9 +92,9 @@ export const ResourcesPage = () => {
 
     useEffect(() => {
         const fetchResources = async () => {
-            setIsLoading(true); // Set loading to true
+            setIsLoading(true);
             try {
-                if (activeTab === 0) {
+                if (activeTab === '0') {
                     const fetchedResources = await getAllResources(0, 10, '');
                     setResources(fetchedResources.content);
                 } else if (activeTab !== null) {
@@ -110,20 +106,19 @@ export const ResourcesPage = () => {
             } catch (error) {
                 console.error("Error fetching resources:", error);
             } finally {
-                setIsLoading(false); // Set loading to false after fetch
+                setIsLoading(false);
             }
         };
         fetchResources();
     }, [activeTab]);
 
-    const handleDownload = async (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>, resourceId: number, enlace: string) => {
+    const handleDownload = async (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>, resourceId: string, enlace: string) => {
         event.preventDefault();
         try {
             await incrementDownloadCount(resourceId);
             window.open(enlace, '_blank');
         } catch (error) {
             console.error("Error incrementing download count:", error);
-            // still open the link
             window.open(enlace, '_blank');
         }
     };
@@ -150,7 +145,7 @@ export const ResourcesPage = () => {
     return (
         <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
             {/* Header */}
-            <motion.div 
+            <motion.div
                 initial={{ opacity: 0, y: -50 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
@@ -178,7 +173,7 @@ export const ResourcesPage = () => {
 
             {/* Contact Options */}
             <div className="max-w-7xl mx-auto px-4 mt-8 mb-8">
-                <motion.div 
+                <motion.div
                     initial={{ opacity: 0, y: 50 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
@@ -245,7 +240,7 @@ export const ResourcesPage = () => {
             {/* Main Content */}
             <div className="max-w-7xl mx-auto px-4 pb-12">
                 {/* Tabs */}
-                <motion.div 
+                <motion.div
                     initial={{ opacity: 0, x: -100 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.5, delay: 0.4 }}
@@ -253,11 +248,11 @@ export const ResourcesPage = () => {
                 >
                     <div className="flex overflow-x-auto border-b border-gray-200">
                         <button
-                            key={0} // Use 0 for 'Todos'
-                            onClick={() => setActiveTab(0)}
-                            className={`px-6 py-4 font-medium transition-colors whitespace-nowrap ${activeTab === 0
-                                    ? 'border-b-2 border-emerald-500 text-emerald-600 bg-emerald-50'
-                                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                            key={'0'}
+                            onClick={() => setActiveTab('0')}
+                            className={`px-6 py-4 font-medium transition-colors whitespace-nowrap ${activeTab === '0'
+                                ? 'border-b-2 border-emerald-500 text-emerald-600 bg-emerald-50'
+                                : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
                                 }`}
                         >
                             Todos
@@ -267,8 +262,8 @@ export const ResourcesPage = () => {
                                 key={cat.id}
                                 onClick={() => setActiveTab(cat.id)}
                                 className={`px-6 py-4 font-medium transition-colors whitespace-nowrap ${activeTab === cat.id
-                                        ? 'border-b-2 border-emerald-500 text-emerald-600 bg-emerald-50'
-                                        : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                                    ? 'border-b-2 border-emerald-500 text-emerald-600 bg-emerald-50'
+                                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
                                     }`}
                             >
                                 {cat.nombre}
@@ -278,7 +273,7 @@ export const ResourcesPage = () => {
                 </motion.div>
 
                 {/* Resources Section */}
-                <motion.div 
+                <motion.div
                     variants={{
                         hidden: { opacity: 0 },
                         show: {
@@ -315,7 +310,7 @@ export const ResourcesPage = () => {
                 </motion.div>
 
                 {/* FAQ Section */}
-                <motion.div 
+                <motion.div
                     initial={{ opacity: 0, y: 50 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.6 }}
@@ -352,7 +347,7 @@ export const ResourcesPage = () => {
                 </motion.div>
 
                 {/* CTA Section */}
-                <motion.div 
+                <motion.div
                     initial={{ opacity: 0, y: 50 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.8 }}
@@ -366,7 +361,7 @@ export const ResourcesPage = () => {
                         Contáctanos y te guiaremos.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <button 
+                        <button
                             onClick={() => navigate('/contacto')}
                             className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
                         >
@@ -379,5 +374,5 @@ export const ResourcesPage = () => {
                 </motion.div>
             </div>
         </div>
-    )
-}
+    );
+};

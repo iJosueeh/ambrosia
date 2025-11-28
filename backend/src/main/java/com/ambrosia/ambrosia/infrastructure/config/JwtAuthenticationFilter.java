@@ -2,6 +2,7 @@ package com.ambrosia.ambrosia.infrastructure.config;
 
 import com.ambrosia.ambrosia.application.service.MyUserDetails;
 import com.ambrosia.ambrosia.application.service.UsuarioService;
+import com.ambrosia.ambrosia.infrastructure.util.security.CookieUtil;
 import com.ambrosia.ambrosia.infrastructure.util.security.JwtUtil;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
@@ -36,6 +37,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final UsuarioService usuarioService;
+    private final CookieUtil cookieUtil;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -48,15 +50,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        final String authorizationHeader = request.getHeader("Authorization");
-
         String username = null;
         String jwt = null;
 
         try {
-            // Extraer token del header
-            if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-                jwt = authorizationHeader.substring(7);
+            // Prioridad 1: Intentar leer token desde cookie (nuevo método)
+            jwt = cookieUtil.getAccessToken(request).orElse(null);
+
+            // Prioridad 2: Fallback al header Authorization (compatibilidad temporal)
+            if (jwt == null) {
+                final String authorizationHeader = request.getHeader("Authorization");
+                if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+                    jwt = authorizationHeader.substring(7);
+                    logger.debug("Token extraído desde header Authorization (modo compatibilidad)");
+                }
+            } else {
+                logger.debug("Token extraído desde cookie HttpOnly");
+            }
+
+            // Extraer username del token si existe
+            if (jwt != null) {
                 username = jwtUtil.extractUsername(jwt);
                 logger.debug("Token extraído para usuario: {}", username);
             }

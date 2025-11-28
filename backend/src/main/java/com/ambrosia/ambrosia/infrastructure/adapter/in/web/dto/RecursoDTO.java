@@ -19,6 +19,7 @@ public class RecursoDTO {
     private String contenido;
     private String size;
     private Long downloads;
+    private String slug;
     private LocalDateTime fechaPublicacion;
     private String nombreCategoria;
     private CategoriaRecursoDTO categoria;

@@ -1,26 +1,19 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, JSX } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getAllResources, getCategories } from "../services/resource.service";
-
 import type { CategoriaRecursoDTO } from "../types/categoria.types";
-import { Search, Mic, BookOpen, Video, Zap, User, Smile, Baby } from "lucide-react";
-import { toast, Toaster } from 'react-hot-toast';
+import { Search, Zap, User, Smile } from "lucide-react";
+import { Toaster } from 'react-hot-toast';
 import articulosImg from "../../../assets/imgArticulos/articulos.jpg";
 import libroImg from "../../../assets/imgArticulos/libro.jpg";
 import mentalImg from "../../../assets/imgArticulos/mental.gif";
 import mitosImg from "../../../assets/imgArticulos/mitos.jpg";
-import ninoImg from "../../../assets/imgArticulos/nino.jpg";
 import podcastImg from "../../../assets/imgArticulos/podcast.jpg";
-import videokImg from "../../../assets/imgArticulos/videok.gif";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
-
 import { motion } from "framer-motion";
 
-
-
 const BuscadorFiltros: React.FC = () => (
-    <div className="p-4 bg-white/90 backdrop-blur-md rounded-xl shadow-lg border-2 border-emerald-500/50 h-full">
+    <div className="p-4 bg-white/90 backdrop-blur-md rounded-xl shadow-lg border-2 border-emerald-500/50 h-full flex flex-col justify-center">
         <h3 className="text-xl font-bold text-emerald-600 mb-4 text-center">Buscador</h3>
         <div className="flex items-center border border-gray-300 rounded-lg p-2 mb-4 bg-white">
             <Search className="w-5 h-5 text-gray-400 mr-2" />
@@ -37,12 +30,12 @@ const BuscadorFiltros: React.FC = () => (
 );
 
 interface RecursoCardProps {
-  title: string;
-  icon: React.ReactElement<{ className?: string }>;
-  large?: boolean;
-  borderColor?: string;
-  backgroundImage?: string;
-  onClick?: () => void;
+    title: string;
+    icon: React.ReactElement<{ className?: string }>;
+    large?: boolean;
+    borderColor?: string;
+    backgroundImage?: string;
+    onClick?: () => void;
 }
 
 const RecursoCard: React.FC<RecursoCardProps> = ({ title, icon, large = false, borderColor = "border-emerald-500", backgroundImage = articulosImg, onClick }) => {
@@ -80,28 +73,35 @@ const ListadoArticulosPage: React.FC = () => {
         queryFn: () => getAllResources(0, 20, ''),
     });
 
-
-
-    const handleCardClick = (categoryName: string) => {
-        const category = categories.find(cat => cat.nombre.toLowerCase() === categoryName.toLowerCase());
-        if (category) {
-            navigate(`/explorar-recursos/${category.id}`);
-        } else {
-            toast.error(`Categoría "${categoryName}" no encontrada.`);
-        }
+    const handleCardClick = (categoryId: string) => {
+        navigate(`/explorar-recursos/${categoryId}`);
     };
 
-    const images = {
-        articulos: articulosImg,
-        podcast: podcastImg,
-        videos: videokImg,
-        libros: libroImg,
-        mitos: mitosImg,
-        salud_mental: mentalImg,
-        desarrollo_infantil: ninoImg
+    // Mapeo de imágenes por categoría
+    const getCategoryImage = (categoryName: string) => {
+        const imageMap: Record<string, string> = {
+            'ansiedad': articulosImg,
+            'depresión': podcastImg,
+            'mindfulness': mentalImg,
+            'autoestima': libroImg,
+            'relaciones': mitosImg,
+        };
+        return imageMap[categoryName.toLowerCase()] || articulosImg;
     };
 
-    if (isLoading) {
+    // Mapeo de iconos por categoría
+    const getCategoryIcon = (categoryName: string) => {
+        const iconMap: Record<string, JSX.Element> = {
+            'ansiedad': <Zap />,
+            'depresión': <Smile />,
+            'mindfulness': <Zap />,
+            'autoestima': <User />,
+            'relaciones': <User />,
+        };
+        return iconMap[categoryName.toLowerCase()] || <User />;
+    };
+
+    if (isLoading || categories.length === 0) {
         return <div className="min-h-screen flex justify-center items-center text-xl font-semibold text-emerald-700">Cargando recursos...</div>;
     }
 
@@ -114,7 +114,7 @@ const ListadoArticulosPage: React.FC = () => {
             <Toaster />
 
             <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-                <motion.header 
+                <motion.header
                     initial={{ opacity: 0, y: -50 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
@@ -124,11 +124,11 @@ const ListadoArticulosPage: React.FC = () => {
                         Nuestro Centro de Recursos
                     </h1>
                     <p className="mt-3 text-xl text-gray-600">
-                        Explora guías, podcasts y videos sobre bienestar y salud.
+                        Explora guías y recursos sobre bienestar y salud mental.
                     </p>
                 </motion.header>
 
-                <motion.div 
+                <motion.div
                     variants={{
                         hidden: { opacity: 0 },
                         show: {
@@ -140,35 +140,81 @@ const ListadoArticulosPage: React.FC = () => {
                     }}
                     initial="hidden"
                     animate="show"
-                    className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+                    className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-5 md:grid-rows-5 gap-2 h-auto md:h-[600px]"
                 >
-                    <motion.div variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }} className="md:col-span-2 lg:col-span-2 min-h-[250px]">
-                        <RecursoCard title="Artículos" icon={<User />} large backgroundImage={images.articulos} onClick={() => handleCardClick('Artículos')} />
-                    </motion.div>
-                    <motion.div variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }} className="md:col-span-2 lg:col-span-2 min-h-[250px]">
-                        <RecursoCard title="Podcast" icon={<Mic />} backgroundImage={images.podcast} onClick={() => handleCardClick('Podcast')} />
-                    </motion.div>
-                    <motion.div variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }} className="md:col-span-2 lg:col-span-2 min-h-[250px]">
+                    {/* Div 1: Left Column (Row Span 5) */}
+                    {categories[0] && (
+                        <motion.div
+                            variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }}
+                            className="md:row-span-5 md:col-start-1 md:row-start-1 min-h-[200px]"
+                        >
+                            <RecursoCard
+                                title={categories[0].nombre}
+                                icon={getCategoryIcon(categories[0].nombre)}
+                                large={true}
+                                backgroundImage={getCategoryImage(categories[0].nombre)}
+                                onClick={() => handleCardClick(categories[0].id)}
+                            />
+                        </motion.div>
+                    )}
+
+                    {/* Div 3: Top Center (Col Span 3, Row Span 2) */}
+                    {categories[1] && (
+                        <motion.div
+                            variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }}
+                            className="md:col-span-3 md:row-span-2 md:col-start-2 md:row-start-1 min-h-[200px]"
+                        >
+                            <RecursoCard
+                                title={categories[1].nombre}
+                                icon={getCategoryIcon(categories[1].nombre)}
+                                backgroundImage={getCategoryImage(categories[1].nombre)}
+                                onClick={() => handleCardClick(categories[1].id)}
+                            />
+                        </motion.div>
+                    )}
+
+                    {/* Div 2: Center Middle (Search Input) */}
+                    <motion.div
+                        variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }}
+                        className="md:col-span-3 md:col-start-2 md:row-start-3 min-h-[100px]"
+                    >
                         <BuscadorFiltros />
                     </motion.div>
-                    <motion.div variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }} className="md:col-span-2 lg:col-span-2 min-h-[250px]">
-                        <RecursoCard title="Videos" icon={<Video />} backgroundImage={images.videos} onClick={() => handleCardClick('Videos')} />
-                    </motion.div>
-                    <motion.div variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }} className="md:col-span-1 lg:col-span-1 min-h-[200px]">
-                        <RecursoCard title="Libros" icon={<BookOpen />} backgroundImage={images.libros} onClick={() => handleCardClick('Libros')} />
-                    </motion.div>
-                    <motion.div variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }} className="md:col-span-1 lg:col-span-1 min-h-[200px]">
-                        <RecursoCard title="Mitos y Realidades" icon={<Zap />} backgroundImage={images.mitos} onClick={() => handleCardClick('Mitos y Realidades')} />
-                    </motion.div>
-                    <motion.div variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }} className="md:col-span-1 lg:col-span-1 min-h-[200px]">
-                        <RecursoCard title="Desarrollo Infantil" icon={<Baby />} backgroundImage={images.desarrollo_infantil} onClick={() => handleCardClick('Desarrollo Infantil')} />
-                    </motion.div>
-                    <motion.div variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }} className="md:col-span-1 lg:col-span-1 min-h-[200px]">
-                        <RecursoCard title="Salud Mental" icon={<Smile />} backgroundImage={images.salud_mental} onClick={() => handleCardClick('Salud Mental')} />
-                    </motion.div>
+
+                    {/* Div 4: Bottom Center (Col Span 3, Row Span 2) */}
+                    {categories[2] && (
+                        <motion.div
+                            variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }}
+                            className="md:col-span-3 md:row-span-2 md:col-start-2 md:row-start-4 min-h-[200px]"
+                        >
+                            <RecursoCard
+                                title={categories[2].nombre}
+                                icon={getCategoryIcon(categories[2].nombre)}
+                                backgroundImage={getCategoryImage(categories[2].nombre)}
+                                onClick={() => handleCardClick(categories[2].id)}
+                            />
+                        </motion.div>
+                    )}
+
+                    {/* Div 5: Right Column (Row Span 5) */}
+                    {categories[3] && (
+                        <motion.div
+                            variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }}
+                            className="md:row-span-5 md:col-start-5 md:row-start-1 min-h-[200px]"
+                        >
+                            <RecursoCard
+                                title={categories[3].nombre}
+                                icon={getCategoryIcon(categories[3].nombre)}
+                                large={true}
+                                backgroundImage={getCategoryImage(categories[3].nombre)}
+                                onClick={() => handleCardClick(categories[3].id)}
+                            />
+                        </motion.div>
+                    )}
                 </motion.div>
             </div>
         </>
     );
 };
+
 export default ListadoArticulosPage;

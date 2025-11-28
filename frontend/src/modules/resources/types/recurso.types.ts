@@ -1,5 +1,5 @@
 export interface RecursoDTO {
-    id?: number; // Make optional for creation
+    id?: string; // UUID from backend
     titulo: string;
     descripcion: string;
     enlace?: string; // Make optional
@@ -12,4 +12,5 @@ export interface RecursoDTO {
     estado: string;
     creadorId?: string; // Added
     nombreCreador?: string; // Added
+    slug?: string; // Added for SEO friendly URLs
 }
