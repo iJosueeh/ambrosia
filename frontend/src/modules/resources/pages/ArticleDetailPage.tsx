@@ -1,19 +1,26 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Share2, Bookmark, Calendar, Tag, CheckCircle, FileText, Video, BookOpen, LoaderCircle } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getRecursoBySlug } from '../services/resource.service';
+import { getRecursoBySlug, getRecursosRelacionados, marcarRecursoComoLeido, getProgresoUsuario, type RecursoRelacionado, type ProgresoUsuario } from '../services/resource.service';
 import type { RecursoDTO } from '../types/recurso.types';
 import { ShareModal } from "@shared/components/ShareModal";
+import { useAuth } from '@shared/hooks/useAuth';
 
 import { motion } from "framer-motion";
 
 export default function ArticleDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [article, setArticle] = useState<RecursoDTO | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [relatedResources, setRelatedResources] = useState<RecursoRelacionado[]>([]);
+  const [userProgress, setUserProgress] = useState<ProgresoUsuario | null>(null);
+  const [isLoadingRelated, setIsLoadingRelated] = useState(false);
+  const [isMarkedAsRead, setIsMarkedAsRead] = useState(false);
+  const [isMarkingAsRead, setIsMarkingAsRead] = useState(false);
 
   useEffect(() => {
     const fetchArticle = async () => {
@@ -26,6 +33,33 @@ export default function ArticleDetailPage() {
         setIsLoading(true);
         const fetchedArticle = await getRecursoBySlug(slug);
         setArticle(fetchedArticle);
+
+        // Cargar recursos relacionados y progreso en paralelo
+        if (fetchedArticle.id) {
+          setIsLoadingRelated(true);
+          try {
+            // Solo obtener progreso si el usuario está autenticado
+            const progressPromise = isAuthenticated
+              ? getProgresoUsuario().catch(() => null)
+              : Promise.resolve(null);
+
+            const [related, progress] = await Promise.all([
+              getRecursosRelacionados(fetchedArticle.id, 3),
+              progressPromise
+            ]);
+            setRelatedResources(related);
+            setUserProgress(progress);
+
+            // Verificar si ya está marcado como leído
+            if (progress && progress.recursosLeidosIds.includes(fetchedArticle.id)) {
+              setIsMarkedAsRead(true);
+            }
+          } catch (err) {
+            console.error('Error loading related data:', err);
+          } finally {
+            setIsLoadingRelated(false);
+          }
+        }
       } catch (err) {
         console.error("Error fetching article:", err);
         setError("No se pudo cargar el artículo. Inténtalo de nuevo más tarde.");
@@ -35,30 +69,6 @@ export default function ArticleDetailPage() {
     };
     fetchArticle();
   }, [slug]);
-
-  const relatedResources = [
-    {
-      icon: FileText,
-      title: 'Podcast: Mitos sobre la nutrición intuitiva',
-      description: 'Escucha a expertos desmentir conceptos erróneos',
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50'
-    },
-    {
-      icon: Video,
-      title: 'Video: Técnicas de Mindfulness',
-      description: 'Ejercicios guiados para comer conscientemente',
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50'
-    },
-    {
-      icon: BookOpen,
-      title: 'Artículo: Construyendo una imagen corporal positiva',
-      description: 'Herramientas para mejorar tu relación contigo mismo',
-      color: 'text-emerald-600',
-      bgColor: 'bg-emerald-50'
-    }
-  ];
 
   if (isLoading) {
     return (
@@ -90,6 +100,25 @@ export default function ArticleDetailPage() {
 
   const currentArticleUrl = window.location.href;
   const currentArticleTitle = article?.titulo || "Artículo de Ambrosia";
+
+  const handleMarcarComoLeido = async () => {
+    if (!article?.id || isMarkingAsRead || isMarkedAsRead) return;
+
+    setIsMarkingAsRead(true);
+    try {
+      await marcarRecursoComoLeido(article.id);
+      setIsMarkedAsRead(true);
+      // Recargar progreso
+      const nuevoProgreso = await getProgresoUsuario().catch(() => null);
+      if (nuevoProgreso) {
+        setUserProgress(nuevoProgreso);
+      }
+    } catch (error) {
+      // Error silencioso - probablemente no autenticado
+    } finally {
+      setIsMarkingAsRead(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
@@ -170,6 +199,40 @@ export default function ArticleDetailPage() {
                     </p>
                   )}
                 </div>
+
+                {/* Botón Marcar como Leído */}
+                {isAuthenticated && !isMarkedAsRead && (
+                  <div className="mt-8 pt-6 border-t border-gray-200">
+                    <button
+                      onClick={handleMarcarComoLeido}
+                      disabled={isMarkingAsRead}
+                      className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white py-4 px-6 rounded-xl font-semibold hover:from-emerald-600 hover:to-teal-600 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      {isMarkingAsRead ? (
+                        <>
+                          <LoaderCircle className="w-5 h-5 animate-spin" />
+                          Marcando...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="w-5 h-5" />
+                          Marcar como leído
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
+
+                {isMarkedAsRead && (
+                  <div className="mt-8 pt-6 border-t border-gray-200">
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center gap-3">
+                      <CheckCircle className="w-6 h-6 text-emerald-600 flex-shrink-0" />
+                      <p className="text-emerald-800 font-medium">
+                        ¡Artículo marcado como leído!
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </motion.article>
@@ -187,31 +250,43 @@ export default function ArticleDetailPage() {
                 <h3 className="text-xl font-bold text-gray-900 mb-4">
                   Recursos Relacionados
                 </h3>
-                <div className="space-y-4">
-                  {relatedResources.map((resource, index) => {
-                    const Icon = resource.icon;
-                    return (
-                      <button
-                        key={index}
-                        className="w-full text-left p-4 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors group"
-                      >
-                        <div className="flex items-start gap-3">
-                          <div className={`w-10 h-10 ${resource.bgColor} rounded-lg flex items-center justify-center flex-shrink-0`}>
-                            <Icon className={`w-5 h-5 ${resource.color}`} />
+                {isLoadingRelated ? (
+                  <div className="flex items-center justify-center py-8">
+                    <LoaderCircle className="w-8 h-8 text-emerald-500 animate-spin" />
+                  </div>
+                ) : relatedResources.length > 0 ? (
+                  <div className="space-y-4">
+                    {relatedResources.map((resource) => {
+                      const Icon = resource.tipoRecurso === 'Video' ? Video : resource.tipoRecurso === 'Podcast' ? FileText : BookOpen;
+                      const color = resource.tipoRecurso === 'Video' ? 'text-purple-600' : resource.tipoRecurso === 'Podcast' ? 'text-blue-600' : 'text-emerald-600';
+                      const bgColor = resource.tipoRecurso === 'Video' ? 'bg-purple-50' : resource.tipoRecurso === 'Podcast' ? 'bg-blue-50' : 'bg-emerald-50';
+
+                      return (
+                        <button
+                          key={resource.id}
+                          onClick={() => navigate(`/articulos/${resource.slug}`)}
+                          className="w-full text-left p-4 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors group"
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className={`w-10 h-10 ${bgColor} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                              <Icon className={`w-5 h-5 ${color}`} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-semibold text-gray-900 mb-1 text-sm group-hover:text-emerald-600 transition-colors">
+                                {resource.titulo}
+                              </h4>
+                              <p className="text-xs text-gray-600 line-clamp-2">
+                                {resource.descripcion}
+                              </p>
+                            </div>
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-semibold text-gray-900 mb-1 text-sm group-hover:text-emerald-600 transition-colors">
-                              {resource.title}
-                            </h4>
-                            <p className="text-xs text-gray-600 line-clamp-2">
-                              {resource.description}
-                            </p>
-                          </div>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500 text-center py-4">No hay recursos relacionados disponibles.</p>
+                )}
               </div>
 
               {/* Help CTA */}
@@ -231,20 +306,25 @@ export default function ArticleDetailPage() {
               </div>
 
               {/* Progress Tracker */}
-              <div className="bg-white rounded-2xl shadow-lg p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <CheckCircle className="w-5 h-5 text-emerald-600" />
-                  <h3 className="text-lg font-bold text-gray-900">
-                    Tu Progreso
-                  </h3>
+              {userProgress && (
+                <div className="bg-white rounded-2xl shadow-lg p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <CheckCircle className="w-5 h-5 text-emerald-600" />
+                    <h3 className="text-lg font-bold text-gray-900">
+                      Tu Progreso
+                    </h3>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Has leído <strong className="text-gray-900">{userProgress.articulosLeidos} de {userProgress.totalArticulosRecomendados}</strong> artículos recomendados
+                  </p>
+                  <div className="w-full bg-gray-200 rounded-full h-2.5">
+                    <div
+                      className="bg-gradient-to-r from-emerald-500 to-teal-500 h-2.5 rounded-full"
+                      style={{ width: `${userProgress.porcentaje}%` }}
+                    ></div>
+                  </div>
                 </div>
-                <p className="text-sm text-gray-600 mb-4">
-                  Has leído <strong className="text-gray-900">12 de 20</strong> artículos recomendados
-                </p>
-                <div className="w-full bg-gray-200 rounded-full h-2.5">
-                  <div className="bg-gradient-to-r from-emerald-500 to-teal-500 h-2.5 rounded-full" style={{ width: '60%' }}></div>
-                </div>
-              </div>
+              )}
             </div>
           </motion.aside>
         </div>

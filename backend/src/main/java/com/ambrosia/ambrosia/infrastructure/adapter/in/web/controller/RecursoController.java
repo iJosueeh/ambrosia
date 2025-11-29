@@ -2,7 +2,9 @@ package com.ambrosia.ambrosia.infrastructure.adapter.in.web.controller;
 
 import com.ambrosia.ambrosia.application.port.in.recurso.CrearRecursoCommand;
 import com.ambrosia.ambrosia.infrastructure.adapter.in.web.dto.CategoriaRecursoDTO;
+import com.ambrosia.ambrosia.infrastructure.adapter.in.web.dto.ProgresoUsuarioDTO;
 import com.ambrosia.ambrosia.infrastructure.adapter.in.web.dto.RecursoDTO;
+import com.ambrosia.ambrosia.infrastructure.adapter.in.web.dto.RecursoRelacionadoDTO;
 import com.ambrosia.ambrosia.application.service.CategoriaRecursoService;
 import com.ambrosia.ambrosia.application.service.RecursoService;
 import jakarta.validation.Valid;
@@ -120,5 +122,61 @@ public class RecursoController {
     public ResponseEntity<Void> incrementarDescargas(@PathVariable UUID id) {
         recursoService.incrementarDescargas(id);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{id}/relacionados")
+    public ResponseEntity<List<RecursoRelacionadoDTO>> obtenerRecursosRelacionados(
+            @PathVariable UUID id,
+            @RequestParam(defaultValue = "3") int limit) {
+        List<RecursoRelacionadoDTO> relacionados = recursoService
+                .obtenerRecursosRelacionados(id, limit);
+        return ResponseEntity.ok(relacionados);
+    }
+
+    @PostMapping("/{id}/marcar-leido")
+    public ResponseEntity<Void> marcarComoLeido(
+            @PathVariable UUID id,
+            @RequestParam(required = false) Integer tiempoLecturaSegundos) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // Verificar si el usuario está autenticado
+        if (authentication == null || !authentication.isAuthenticated() ||
+                "anonymousUser".equals(authentication.getPrincipal())) {
+            return ResponseEntity.status(401).build();
+        }
+
+        // Verificar que el principal sea del tipo correcto
+        if (!(authentication.getPrincipal() instanceof MyUserDetails)) {
+            return ResponseEntity.status(403).build();
+        }
+
+        MyUserDetails userDetails = (MyUserDetails) authentication.getPrincipal();
+        UUID usuarioId = userDetails.getId();
+
+        recursoService.marcarRecursoComoLeido(id, usuarioId, tiempoLecturaSegundos);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/progreso")
+    public ResponseEntity<ProgresoUsuarioDTO> obtenerProgreso() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // Verificar si el usuario está autenticado
+        if (authentication == null || !authentication.isAuthenticated() ||
+                "anonymousUser".equals(authentication.getPrincipal())) {
+            return ResponseEntity.status(401).build();
+        }
+
+        // Verificar que el principal sea del tipo correcto
+        if (!(authentication.getPrincipal() instanceof MyUserDetails)) {
+            return ResponseEntity.status(403).build();
+        }
+
+        MyUserDetails userDetails = (MyUserDetails) authentication.getPrincipal();
+        UUID usuarioId = userDetails.getId();
+
+        ProgresoUsuarioDTO progreso = recursoService
+                .obtenerProgresoUsuario(usuarioId);
+        return ResponseEntity.ok(progreso);
     }
 }

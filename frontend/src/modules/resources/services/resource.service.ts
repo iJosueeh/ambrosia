@@ -76,3 +76,47 @@ export const getRecursoBySlug = async (slug: string): Promise<RecursoDTO> => {
 export const incrementDownloadCount = async (id: string): Promise<void> => {
     await axiosInstance.put(`${API_URL}/${id}/descargar`);
 };
+
+export interface RecursoRelacionado {
+    id: string;
+    titulo: string;
+    descripcion: string;
+    slug: string;
+    urlimg: string;
+    tipoRecurso: string;
+    nombreCategoria: string;
+}
+
+export interface ProgresoUsuario {
+    articulosLeidos: number;
+    totalArticulosRecomendados: number;
+    porcentaje: number;
+    recursosLeidosIds: string[];
+}
+
+export const getRecursosRelacionados = async (
+    recursoId: string,
+    limit: number = 3
+): Promise<RecursoRelacionado[]> => {
+    const response = await axiosInstance.get<RecursoRelacionado[]>(
+        `${API_URL}/${recursoId}/relacionados`,
+        { params: { limit } }
+    );
+    return response.data;
+};
+
+export const marcarRecursoComoLeido = async (
+    recursoId: string,
+    tiempoLecturaSegundos?: number
+): Promise<void> => {
+    await axiosInstance.post(
+        `${API_URL}/${recursoId}/marcar-leido`,
+        null,
+        { params: { tiempoLecturaSegundos } }
+    );
+};
+
+export const getProgresoUsuario = async (): Promise<ProgresoUsuario> => {
+    const response = await axiosInstance.get<ProgresoUsuario>(`${API_URL}/progreso`);
+    return response.data;
+};

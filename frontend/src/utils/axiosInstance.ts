@@ -29,7 +29,7 @@ axiosInstance.interceptors.response.use(
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
     // Excluir ciertos endpoints del manejo automático de 401
-    const excludedPaths = ['/auth/me', '/auth/refresh', '/auth/login'];
+    const excludedPaths = ['/auth/me', '/auth/refresh', '/auth/login', '/recursos/progreso', '/marcar-leido'];
     const isExcluded = excludedPaths.some(path => originalRequest.url?.includes(path));
 
     // Si es un endpoint excluido con 401, retornar error silenciosamente

@@ -9,6 +9,7 @@ import com.ambrosia.ambrosia.infrastructure.adapter.in.web.dto.RecursoDTO;
 import com.ambrosia.ambrosia.domain.repository.CategoriaRecursoRepositoryPort;
 import com.ambrosia.ambrosia.domain.repository.EstadoPublicadoRepositoryPort;
 import com.ambrosia.ambrosia.domain.repository.RecursoRepositoryPort;
+import com.ambrosia.ambrosia.domain.repository.UsuarioRepositoryPort;
 import com.ambrosia.ambrosia.domain.repository.ProfesionalRepositoryPort;
 import com.google.common.base.Strings;
 import com.ambrosia.ambrosia.infrastructure.util.mapper.RecursoMapper;
@@ -40,6 +41,8 @@ public class RecursoService implements
     private final EstadoPublicadoRepositoryPort estadoPublicadoRepository;
     private final ProfesionalRepositoryPort profesionalRepository;
     private final RecursoMapper recursoMapper;
+    private final RecursoLeidoService recursoLeidoService;
+    private final UsuarioRepositoryPort usuarioRepository;
 
     @Override
     @Transactional
@@ -121,8 +124,6 @@ public class RecursoService implements
         return recursoMapper.toDto(recurso);
     }
 
-    // ========== MÉTODOS ADICIONALES ==========
-
     @Transactional(readOnly = true)
     public List<RecursoDTO> getRecursosByProfesionalId(UUID profesionalId) {
         return recursoRepository.findByCreadorId(profesionalId).stream()
@@ -177,7 +178,6 @@ public class RecursoService implements
         recursoRepository.save(recurso);
     }
 
-    // ========== MÉTODOS LEGACY (delegando a casos de uso) ==========
 
     @Transactional
     public RecursoDTO createRecurso(RecursoDTO dto, UUID profesionalId) {
@@ -206,5 +206,83 @@ public class RecursoService implements
     @Transactional(readOnly = true)
     public RecursoDTO obtenerRecursoPorId(UUID id) {
         return obtenerPorId(id);
+    }
+
+    @Transactional(readOnly = true)
+    public List<com.ambrosia.ambrosia.infrastructure.adapter.in.web.dto.RecursoRelacionadoDTO> obtenerRecursosRelacionados(
+            UUID recursoId, int limit) {
+        RecursoEducativo recurso = recursoRepository.findById(recursoId)
+                .orElseThrow(() -> new RuntimeException("Recurso no encontrado con el ID: " + recursoId));
+
+        Page<RecursoEducativo> relacionados = recursoRepository.findByCategoriaIdAndEstadoNombre(
+                recurso.getCategoria().getId(),
+                "PUBLICADO",
+                org.springframework.data.domain.PageRequest.of(0, limit + 10));
+
+        return relacionados.stream()
+                .filter(r -> !r.getId().equals(recursoId))
+                .limit(limit)
+                .map(r -> com.ambrosia.ambrosia.infrastructure.adapter.in.web.dto.RecursoRelacionadoDTO.builder()
+                        .id(r.getId())
+                        .titulo(r.getTitulo())
+                        .descripcion(r.getDescripcion())
+                        .slug(r.getSlug())
+                        .urlimg(r.getUrlimg())
+                        .tipoRecurso(determinarTipoRecurso(r))
+                        .nombreCategoria(r.getCategoria().getNombre())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void marcarRecursoComoLeido(UUID recursoId, UUID usuarioId, Integer tiempoLecturaSegundos) {
+        RecursoEducativo recurso = recursoRepository.findById(recursoId)
+                .orElseThrow(() -> new RuntimeException("Recurso no encontrado con el ID: " + recursoId));
+
+        com.ambrosia.ambrosia.domain.model.Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con el ID: " + usuarioId));
+
+        // Verificar si ya estaba marcado como leído
+        boolean yaLeido = recursoLeidoService.estaLeido(usuario, recurso);
+
+        recursoLeidoService.marcarComoLeido(usuario, recurso, tiempoLecturaSegundos);
+
+        // Solo incrementar contador si es la primera vez
+        if (!yaLeido) {
+            usuario.setArticulosLeidos((usuario.getArticulosLeidos() != null ? usuario.getArticulosLeidos() : 0) + 1);
+            usuarioRepository.save(usuario);
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public com.ambrosia.ambrosia.infrastructure.adapter.in.web.dto.ProgresoUsuarioDTO obtenerProgresoUsuario(
+            UUID usuarioId) {
+        com.ambrosia.ambrosia.domain.model.Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con el ID: " + usuarioId));
+
+        long recursosLeidos = recursoLeidoService.contarRecursosLeidos(usuario);
+        long totalRecursos = recursoRepository
+                .findByEstadoNombre("PUBLICADO", org.springframework.data.domain.Pageable.unpaged()).getTotalElements();
+        List<UUID> recursosLeidosIds = recursoLeidoService.obtenerIdsRecursosLeidos(usuario);
+        int porcentaje = totalRecursos > 0 ? (int) ((recursosLeidos * 100) / totalRecursos) : 0;
+
+        return com.ambrosia.ambrosia.infrastructure.adapter.in.web.dto.ProgresoUsuarioDTO.builder()
+                .articulosLeidos((int) recursosLeidos)
+                .totalArticulosRecomendados((int) totalRecursos)
+                .porcentaje(porcentaje)
+                .recursosLeidosIds(recursosLeidosIds)
+                .build();
+    }
+
+    private String determinarTipoRecurso(RecursoEducativo recurso) {
+        if (recurso.getEnlace() != null) {
+            String enlace = recurso.getEnlace().toLowerCase();
+            if (enlace.contains("youtube") || enlace.contains("video")) {
+                return "Video";
+            } else if (enlace.contains("podcast") || enlace.contains("spotify")) {
+                return "Podcast";
+            }
+        }
+        return "Artículo";
     }
 }

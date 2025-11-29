@@ -19,6 +19,7 @@ import com.ambrosia.ambrosia.domain.repository.UsuarioRepositoryPort;
 import com.ambrosia.ambrosia.infrastructure.util.export.ExportStrategy;
 import com.google.common.base.Strings;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 import com.ambrosia.ambrosia.infrastructure.util.mapper.RecursoMapper;
@@ -71,6 +72,7 @@ public class UsuarioService implements
     private final java.util.Map<String, ExportStrategy<Usuario>> exportStrategies;
 
     @Override
+    @Transactional
     public UsuarioDTO registrar(RegistrarUsuarioCommand command) {
         logger.info("Registrando usuario con correo: {}", command.getEmail());
 
@@ -87,7 +89,16 @@ public class UsuarioService implements
                 .build();
 
         Usuario usuarioGuardado = usuarioRepository.save(usuario);
-        actividadService.crearActividad(usuarioGuardado, TipoActividad.REGISTRO, "Te uniste a Ambrosia Vital");
+        logger.info("Usuario guardado exitosamente con ID: {}", usuarioGuardado.getId());
+
+        // Intentar crear actividad, pero no fallar el registro si esto falla
+        try {
+            actividadService.crearActividad(usuarioGuardado, TipoActividad.REGISTRO, "Te uniste a Ambrosia Vital");
+        } catch (Exception e) {
+            logger.error("Error al crear actividad de registro para usuario {}: {}", usuarioGuardado.getId(),
+                    e.getMessage());
+            // Continuar con el registro aunque falle la actividad
+        }
 
         return mapUsuarioToDTO(usuarioGuardado);
     }

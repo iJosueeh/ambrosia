@@ -56,7 +56,7 @@ export interface CurrentUser {
 
 export interface RegisterRequest {
     nombre: string;
-    correo: string;
+    email: string;
     password: string;
     rol: string;
 }

@@ -65,7 +65,7 @@ export const Register: React.FC<RegisterProps> = ({ onToggleView }) => {
         if (validateForm()) {
             registerMutation.mutate({
                 nombre: fullNameProps.value,
-                correo: emailProps.value,
+                email: emailProps.value,
                 password: passwordProps.value,
                 rol: "USER" // Assuming a default role for registration
             });
@@ -82,7 +82,7 @@ export const Register: React.FC<RegisterProps> = ({ onToggleView }) => {
         >
             <div className="w-full max-w-md">
                 <div className="text-center mb-8">
-                     <motion.div
+                    <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1, rotate: 360 }}
                         transition={{ delay: 0.2, type: "spring", stiffness: 260, damping: 20 }}
