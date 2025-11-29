@@ -86,6 +86,10 @@ public class UsuarioService implements
                 .password(passwordEncoder.encode(command.getPassword()))
                 .fechaRegistro(LocalDateTime.now())
                 .rol(rol)
+                .nivelAcceso(1)
+                .testsCompletados(0)
+                .articulosLeidos(0)
+                .recursosDescargados(0)
                 .build();
 
         Usuario usuarioGuardado = usuarioRepository.save(usuario);
