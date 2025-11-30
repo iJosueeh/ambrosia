@@ -4,12 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.UUID; // Importar UUID
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class OpcionDTO {
-    private UUID id; // Cambio a UUID
+    private UUID id;
     private String texto;
+    private Integer valor;
 }

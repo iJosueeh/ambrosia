@@ -132,6 +132,7 @@ public class RecursoMapper {
         OpcionDTO opcionDTO = new OpcionDTO();
         opcionDTO.setId(opcion.getId());
         opcionDTO.setTexto(opcion.getTexto());
+        opcionDTO.setValor(opcion.getValor());
         return opcionDTO;
     }
 }

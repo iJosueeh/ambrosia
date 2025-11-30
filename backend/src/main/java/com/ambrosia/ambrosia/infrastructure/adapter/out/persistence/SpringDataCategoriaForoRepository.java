@@ -8,4 +8,5 @@ import java.util.UUID; // Importar UUID
 
 @Repository
 public interface SpringDataCategoriaForoRepository extends JpaRepository<CategoriaForo, UUID> {
+    java.util.Optional<CategoriaForo> findByNombre(String nombre);
 }

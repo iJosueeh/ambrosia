@@ -8,7 +8,7 @@ export const forumService = {
         return response.data;
     },
 
-    getCategoryById: async (id: number) => {
+    getCategoryById: async (id: string) => {
         const response = await axiosInstance.get(`${API_URL}/categorias-foro/${id}`);
         return response.data;
     },
@@ -23,7 +23,7 @@ export const forumService = {
         return response.data;
     },
 
-    getForoById: async (id: number) => {
+    getForoById: async (id: string) => {
         const response = await axiosInstance.get(`${API_URL}/foros/${id}`);
         return response.data;
     },
@@ -33,17 +33,17 @@ export const forumService = {
         return response.data;
     },
 
-    getForosByCategoriaForoId: async (categoriaForoId: number) => {
+    getForosByCategoriaForoId: async (categoriaForoId: string) => {
         const response = await axiosInstance.get(`${API_URL}/foros/categoria/${categoriaForoId}`);
         return response.data;
     },
 
-    getCommentsByForoId: async (foroId: number) => {
+    getCommentsByForoId: async (foroId: string) => {
         const response = await axiosInstance.get(`${API_URL}/foros/${foroId}/comentarios`);
         return response.data;
     },
 
-    createComment: async (foroId: number, commentData: any) => {
+    createComment: async (foroId: string, commentData: any) => {
         const response = await axiosInstance.post(`${API_URL}/foros/${foroId}/comentarios`, commentData);
         return response.data;
     }

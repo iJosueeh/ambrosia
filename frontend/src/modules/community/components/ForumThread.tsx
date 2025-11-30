@@ -45,11 +45,11 @@ const ForumThread: React.FC<ForumThreadProps> = ({ thread, onBack, onBackToHome,
             }
             try {
                 const data = await forumService.getCommentsByForoId(thread.id);
-                const mappedComments: CommentType[] = data.map((comment: any) => ({
+                const mappedComments: CommentType[] = (data.content || []).map((comment: any) => ({
                     id: comment.id,
                     autor: {
-                        id: comment.autor.id,
-                        nombre: comment.autor.nombre,
+                        id: comment.autorId,
+                        nombre: comment.autorNombre,
                     },
                     fechaCreacion: comment.fechaCreacion,
                     contenido: comment.contenido,

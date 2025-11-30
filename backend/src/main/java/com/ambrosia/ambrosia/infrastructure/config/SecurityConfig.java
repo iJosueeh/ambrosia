@@ -102,14 +102,29 @@ public class SecurityConfig {
                                                 .requestMatchers("/api/tests/admin").hasAuthority("ROLE_ADMIN")
                                                 .requestMatchers("/api/profesionales/**")
                                                 .hasAuthority("ROLE_PROFESSIONAL")
+                                                // Endpoints públicos
                                                 .requestMatchers(
                                                                 "/api/v1/usuarios/registrar",
                                                                 "/api/v1/auth/login",
-                                                                "/api/tests",
-                                                                "/api/tests/resultado",
-                                                                "/api/v1/recursos/**",
+                                                                "/api/v1/auth/refresh",
+                                                                "/api/v1/auth/logout",
+                                                                "/api/v1/auth/logout",
+                                                                "/api/v1/tests/**",
+                                                                "/api/tests/**",
                                                                 "/api/resource-categories",
-                                                                "/api/resource-statuses")
+                                                                "/api/resource-statuses",
+                                                                "/api/v1/categorias-foro",
+                                                                "/api/v1/categorias-foro/**",
+                                                                "/api/v1/foros",
+                                                                "/api/v1/foros/**")
+                                                .permitAll()
+                                                // Endpoints de recursos que requieren autenticación
+                                                .requestMatchers(
+                                                                "/api/v1/recursos/*/marcar-leido",
+                                                                "/api/v1/recursos/progreso")
+                                                .authenticated()
+                                                // Resto de endpoints de recursos son públicos
+                                                .requestMatchers("/api/v1/recursos/**")
                                                 .permitAll()
                                                 .anyRequest().authenticated())
                                 .formLogin(AbstractHttpConfigurer::disable)

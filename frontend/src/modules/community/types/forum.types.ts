@@ -1,15 +1,15 @@
 export interface ForumCategoryType {
-    id: number;
+    id: string;
     titulo: string;
     descripcion: string;
 }
 
 export interface ForumThreadType {
-    id: number;
+    id: string;
     titulo: string;
     descripcion: string;
     autor: {
-        id: number;
+        id: string;
         nombre: string;
     };
     fechaCreacion: string; // ISO date string
@@ -19,10 +19,10 @@ export interface ForumThreadType {
 }
 
 export interface CommentType {
-    id: number;
+    id: string;
     contenido: string;
     autor: {
-        id: number;
+        id: string;
         nombre: string;
     };
     fechaCreacion: string; // ISO date string

@@ -51,8 +51,8 @@ const ForumCategory: React.FC<ForumCategoryProps> = ({ category, onBackToHome, o
                     titulo: thread.titulo,
                     descripcion: thread.descripcion,
                     autor: {
-                        id: thread.autor.id,
-                        nombre: thread.autor.nombre,
+                        id: thread.autorId,
+                        nombre: thread.autorNombre,
                     },
                     fechaCreacion: thread.fechaCreacion,
                     categoriaForo: category, // Pass the full category object

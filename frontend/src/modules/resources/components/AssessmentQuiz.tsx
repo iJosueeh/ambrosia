@@ -1,79 +1,48 @@
 import { useState, useEffect } from "react";
 import { ArrowLeft, ArrowRight, CheckCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import AmbrosiaLogo from "../../../assets/Ambrosia_Logo2.png";
 import { useMutation } from "@tanstack/react-query";
-import { guardarResultado } from "../services/test.service";
+import { guardarResultado, getTestById } from "../services/test.service";
 import * as TestServiceTypes from "../services/test.service";
 import { toast } from 'react-hot-toast';
 import { useAuth } from "../../../shared/hooks/useAuth";
 
-const staticTest: TestServiceTypes.TestDTO = {
-  id: 1,
-  titulo: "Evaluación de Bienestar Integral",
-  descripcion: "Este test evalúa aspectos psicológicos y nutricionales para un bienestar completo.",
-  preguntas: [
-    {
-      id: 101,
-      texto: "¿Con qué frecuencia sientes estrés o ansiedad en tu día a día?",
-      opciones: [
-        { id: 1001, texto: "Nunca o casi nunca" },
-        { id: 1002, texto: "Raramente" },
-        { id: 1003, texto: "A veces" },
-        { id: 1004, texto: "Frecuentemente" },
-        { id: 1005, texto: "Constantemente" },
-      ],
-    },
-    {
-      id: 102,
-      texto: "¿Cómo describirías la calidad de tu sueño?",
-      opciones: [
-        { id: 1006, texto: "Muy buena, duermo profundamente" },
-        { id: 1007, texto: "Buena, me siento descansado/a" },
-        { id: 1008, texto: "Regular, a veces me cuesta dormir" },
-        { id: 1009, texto: "Mala, me despierto varias veces" },
-        { id: 1010, texto: "Muy mala, casi no duermo" },
-      ],
-    },
-    {
-      id: 103,
-      texto: "¿Con qué frecuencia consumes frutas y verduras?",
-      opciones: [
-        { id: 1011, texto: "Varias veces al día" },
-        { id: 1012, texto: "Una vez al día" },
-        { id: 1013, texto: "Algunos días a la semana" },
-        { id: 1014, texto: "Raramente" },
-        { id: 1015, texto: "Nunca o casi nunca" },
-      ],
-    },
-    {
-      id: 104,
-      texto: "¿Cuántos vasos de agua bebes al día en promedio?",
-      opciones: [
-        { id: 1016, texto: "8 o más" },
-        { id: 1017, texto: "Entre 5 y 7" },
-        { id: 1018, texto: "Entre 2 y 4" },
-        { id: 1019, texto: "Menos de 2" },
-        { id: 1020, texto: "Casi ninguno" },
-      ],
-    },
-  ],
-};
-
 export const AssessmentQuiz = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>(); // Obtener ID de la URL
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<number, number>>({}); // Stores questionId -> optionId
+  const [answers, setAnswers] = useState<Record<string, string>>({}); // Stores questionId -> optionId
   const [showResults, setShowResults] = useState(false);
   const [currentTest, setCurrentTest] = useState<TestServiceTypes.TestDTO | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    setCurrentTest(staticTest);
-  }, []);
+    const loadTest = async () => {
+      if (!id) {
+        toast.error("No se especificó un test.");
+        navigate('/quiz');
+        return;
+      }
+
+      try {
+        const testData = await getTestById(id);
+        setCurrentTest(testData);
+      } catch (error) {
+        console.error("Error al cargar el test:", error);
+        toast.error("No se pudo cargar el test.");
+        navigate('/quiz');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadTest();
+  }, [id, navigate]);
 
   const submitResultMutation = useMutation<void, Error, TestServiceTypes.ResultadoDTO>({
     mutationFn: guardarResultado,
@@ -101,7 +70,7 @@ export const AssessmentQuiz = () => {
 
   const currentQuestion: TestServiceTypes.Pregunta = questions[currentQuestionIndex];
 
-  const handleSelectAnswer = (questionId: number, optionId: number) => {
+  const handleSelectAnswer = (questionId: string, optionId: string) => {
     setAnswers({
       ...answers,
       [questionId]: optionId,
@@ -127,8 +96,10 @@ export const AssessmentQuiz = () => {
     questions.forEach(question => {
       const selectedOptionId = answers[question.id];
       if (selectedOptionId) {
-
-        score += selectedOptionId % 1000;
+        const selectedOption = question.opciones.find(opt => opt.id === selectedOptionId);
+        if (selectedOption && selectedOption.valor !== undefined) {
+          score += selectedOption.valor;
+        }
       }
     });
     return score;
@@ -144,7 +115,7 @@ export const AssessmentQuiz = () => {
         usuarioId: user.id,
         testId: currentTest.id,
         respuestas: Object.entries(answers).map(([preguntaId, opcionId]) => ({
-          preguntaId: parseInt(preguntaId),
+          preguntaId: preguntaId,
           opcionId: opcionId,
         })),
         puntajeTotal: puntajeTotal,
@@ -180,14 +151,43 @@ export const AssessmentQuiz = () => {
             </p>
 
             {/* Results Box */}
-            <div className="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-lg mb-6">
-              <h3 className="font-semibold text-blue-900 mb-3">
-                Tus Resultados
+            <div className={`border-l-4 p-6 rounded-lg mb-6 ${
+              calculateScore() < 5 ? 'bg-green-50 border-green-500' :
+              calculateScore() < 10 ? 'bg-yellow-50 border-yellow-500' :
+              'bg-red-50 border-red-500'
+            }`}>
+              <h3 className={`font-semibold mb-3 ${
+                calculateScore() < 5 ? 'text-green-900' :
+                calculateScore() < 10 ? 'text-yellow-900' :
+                'text-red-900'
+              }`}>
+                Análisis de tus Resultados
               </h3>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                Puntaje obtenido: <strong>{calculateScore()}</strong>
+              </p>
               <p className="text-gray-700 leading-relaxed">
-                Basándonos en tus respuestas, tu puntaje total es: <strong>{calculateScore()}</strong>.
-                Recomendamos que consideres hablar con un profesional de la salud. Recuerda que buscar ayuda es un
-                acto de valentía y el primer paso hacia la recuperación.
+                {(() => {
+                  const score = calculateScore();
+                  const title = currentTest?.titulo.toLowerCase() || '';
+
+                  if (title.includes('ansiedad')) {
+                    if (score < 5) return "Tus respuestas indican niveles bajos de ansiedad. ¡Sigue manteniendo tus hábitos saludables!";
+                    if (score < 10) return "Presentas algunos síntomas leves de ansiedad. Sería beneficioso practicar técnicas de relajación y mindfulness.";
+                    return "Tus resultados sugieren niveles elevados de ansiedad. Te recomendamos encarecidamente consultar con un especialista para una evaluación más detallada.";
+                  }
+                  
+                  if (title.includes('nutrición') || title.includes('alimentación')) {
+                    if (score < 15) return "Tus hábitos alimenticios parecen necesitar atención. Considera consultar con un nutricionista para mejorar tu dieta.";
+                    if (score < 25) return "Tienes algunos buenos hábitos, pero hay margen de mejora. Pequeños cambios pueden hacer una gran diferencia.";
+                    return "¡Excelente! Tus respuestas reflejan hábitos alimenticios muy saludables. Sigue así.";
+                  }
+
+                  // Default / Bienestar
+                  if (score < 8) return "Tu bienestar general parece estable. Continúa cuidando de ti mismo y prestando atención a tus necesidades.";
+                  if (score < 15) return "Podrías estar experimentando cierto desequilibrio en tu bienestar. Identificar las áreas de estrés te ayudará a mejorar.";
+                  return "Tus respuestas indican que podrías estar pasando por un momento difícil. No dudes en buscar apoyo profesional.";
+                })()}
               </p>
             </div>
 
@@ -252,7 +252,7 @@ export const AssessmentQuiz = () => {
                   Inicia sesión para guardar resultados
                 </button>
               )}
-              <button 
+              <button
                 onClick={() => navigate('/contacto')}
                 className="flex-1 border-2 border-emerald-500 text-emerald-600 py-3 px-6 rounded-lg font-semibold hover:bg-emerald-50 transition-colors duration-200"
               >
@@ -330,11 +330,10 @@ export const AssessmentQuiz = () => {
                   onClick={() => handleSelectAnswer(currentQuestion.id, option.id)}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className={`w-full text-left px-6 py-4 rounded-lg border-2 transition-all duration-200 ${
-                    answers[currentQuestion.id] === option.id
-                      ? "border-blue-500 bg-blue-50 text-blue-900"
-                      : "border-gray-200 hover:border-blue-300 hover:bg-gray-50 text-gray-700"
-                  }`}
+                  className={`w-full text-left px-6 py-4 rounded-lg border-2 transition-all duration-200 ${answers[currentQuestion.id] === option.id
+                    ? "border-blue-500 bg-blue-50 text-blue-900"
+                    : "border-gray-200 hover:border-blue-300 hover:bg-gray-50 text-gray-700"
+                    }`}
                 >
                   {option.texto}
                 </motion.button>
