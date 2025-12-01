@@ -19,4 +19,6 @@ public class ComentarioDTO {
     private UUID autorId; // Cambio a UUID
     private String autorNombre;
     private UUID foroId; // Cambio a UUID
+    private String status;
+    private Long likesCount; // Total de likes del comentario
 }

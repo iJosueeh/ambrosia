@@ -6,12 +6,15 @@ import com.ambrosia.ambrosia.infrastructure.adapter.in.web.dto.ComentarioDTO;
 import com.ambrosia.ambrosia.infrastructure.adapter.in.web.dto.ForoDTO;
 import com.ambrosia.ambrosia.application.service.ForoService;
 import com.ambrosia.ambrosia.application.service.ComentarioService;
+import com.ambrosia.ambrosia.application.service.ComentarioLikeService;
+import com.ambrosia.ambrosia.application.service.MyUserDetails;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,6 +27,7 @@ public class ForoController {
 
     private final ForoService foroService;
     private final ComentarioService comentarioService;
+    private final ComentarioLikeService likeService;
 
     @GetMapping
     public ResponseEntity<Page<ForoDTO>> getAllForos(
@@ -89,5 +93,45 @@ public class ForoController {
 
         ComentarioDTO savedComentario = comentarioService.crear(commandWithForo);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedComentario);
+    }
+
+    // ========== ENDPOINTS DE LIKES ==========
+
+    @PostMapping("/{foroId}/comentarios/{comentarioId}/like")
+    public ResponseEntity<Void> toggleLike(
+            @PathVariable UUID foroId,
+            @PathVariable UUID comentarioId,
+            Authentication authentication) {
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        MyUserDetails userDetails = (MyUserDetails) authentication.getPrincipal();
+        likeService.toggleLike(comentarioId, userDetails.getId());
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{foroId}/comentarios/{comentarioId}/likes/count")
+    public ResponseEntity<Long> getLikesCount(
+            @PathVariable UUID foroId,
+            @PathVariable UUID comentarioId) {
+        long count = likeService.getLikesCount(comentarioId);
+        return ResponseEntity.ok(count);
+    }
+
+    @GetMapping("/{foroId}/comentarios/{comentarioId}/likes/me")
+    public ResponseEntity<Boolean> hasUserLiked(
+            @PathVariable UUID foroId,
+            @PathVariable UUID comentarioId,
+            Authentication authentication) {
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.ok(false);
+        }
+
+        MyUserDetails userDetails = (MyUserDetails) authentication.getPrincipal();
+        boolean hasLiked = likeService.hasUserLiked(comentarioId, userDetails.getId());
+        return ResponseEntity.ok(hasLiked);
     }
 }

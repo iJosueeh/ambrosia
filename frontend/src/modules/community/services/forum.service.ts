@@ -46,5 +46,21 @@ export const forumService = {
     createComment: async (foroId: string, commentData: any) => {
         const response = await axiosInstance.post(`${API_URL}/foros/${foroId}/comentarios`, commentData);
         return response.data;
+    },
+
+    // Métodos de likes
+    toggleLike: async (foroId: string, comentarioId: string) => {
+        const response = await axiosInstance.post(`${API_URL}/foros/${foroId}/comentarios/${comentarioId}/like`);
+        return response.data;
+    },
+
+    getLikesCount: async (foroId: string, comentarioId: string) => {
+        const response = await axiosInstance.get(`${API_URL}/foros/${foroId}/comentarios/${comentarioId}/likes/count`);
+        return response.data;
+    },
+
+    hasUserLiked: async (foroId: string, comentarioId: string) => {
+        const response = await axiosInstance.get(`${API_URL}/foros/${foroId}/comentarios/${comentarioId}/likes/me`);
+        return response.data;
     }
 };

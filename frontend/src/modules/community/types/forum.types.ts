@@ -16,6 +16,7 @@ export interface ForumThreadType {
     categoriaForo: ForumCategoryType;
     status: string; // e.g., ACTIVE, CLOSED, REPORTED
     comentarios: CommentType[]; // Assuming comments are part of the thread when fetched
+    commentCount?: number; // Contador de comentarios del backend
 }
 
 export interface CommentType {
@@ -27,4 +28,7 @@ export interface CommentType {
     };
     fechaCreacion: string; // ISO date string
     status: string; // e.g., ACTIVE, HIDDEN, REPORTED
+    foroId?: string; // Optional
+    foroTitulo?: string; // Optional
+    likesCount?: number; // Total de likes del comentario
 }

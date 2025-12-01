@@ -27,7 +27,7 @@ const formatRelativeTime = (dateString: string) => {
 
 interface ForumCategoryProps {
     category: ForumCategoryType;
-    onBack: () => void; // Added this line
+    onBack: () => void;
     onBackToHome: () => void;
     onSelectThread: (thread: ForumThreadType) => void;
     onNewThread: () => void;
@@ -55,9 +55,10 @@ const ForumCategory: React.FC<ForumCategoryProps> = ({ category, onBackToHome, o
                         nombre: thread.autorNombre,
                     },
                     fechaCreacion: thread.fechaCreacion,
-                    categoriaForo: category, // Pass the full category object
+                    categoriaForo: category,
                     status: thread.status,
-                    comentarios: thread.comentarios || []
+                    comentarios: [],
+                    commentCount: thread.numeroComentarios || 0
                 }));
                 setThreads(mappedThreads);
             } catch (err: any) {
@@ -95,14 +96,15 @@ const ForumCategory: React.FC<ForumCategoryProps> = ({ category, onBackToHome, o
                 </div>
                 <div className="bg-white rounded-xl shadow-md overflow-hidden">
                     {threads.map((thread: ForumThreadType) => (
-                        <div key={thread.id} className="grid grid-cols-1 md:grid-cols-12 gap-4 px-6 py-5 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors" onClick={() => onSelectThread(thread)}>                            <div className="md:col-span-6 flex items-center gap-3">
+                        <div key={thread.id} className="grid grid-cols-1 md:grid-cols-12 gap-4 px-6 py-5 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors" onClick={() => onSelectThread(thread)}>
+                            <div className="md:col-span-6 flex items-center gap-3">
                                 <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center font-semibold text-emerald-700">{thread.autor.nombre.charAt(0)}</div>
                                 <div>
                                     <h3 className="font-semibold text-gray-900">{thread.titulo}</h3>
                                     <p className="text-sm text-gray-600">por {thread.autor.nombre}</p>
                                 </div>
                             </div>
-                            <div className="md:col-span-2 flex items-center"><span className="font-semibold text-gray-900">{thread.comentarios.length} respuestas</span></div>
+                            <div className="md:col-span-2 flex items-center"><span className="font-semibold text-gray-900">{thread.commentCount || 0} respuestas</span></div>
                             <div className="md:col-span-4 flex items-center md:justify-end"><span className="text-sm text-gray-600">{formatRelativeTime(thread.fechaCreacion)}</span></div>
                         </div>
                     ))}

@@ -15,6 +15,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.http.HttpMethod;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -114,10 +115,12 @@ public class SecurityConfig {
                                                                 "/api/resource-categories",
                                                                 "/api/resource-statuses",
                                                                 "/api/v1/categorias-foro",
-                                                                "/api/v1/categorias-foro/**",
-                                                                "/api/v1/foros",
-                                                                "/api/v1/foros/**")
+                                                                "/api/v1/categorias-foro/**")
                                                 .permitAll()
+                                                // Endpoints de foros: POST requiere autenticación (comentar, dar like)
+                                                .requestMatchers(HttpMethod.POST, "/api/v1/foros/**").authenticated()
+                                                // Resto de endpoints de foros son públicos (GET para leer)
+                                                .requestMatchers("/api/v1/foros/**").permitAll()
                                                 // Endpoints de recursos que requieren autenticación
                                                 .requestMatchers(
                                                                 "/api/v1/recursos/*/marcar-leido",
@@ -129,7 +132,6 @@ public class SecurityConfig {
                                                 .anyRequest().authenticated())
                                 .formLogin(AbstractHttpConfigurer::disable)
                                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-
                 return http.build();
         }
 }

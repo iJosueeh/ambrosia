@@ -34,6 +34,7 @@ public class ComentarioService implements
     private final ComentarioRepositoryPort comentarioRepository;
     private final UsuarioRepositoryPort usuarioRepository;
     private final ForoRepositoryPort foroRepository;
+    private final ComentarioLikeService likeService;
 
     @Override
     @Transactional
@@ -120,6 +121,8 @@ public class ComentarioService implements
                 .autorId(comentario.getAutor() != null ? comentario.getAutor().getId() : null)
                 .autorNombre(comentario.getAutor() != null ? comentario.getAutor().getNombre() : "Anónimo")
                 .foroId(comentario.getForo() != null ? comentario.getForo().getId() : null)
+                .status(comentario.getStatus())
+                .likesCount(likeService.getLikesCount(comentario.getId()))
                 .build();
     }
 }

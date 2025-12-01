@@ -1,5 +1,7 @@
 import { ChevronRight, MessageSquare, ThumbsUp } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { toast } from 'react-hot-toast';
+import { useAuth } from '../../../shared/hooks/useAuth';
 import { forumService } from '../services/forum.service';
 import type { ForumThreadType, CommentType } from '../types/forum.types';
 
@@ -33,9 +35,11 @@ interface ForumThreadProps {
 }
 
 const ForumThread: React.FC<ForumThreadProps> = ({ thread, onBack, onBackToHome, onReply }) => {
+    const { user } = useAuth();
     const [comments, setComments] = useState<CommentType[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<any>(null);
+    const [likedComments, setLikedComments] = useState<Set<string>>(new Set());
 
     useEffect(() => {
         const fetchComments = async () => {
@@ -54,8 +58,9 @@ const ForumThread: React.FC<ForumThreadProps> = ({ thread, onBack, onBackToHome,
                     fechaCreacion: comment.fechaCreacion,
                     contenido: comment.contenido,
                     status: comment.status,
-                    foroId: thread.id, // Assuming comment belongs to this thread
-                    foroTitulo: thread.titulo, // Assuming comment belongs to this thread
+                    foroId: thread.id,
+                    foroTitulo: thread.titulo,
+                    likesCount: comment.likesCount || 0,
                 }));
                 setComments(mappedComments);
             } catch (err: any) {
@@ -66,6 +71,50 @@ const ForumThread: React.FC<ForumThreadProps> = ({ thread, onBack, onBackToHome,
         };
         fetchComments();
     }, [thread]);
+
+    const handleLike = async (comment: CommentType) => {
+        if (!user) {
+            toast.error('Debes iniciar sesión para dar like.');
+            return;
+        }
+
+        if (!thread || !thread.id) return;
+
+        const wasLiked = likedComments.has(comment.id);
+
+        // Actualización optimista
+        const newLikedComments = new Set(likedComments);
+        if (wasLiked) {
+            newLikedComments.delete(comment.id);
+        } else {
+            newLikedComments.add(comment.id);
+        }
+        setLikedComments(newLikedComments);
+
+        // Actualizar count localmente
+        setComments(prevComments =>
+            prevComments.map(c =>
+                c.id === comment.id
+                    ? { ...c, likesCount: (c.likesCount || 0) + (wasLiked ? -1 : 1) }
+                    : c
+            )
+        );
+
+        try {
+            await forumService.toggleLike(thread.id, comment.id);
+        } catch (error: any) {
+            // Revertir en caso de error
+            setLikedComments(likedComments);
+            setComments(prevComments =>
+                prevComments.map(c =>
+                    c.id === comment.id
+                        ? { ...c, likesCount: (c.likesCount || 0) + (wasLiked ? 1 : -1) }
+                        : c
+                )
+            );
+            toast.error('Error al dar like. Inténtalo de nuevo.');
+        }
+    };
 
     if (loading) return <div className="flex justify-center items-center min-h-screen bg-gray-50 text-emerald-600 text-lg font-semibold">Cargando comentarios...</div>;
     if (error) return <div className="flex justify-center items-center min-h-screen bg-gray-50 text-red-600 text-lg font-semibold">Error al cargar comentarios: {error.message}</div>;
@@ -102,8 +151,16 @@ const ForumThread: React.FC<ForumThreadProps> = ({ thread, onBack, onBackToHome,
                                     </div>
                                     <p className="text-gray-700 leading-relaxed mb-4">{comment.contenido}</p>
                                     <div className="flex items-center gap-4">
-                                        <button className="flex items-center gap-2 text-gray-600 hover:text-emerald-600 transition-colors">
-                                            <ThumbsUp className="w-4 h-4" /><span className="text-sm">0</span> {/* Placeholder for likes */}
+                                        <button
+                                            onClick={() => handleLike(comment)}
+                                            className={`flex items-center gap-2 transition-colors ${likedComments.has(comment.id)
+                                                    ? 'text-emerald-600 hover:text-emerald-700'
+                                                    : 'text-gray-600 hover:text-emerald-600'
+                                                }`}
+                                        >
+                                            <ThumbsUp className={`w-4 h-4 ${likedComments.has(comment.id) ? 'fill-emerald-600' : ''
+                                                }`} />
+                                            <span className="text-sm">{comment.likesCount || 0}</span>
                                         </button>
                                         <button onClick={() => onReply(comment)} className="flex items-center gap-2 text-gray-600 hover:text-emerald-600 transition-colors">
                                             <MessageSquare className="w-4 h-4" /><span className="text-sm">Responder</span>

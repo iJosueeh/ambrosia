@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../../../shared/hooks/useAuth';
+import { toast } from 'react-hot-toast';
 import { NewThreadModal, ReplyModal, NewThreadData } from '../components/ForumModals';
 import ForumHome from '../components/ForumHome';
 import ForumCategory from '../components/ForumCategory';
@@ -20,6 +21,8 @@ const CommunityForums = () => {
     const [newThreadData, setNewThreadData] = useState<NewThreadData>({ title: '', content: '', categoriaForoId: null });
     const [replyContent, setReplyContent] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [threadKey, setThreadKey] = useState(0); // Key para forzar re-render
     const handleCreateNewThread = async () => {
         if (!selectedCategory || !selectedCategory.id || !user) return;
         try {
@@ -40,22 +43,49 @@ const CommunityForums = () => {
         }
     };
     const handlePostReply = async () => {
-        if (!selectedThread || !selectedThread.id || !user) return;
+        // Validar autenticación
+        if (!user) {
+            toast.error('Debes iniciar sesión para comentar.');
+            setShowReply(false);
+            return;
+        }
+
+        // Validar que hay un thread seleccionado
+        if (!selectedThread || !selectedThread.id) {
+            toast.error('No se ha seleccionado ningún tema.');
+            return;
+        }
+
+        // Validar que el contenido no esté vacío
+        if (!replyContent.trim()) {
+            toast.error('El comentario no puede estar vacío.');
+            return;
+        }
+
+        setIsSubmitting(true);
+        const toastId = toast.loading('Enviando comentario...');
+
         try {
             const newComment = {
-                contenido: replyContent,
+                contenido: replyContent.trim(),
                 autorId: user.id,
                 foroId: selectedThread.id
             };
             await forumService.createComment(selectedThread.id, newComment);
+
+            toast.success('Comentario publicado con éxito!', { id: toastId });
             setShowReply(false);
             setReplyToComment(null);
             setReplyContent('');
-            // Optionally, refresh the thread view to show the new comment
-            setView('thread');
-        } catch (error) {
+
+            // Forzar re-render del thread para recargar comentarios
+            setThreadKey(prev => prev + 1);
+        } catch (error: any) {
             console.error("Error posting reply:", error);
-            // Handle error, show message to user
+            const errorMessage = error.response?.data?.message || 'Error al publicar comentario. Por favor, inténtalo de nuevo.';
+            toast.error(errorMessage, { id: toastId });
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -69,10 +99,38 @@ const CommunityForums = () => {
     }
 
     if (view === 'thread' && selectedThread) {
+        const handleReply = (comment: any) => {
+            if (!user) {
+                toast.error('Debes iniciar sesión para comentar.');
+                return;
+            }
+            setReplyToComment(comment);
+            setShowReply(true);
+        };
+
         return (
             <>
-                <ForumThread thread={selectedThread} onBack={() => setView('category')} onBackToHome={() => setView('home')} onReply={(comment: any) => { setReplyToComment(comment); setShowReply(true); }} />
-                {showReply && <ReplyModal onClose={() => { setShowReply(false); setReplyToComment(null); }} comment={replyToComment} content={replyContent} setContent={setReplyContent} onPost={handlePostReply} />}
+                <ForumThread
+                    key={threadKey}
+                    thread={selectedThread}
+                    onBack={() => setView('category')}
+                    onBackToHome={() => setView('home')}
+                    onReply={handleReply}
+                />
+                {showReply && (
+                    <ReplyModal
+                        onClose={() => {
+                            setShowReply(false);
+                            setReplyToComment(null);
+                            setReplyContent('');
+                        }}
+                        comment={replyToComment}
+                        content={replyContent}
+                        setContent={setReplyContent}
+                        onPost={handlePostReply}
+                        isSubmitting={isSubmitting}
+                    />
+                )}
             </>
         );
     }
