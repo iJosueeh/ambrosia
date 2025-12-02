@@ -34,6 +34,8 @@ public class Usuario implements UserDetails {
     @Column(nullable = false)
     private String password;
 
+    private String telefono;
+
     private LocalDateTime fechaRegistro;
 
     @ManyToOne

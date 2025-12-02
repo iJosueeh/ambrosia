@@ -22,4 +22,16 @@ public class CategoriaRecurso {
     private String nombre;
 
     private String descripcion;
+
+    /**
+     * Nombre del icono de Lucide React (ej: "Heart", "Apple", "BookOpen")
+     */
+    @Column(length = 50)
+    private String icono;
+
+    /**
+     * Color hexadecimal para la categoría (ej: "#10b981", "#ec4899")
+     */
+    @Column(length = 20)
+    private String color;
 }

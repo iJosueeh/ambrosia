@@ -22,6 +22,7 @@ export interface Recomendacion {
 export interface UsuarioDTO {
     nombre: string;
     correo: string;
+    telefono?: string;
     fechaRegistro: string; // ISO date string
     diasActivo: number;
     articulosLeidos: number;
@@ -30,4 +31,33 @@ export interface UsuarioDTO {
     progreso: ProgresoItem[];
     actividadReciente: ActividadReciente[];
     recomendaciones: Recomendacion[];
+}
+
+// Request types para actualizaciones
+export interface UpdateUserRequest {
+    nombre: string;
+    email: string;
+    telefono?: string;
+    rol: string;
+}
+
+export interface ChangePasswordRequest {
+    contrasenaActual: string;
+    contrasenaNueva: string;
+    confirmarContrasena: string;
+}
+
+export interface Guardado {
+    id: string;
+    tipo: 'ARTICULO' | 'RECURSO' | 'TEST';
+    itemId: string;
+    fechaGuardado: string;
+    titulo?: string;
+    descripcion?: string;
+    url?: string;
+}
+
+export interface CrearGuardadoRequest {
+    tipo: 'ARTICULO' | 'RECURSO' | 'TEST';
+    itemId: string;
 }

@@ -70,6 +70,14 @@ public class UsuarioController {
         return ResponseEntity.noContent().build();
     }
 
+    @PutMapping("/{id}/cambiar-contrasena")
+    public ResponseEntity<Void> cambiarContrasena(
+            @PathVariable UUID id,
+            @Valid @RequestBody CambiarContrasenaCommand command) {
+        usuarioService.cambiarContrasena(id, command);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/exportar")
     public ResponseEntity<InputStreamResource> exportarUsuarios(@RequestParam(defaultValue = "xlsx") String format) {
         ByteArrayInputStream in = usuarioService.exportUsers(format);

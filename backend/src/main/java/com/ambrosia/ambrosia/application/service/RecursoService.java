@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,8 +58,8 @@ public class RecursoService implements
                 .orElseThrow(() -> new RuntimeException(
                         "Categoria no encontrada con el nombre: " + command.getNombreCategoria()));
 
-        EstadoPublicado estadoBorrador = estadoPublicadoRepository.findByNombre("BORRADOR")
-                .orElseThrow(() -> new RuntimeException("Estado 'BORRADOR' no encontrado."));
+        EstadoPublicado estadoBorrador = estadoPublicadoRepository.findByNombre("DRAFT")
+                .orElseThrow(() -> new RuntimeException("Estado 'DRAFT' no encontrado."));
 
         RecursoEducativo recurso = RecursoEducativo.builder()
                 .titulo(command.getTitulo())
@@ -178,7 +179,6 @@ public class RecursoService implements
         recursoRepository.save(recurso);
     }
 
-
     @Transactional
     public RecursoDTO createRecurso(RecursoDTO dto, UUID profesionalId) {
         CrearRecursoCommand command = new CrearRecursoCommand(
@@ -216,7 +216,7 @@ public class RecursoService implements
 
         Page<RecursoEducativo> relacionados = recursoRepository.findByCategoriaIdAndEstadoNombre(
                 recurso.getCategoria().getId(),
-                "PUBLICADO",
+                "PUBLISHED",
                 org.springframework.data.domain.PageRequest.of(0, limit + 10));
 
         return relacionados.stream()
@@ -262,7 +262,7 @@ public class RecursoService implements
 
         long recursosLeidos = recursoLeidoService.contarRecursosLeidos(usuario);
         long totalRecursos = recursoRepository
-                .findByEstadoNombre("PUBLICADO", org.springframework.data.domain.Pageable.unpaged()).getTotalElements();
+                .findByEstadoNombre("PUBLISHED", org.springframework.data.domain.Pageable.unpaged()).getTotalElements();
         List<UUID> recursosLeidosIds = recursoLeidoService.obtenerIdsRecursosLeidos(usuario);
         int porcentaje = totalRecursos > 0 ? (int) ((recursosLeidos * 100) / totalRecursos) : 0;
 
@@ -284,5 +284,56 @@ public class RecursoService implements
             }
         }
         return "Artículo";
+    }
+
+    /**
+     * Busca recursos aplicando filtros dinámicos y ordenamiento.
+     * Utiliza JPA Specifications para construir queries flexibles.
+     */
+    @Transactional(readOnly = true)
+    public Page<RecursoDTO> buscarConFiltros(
+            com.ambrosia.ambrosia.infrastructure.adapter.in.web.dto.RecursoFilterDTO filtros,
+            Pageable pageable) {
+
+        logger.info("Buscando recursos con filtros: {}", filtros);
+
+        // Construir Specification basada en filtros
+        org.springframework.data.jpa.domain.Specification<RecursoEducativo> spec = com.ambrosia.ambrosia.infrastructure.specification.RecursoSpecification
+                .withFilters(filtros);
+
+        // Aplicar ordenamiento dinámico
+        org.springframework.data.domain.Sort sort = construirOrdenamiento(
+                filtros.getOrdenarPor(),
+                filtros.getDireccion());
+
+        Pageable pageableConOrden = org.springframework.data.domain.PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                sort);
+
+        // Ejecutar query con Specification usando el adapter
+        // NO hacer cast a SpringDataRecursoRepository, usar el método del adapter
+        Page<RecursoEducativo> recursos = recursoRepository.findAll(spec, pageableConOrden);
+
+        return recursos.map(recursoMapper::toDto);
+    }
+
+    /**
+     * Construye el objeto Sort basado en el campo y dirección especificados.
+     */
+    private Sort construirOrdenamiento(String ordenarPor, String direccion) {
+        // Mapeo de nombres de campos a nombres de columnas en la entidad
+        String campoOrden = switch (ordenarPor != null ? ordenarPor.toLowerCase() : "fecha") {
+            case "titulo" -> "titulo";
+            case "downloads", "popularidad" -> "downloads";
+            case "fecha" -> "fechaPublicacion";
+            default -> "fechaPublicacion";
+        };
+
+        org.springframework.data.domain.Sort.Direction dir = "ASC".equalsIgnoreCase(direccion)
+                ? org.springframework.data.domain.Sort.Direction.ASC
+                : org.springframework.data.domain.Sort.Direction.DESC;
+
+        return org.springframework.data.domain.Sort.by(dir, campoOrden);
     }
 }

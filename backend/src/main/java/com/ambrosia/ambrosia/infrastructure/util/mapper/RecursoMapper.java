@@ -43,6 +43,8 @@ public class RecursoMapper {
             categoriaDTO.setId(recursoEducativo.getCategoria().getId());
             categoriaDTO.setNombre(recursoEducativo.getCategoria().getNombre());
             categoriaDTO.setDescripcion(recursoEducativo.getCategoria().getDescripcion());
+            categoriaDTO.setIcono(recursoEducativo.getCategoria().getIcono());
+            categoriaDTO.setColor(recursoEducativo.getCategoria().getColor());
             recursoDTO.setCategoria(categoriaDTO);
         }
         if (recursoEducativo.getEstado() != null) {
@@ -91,6 +93,8 @@ public class RecursoMapper {
         categoriaRecursoDTO.setId(categoriaRecurso.getId());
         categoriaRecursoDTO.setNombre(categoriaRecurso.getNombre());
         categoriaRecursoDTO.setDescripcion(categoriaRecurso.getDescripcion());
+        categoriaRecursoDTO.setIcono(categoriaRecurso.getIcono());
+        categoriaRecursoDTO.setColor(categoriaRecurso.getColor());
         return categoriaRecursoDTO;
     }
 

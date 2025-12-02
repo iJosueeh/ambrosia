@@ -13,4 +13,6 @@ public class CategoriaRecursoDTO {
     private UUID id; // Cambio a UUID
     private String nombre;
     private String descripcion;
+    private String icono; // Nombre del icono de Lucide React
+    private String color; // Color hexadecimal
 }

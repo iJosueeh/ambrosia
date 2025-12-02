@@ -120,3 +120,45 @@ export const getProgresoUsuario = async (): Promise<ProgresoUsuario> => {
     const response = await axiosInstance.get<ProgresoUsuario>(`${API_URL}/progreso`);
     return response.data;
 };
+
+/**
+ * Interfaz para los filtros de búsqueda avanzada
+ */
+export interface ResourceFilters {
+    query?: string;              // Búsqueda por palabra clave
+    categoriaId?: string;        // Filtrar por categoría
+    tipo?: string;               // Tipo de recurso (Artículo, Video, Podcast)
+    fechaDesde?: string;         // Fecha desde (ISO format: YYYY-MM-DD)
+    fechaHasta?: string;         // Fecha hasta (ISO format: YYYY-MM-DD)
+    ordenarPor?: 'fecha' | 'titulo' | 'popularidad';  // Campo de ordenamiento
+    direccion?: 'ASC' | 'DESC';  // Dirección del ordenamiento
+}
+
+/**
+ * Busca recursos con filtros avanzados usando el nuevo endpoint /buscar
+ */
+export const searchResourcesWithFilters = async (
+    filters: ResourceFilters,
+    page: number = 0,
+    size: number = 6
+): Promise<PaginatedResources> => {
+    // Construir parámetros de query eliminando valores undefined/null
+    const params: Record<string, any> = {
+        page,
+        size,
+    };
+
+    if (filters.query) params.query = filters.query;
+    if (filters.categoriaId) params.categoriaId = filters.categoriaId;
+    if (filters.tipo) params.tipo = filters.tipo;
+    if (filters.fechaDesde) params.fechaDesde = filters.fechaDesde;
+    if (filters.fechaHasta) params.fechaHasta = filters.fechaHasta;
+    if (filters.ordenarPor) params.ordenarPor = filters.ordenarPor;
+    if (filters.direccion) params.direccion = filters.direccion;
+
+    const response = await axiosInstance.get<PaginatedResources>(`${API_URL}/buscar`, {
+        params
+    });
+
+    return response.data;
+};

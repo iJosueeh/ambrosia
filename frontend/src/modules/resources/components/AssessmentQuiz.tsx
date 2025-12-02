@@ -17,7 +17,6 @@ export const AssessmentQuiz = () => {
   const [answers, setAnswers] = useState<Record<string, string>>({}); // Stores questionId -> optionId
   const [showResults, setShowResults] = useState(false);
   const [currentTest, setCurrentTest] = useState<TestServiceTypes.TestDTO | null>(null);
-  const [loading, setLoading] = useState(true);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -36,8 +35,6 @@ export const AssessmentQuiz = () => {
         console.error("Error al cargar el test:", error);
         toast.error("No se pudo cargar el test.");
         navigate('/quiz');
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -151,16 +148,14 @@ export const AssessmentQuiz = () => {
             </p>
 
             {/* Results Box */}
-            <div className={`border-l-4 p-6 rounded-lg mb-6 ${
-              calculateScore() < 5 ? 'bg-green-50 border-green-500' :
+            <div className={`border-l-4 p-6 rounded-lg mb-6 ${calculateScore() < 5 ? 'bg-green-50 border-green-500' :
               calculateScore() < 10 ? 'bg-yellow-50 border-yellow-500' :
-              'bg-red-50 border-red-500'
-            }`}>
-              <h3 className={`font-semibold mb-3 ${
-                calculateScore() < 5 ? 'text-green-900' :
-                calculateScore() < 10 ? 'text-yellow-900' :
-                'text-red-900'
+                'bg-red-50 border-red-500'
               }`}>
+              <h3 className={`font-semibold mb-3 ${calculateScore() < 5 ? 'text-green-900' :
+                calculateScore() < 10 ? 'text-yellow-900' :
+                  'text-red-900'
+                }`}>
                 Análisis de tus Resultados
               </h3>
               <p className="text-gray-700 leading-relaxed mb-4">
@@ -176,7 +171,7 @@ export const AssessmentQuiz = () => {
                     if (score < 10) return "Presentas algunos síntomas leves de ansiedad. Sería beneficioso practicar técnicas de relajación y mindfulness.";
                     return "Tus resultados sugieren niveles elevados de ansiedad. Te recomendamos encarecidamente consultar con un especialista para una evaluación más detallada.";
                   }
-                  
+
                   if (title.includes('nutrición') || title.includes('alimentación')) {
                     if (score < 15) return "Tus hábitos alimenticios parecen necesitar atención. Considera consultar con un nutricionista para mejorar tu dieta.";
                     if (score < 25) return "Tienes algunos buenos hábitos, pero hay margen de mejora. Pequeños cambios pueden hacer una gran diferencia.";

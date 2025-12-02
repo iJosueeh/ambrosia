@@ -15,6 +15,9 @@ public class ActualizarUsuarioCommand {
     @Email(message = "El email debe ser válido")
     String email;
 
+    @Size(max = 20, message = "El teléfono no puede tener más de 20 caracteres")
+    String telefono; // Campo opcional
+
     @NotBlank(message = "El rol es obligatorio")
     String rol;
 }

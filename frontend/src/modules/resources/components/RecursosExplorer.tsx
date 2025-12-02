@@ -1,20 +1,32 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Heart, Apple, BookOpen, Search, ChevronLeft, ChevronRight, LoaderCircle } from 'lucide-react';
-import { getCategories, getResourcesByCategory, getAllResources, type PaginatedResources } from '../services/resource.service';
+import {
+  FileText, Heart, Apple, BookOpen, Search, ChevronLeft, ChevronRight, LoaderCircle,
+  Cloud, Star, Users, Brain, Sparkles, Activity, Moon, Home, Briefcase, Zap, AlertCircle
+} from 'lucide-react';
+import { getCategories, searchResourcesWithFilters, type PaginatedResources, type ResourceFilters } from '../services/resource.service';
 import type { CategoriaRecursoDTO } from '../types/categoria.types';
 import type { RecursoDTO } from '../types/recurso.types';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 
 import { motion } from "framer-motion";
 
-// TEMP: Forcing Vite re-process
-// Helper to map category names to icons
-const iconMap: { [key: string]: React.ElementType } = {
-  'articulos': FileText,
-  'salud-mental': Heart,
-  'nutricion': Apple,
-  'historias': BookOpen,
-  'default': FileText
+// Mapeo de nombres de iconos (strings del backend) a componentes de Lucide React
+const iconComponents: Record<string, React.ElementType> = {
+  'Heart': Heart,
+  'Cloud': Cloud,
+  'Star': Star,
+  'Users': Users,
+  'Brain': Brain,
+  'Apple': Apple,
+  'Activity': Activity,
+  'Moon': Moon,
+  'Home': Home,
+  'Briefcase': Briefcase,
+  'Zap': Zap,
+  'AlertCircle': AlertCircle,
+  'BookOpen': BookOpen,
+  'FileText': FileText,
+  'Sparkles': Sparkles,
 };
 
 export const RecursosExplorer: React.FC = () => {
@@ -47,12 +59,18 @@ export const RecursosExplorer: React.FC = () => {
         }
         setSelectedCategory(currentSelectedCategory);
 
-        let fetchedPaginatedResources: PaginatedResources;
-        if (currentSelectedCategory !== null) {
-          fetchedPaginatedResources = await getResourcesByCategory(currentSelectedCategory, currentPage - 1, articlesPerPage, searchQuery);
-        } else {
-          fetchedPaginatedResources = await getAllResources(currentPage - 1, articlesPerPage, searchQuery);
-        }
+        // Construir filtros para la búsqueda
+        const filters: ResourceFilters = {
+          query: searchQuery || undefined,
+          categoriaId: currentSelectedCategory || undefined,
+        };
+
+        // Usar el nuevo endpoint de búsqueda con filtros
+        const fetchedPaginatedResources = await searchResourcesWithFilters(
+          filters,
+          currentPage - 1,
+          articlesPerPage
+        );
 
         console.log("Fetched paginated resources:", fetchedPaginatedResources);
         setResources(fetchedPaginatedResources.content);
@@ -219,44 +237,41 @@ export const RecursosExplorer: React.FC = () => {
 
                   >
 
-                    <FileText className="w-5 h-5 flex-shrink-0" />
+                    <FileText className="w-6 h-6 flex-shrink-0" />
 
                     <span>Todos</span>
 
                   </button>
 
                   {categories.map((category) => {
-
-                    const Icon = iconMap[category.nombre.toLowerCase()] || iconMap['default'];
+                    // Obtener el componente de icono desde el backend o usar FileText por defecto
+                    const IconComponent = category.icono && iconComponents[category.icono]
+                      ? iconComponents[category.icono]
+                      : FileText;
 
                     const isActive = selectedCategory === category.id;
+                    const categoryColor = category.color || '#10b981'; // Verde esmeralda por defecto
 
                     return (
-
                       <button
-
                         key={category.id}
-
                         onClick={() => handleCategoryClick(category.id)}
-
                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-left ${isActive
-
-                          ? 'bg-emerald-50 text-emerald-700 font-semibold border-l-4 border-emerald-500'
-
-                          : 'text-gray-600 hover:bg-gray-50 border-l-4 border-transparent'
-
+                            ? 'bg-emerald-50 text-emerald-700 font-semibold border-l-4'
+                            : 'text-gray-600 hover:bg-gray-50 border-l-4 border-transparent'
                           }`}
-
+                        style={isActive ? { borderLeftColor: categoryColor } : {}}
                       >
-
-                        <Icon className="w-5 h-5 flex-shrink-0" />
-
+                        <IconComponent
+                          className="w-6 h-6 flex-shrink-0"
+                          style={{
+                            color: isActive ? categoryColor : categoryColor,
+                            opacity: isActive ? 1 : 0.7
+                          }}
+                        />
                         <span>{category.nombre}</span>
-
                       </button>
-
                     );
-
                   })}
 
                 </nav>
@@ -304,7 +319,7 @@ export const RecursosExplorer: React.FC = () => {
 
                     }}
 
-                    className="w-full pl-12 pr-4 py-3.5 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent shadow-sm"
+                    className="w-full pl-12 pr-4 py-3.5 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent shadow-md"
 
                   />
 
@@ -327,5 +342,4 @@ export const RecursosExplorer: React.FC = () => {
   );
 
 }
-
 

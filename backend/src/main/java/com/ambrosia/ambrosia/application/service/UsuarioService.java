@@ -167,6 +167,11 @@ public class UsuarioService implements
         usuario.setNombre(command.getNombre());
         usuario.setEmail(command.getEmail());
 
+        // Actualizar teléfono si se proporciona
+        if (command.getTelefono() != null) {
+            usuario.setTelefono(command.getTelefono());
+        }
+
         if (command.getRol() != null && !command.getRol().isEmpty()) {
             Rol rol = rolRepository.findByNombre(command.getRol())
                     .orElseThrow(() -> new RuntimeException("Rol no encontrado: " + command.getRol()));
@@ -189,6 +194,33 @@ public class UsuarioService implements
         }
 
         usuarioRepository.deleteById(id);
+    }
+
+    /**
+     * Cambiar contraseña de usuario
+     */
+    @Transactional
+    public void cambiarContrasena(UUID id, CambiarContrasenaCommand command) {
+        logger.info("Cambiando contraseña para usuario con ID: {}", id);
+
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + id));
+
+        // Verificar que la contraseña actual es correcta
+        if (!passwordEncoder.matches(command.getContrasenaActual(), usuario.getPassword())) {
+            throw new IllegalArgumentException("La contraseña actual no es correcta");
+        }
+
+        // Verificar que las contraseñas nuevas coinciden
+        if (!command.getContrasenaNueva().equals(command.getConfirmarContrasena())) {
+            throw new IllegalArgumentException("Las contraseñas nuevas no coinciden");
+        }
+
+        // Actualizar contraseña
+        usuario.setPassword(passwordEncoder.encode(command.getContrasenaNueva()));
+        usuarioRepository.save(usuario);
+
+        logger.info("Contraseña actualizada exitosamente para usuario ID: {}", id);
     }
 
     // ========== MÉTODOS LEGACY PARA COMPATIBILIDAD ==========
@@ -294,6 +326,7 @@ public class UsuarioService implements
         return UsuarioDashboardDTO.builder()
                 .nombre(usuario.getNombre())
                 .correo(usuario.getEmail())
+                .telefono(usuario.getTelefono())
                 .fechaRegistro(usuario.getFechaRegistro() != null ? usuario.getFechaRegistro().toLocalDate() : null)
                 .diasActivo(diasActivo)
                 .articulosLeidos(articulosLeidos)
@@ -376,6 +409,7 @@ public class UsuarioService implements
                 .id(usuario.getId())
                 .nombre(usuario.getNombre())
                 .correo(usuario.getEmail())
+                .telefono(usuario.getTelefono())
                 .rol(rolNombre)
                 .fechaRegistro(usuario.getFechaRegistro() != null ? usuario.getFechaRegistro().toLocalDate() : null)
                 .build();

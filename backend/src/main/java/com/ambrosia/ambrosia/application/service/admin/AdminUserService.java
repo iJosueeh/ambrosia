@@ -85,12 +85,13 @@ public class AdminUserService {
     }
 
     private UsuarioDTO mapToUsuarioDTO(Usuario usuario) {
-        return new UsuarioDTO(
-                usuario.getId(),
-                usuario.getNombre(),
-                usuario.getEmail(),
-                null, // Password should not be sent
-                usuario.getRol().getNombre(),
-                usuario.getFechaRegistro() != null ? usuario.getFechaRegistro().toLocalDate() : null);
+        return UsuarioDTO.builder()
+                .id(usuario.getId())
+                .nombre(usuario.getNombre())
+                .correo(usuario.getEmail())
+                .telefono(usuario.getTelefono())
+                .rol(usuario.getRol().getNombre())
+                .fechaRegistro(usuario.getFechaRegistro() != null ? usuario.getFechaRegistro().toLocalDate() : null)
+                .build();
     }
 }

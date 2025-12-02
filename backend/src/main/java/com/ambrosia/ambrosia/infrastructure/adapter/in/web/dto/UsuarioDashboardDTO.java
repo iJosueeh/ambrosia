@@ -15,6 +15,7 @@ import java.util.List;
 public class UsuarioDashboardDTO {
     private String nombre;
     private String correo;
+    private String telefono;
     private LocalDate fechaRegistro;
     private long diasActivo;
     private int articulosLeidos;

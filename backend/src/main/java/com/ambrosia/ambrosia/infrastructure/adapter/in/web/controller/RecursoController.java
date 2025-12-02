@@ -4,6 +4,7 @@ import com.ambrosia.ambrosia.application.port.in.recurso.CrearRecursoCommand;
 import com.ambrosia.ambrosia.infrastructure.adapter.in.web.dto.CategoriaRecursoDTO;
 import com.ambrosia.ambrosia.infrastructure.adapter.in.web.dto.ProgresoUsuarioDTO;
 import com.ambrosia.ambrosia.infrastructure.adapter.in.web.dto.RecursoDTO;
+import com.ambrosia.ambrosia.infrastructure.adapter.in.web.dto.RecursoFilterDTO;
 import com.ambrosia.ambrosia.infrastructure.adapter.in.web.dto.RecursoRelacionadoDTO;
 import com.ambrosia.ambrosia.application.service.CategoriaRecursoService;
 import com.ambrosia.ambrosia.application.service.RecursoService;
@@ -78,6 +79,34 @@ public class RecursoController {
     @GetMapping("/categorias")
     public ResponseEntity<List<CategoriaRecursoDTO>> listarCategorias() {
         return ResponseEntity.ok(categoriaRecursoService.listarCategorias());
+    }
+
+    /**
+     * Endpoint de búsqueda avanzada con filtros dinámicos.
+     * Permite combinar múltiples criterios de búsqueda y ordenamiento.
+     */
+    @GetMapping("/buscar")
+    public ResponseEntity<Page<RecursoDTO>> buscarConFiltros(
+            @RequestParam(required = false) String query,
+            @RequestParam(required = false) UUID categoriaId,
+            @RequestParam(required = false) String tipo,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate fechaDesde,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate fechaHasta,
+            @RequestParam(defaultValue = "fecha") String ordenarPor,
+            @RequestParam(defaultValue = "DESC") String direccion,
+            Pageable pageable) {
+
+        RecursoFilterDTO filtros = RecursoFilterDTO.builder()
+                .searchQuery(query)
+                .categoriaId(categoriaId)
+                .tipoRecurso(tipo)
+                .fechaDesde(fechaDesde)
+                .fechaHasta(fechaHasta)
+                .ordenarPor(ordenarPor)
+                .direccion(direccion)
+                .build();
+
+        return ResponseEntity.ok(recursoService.buscarConFiltros(filtros, pageable));
     }
 
     @GetMapping("/{id}")
