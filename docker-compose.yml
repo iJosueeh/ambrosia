@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   backend:
@@ -8,45 +8,43 @@ services:
     ports:
       - "8080:8080"
     environment:
-      # Puedes externalizar estas variables de entorno a un archivo .env
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/postgres
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: your_db_password # ¡Cambia esto por tu contraseña real!
-      JWT_SECRET: aVeryLongAndSecureSecretKeyForTestingJWTpurposes # Usa una clave segura, como la generada antes
+      # Database Configuration (usando Supabase en producción)
+      DB_URL: ${DB_URL}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+
+      # JWT Configuration
+      JWT_SECRET: ${JWT_SECRET}
+
+      # File Upload
       FILE_UPLOAD_DIR: /app/uploads
-      SUPABASE_URL: http://supabase:8000 # O la URL real de Supabase si la usas
-      SUPABASE_KEY: your_supabase_key # ¡Cambia esto por tu clave real!
-      SUPABASE_SERVICE_ROLE_KEY: your_supabase_service_role_key # ¡Cambia esto por tu clave real!
-    depends_on:
-      - db
+
+      # Supabase Configuration
+      SUPABASE_URL: ${SUPABASE_URL}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+    volumes:
+      - ./backend/uploads:/app/uploads
     networks:
       - ambrosia-network
+    restart: unless-stopped
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "80:80"
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8080/api/v1
     depends_on:
       - backend
     networks:
       - ambrosia-network
-
-  db:
-    image: postgres:13-alpine
-    environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: your_db_password # ¡Cambia esto por tu contraseña real!
-    volumes:
-      - db-data:/var/lib/postgresql/data
-    networks:
-      - ambrosia-network
+    restart: unless-stopped
 
 networks:
   ambrosia-network:
     driver: bridge
 
 volumes:
-  db-data:
+  backend-uploads:
