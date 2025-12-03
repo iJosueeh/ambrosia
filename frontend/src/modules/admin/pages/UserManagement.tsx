@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, Search, ChevronLeft, ChevronRight, Trash2, Edit, Eye } from 'lucide-react';
+import { Plus, Search, ChevronLeft, ChevronRight, Trash2, Edit, Eye, Download } from 'lucide-react';
 import { fetchUsers, updateUser, deleteUser } from '../services/userManagement.service';
+import axiosInstance from '../../../utils/axiosInstance';
 import type { AdminUser, PaginatedUsersResponse } from '../types/user.types';
 
 // --- Component Props Interfaces ---
@@ -70,7 +71,7 @@ const UserManagement = () => {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalPages, setTotalPages] = useState(0);
-  
+
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
@@ -117,14 +118,14 @@ const UserManagement = () => {
 
   const handleDelete = async (userId: number) => {
     if (window.confirm('Are you sure you want to delete this user?')) {
-        try {
-            await deleteUser(userId);
-            // Refresh users list
-            loadUsers();
-        } catch (error) {
-            console.error("Failed to delete user:", error);
-            // Handle error display to user
-        }
+      try {
+        await deleteUser(userId);
+        // Refresh users list
+        loadUsers();
+      } catch (error) {
+        console.error("Failed to delete user:", error);
+        // Handle error display to user
+      }
     }
   }
 
@@ -140,23 +141,53 @@ const UserManagement = () => {
 
   const handleSaveUser = async (user: AdminUser) => {
     try {
-        await updateUser(user);
-        handleCloseModal();
-        loadUsers();
+      await updateUser(user);
+      handleCloseModal();
+      loadUsers();
     } catch (error) {
-        console.error("Failed to update user:", error);
+      console.error("Failed to update user:", error);
     }
   }
+
+  const handleExportToExcel = async () => {
+    try {
+      const response = await axiosInstance.get('/admin/users/export/excel', {
+        responseType: 'blob',
+      });
+
+      // Crear un enlace temporal para descargar el archivo
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `usuarios_${new Date().toISOString().split('T')[0]}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Failed to export users:", error);
+      alert('Error al exportar usuarios a Excel');
+    }
+  };
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
         <h1 className="text-3xl font-bold text-gray-800">Gestión de Usuarios</h1>
-        <button className="mt-4 md:mt-0 flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-          <Plus className="w-5 h-5 mr-2" />
-          Añadir Nuevo Usuario
-        </button>
+        <div className="mt-4 md:mt-0 flex gap-3">
+          <button
+            onClick={handleExportToExcel}
+            className="flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            <Download className="w-5 h-5 mr-2" />
+            Exportar a Excel
+          </button>
+          <button className="flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+            <Plus className="w-5 h-5 mr-2" />
+            Añadir Nuevo Usuario
+          </button>
+        </div>
       </div>
 
       {/* Filters and Search */}
@@ -205,18 +236,17 @@ const UserManagement = () => {
                     <div className="text-sm text-gray-500">{user.correo}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        user.rol === 'ADMIN' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
-                    }`}>
-                        {user.rol}
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.rol === 'ADMIN' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+                      }`}>
+                      {user.rol}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(user.fechaRegistro).toLocaleDateString()}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end space-x-2">
-                        <button className="text-gray-400 hover:text-gray-600 p-1"><Eye className="w-5 h-5" /></button>
-                        <button onClick={() => handleEditClick(user)} className="text-gray-400 hover:text-blue-600 p-1"><Edit className="w-5 h-5" /></button>
-                        <button onClick={() => handleDelete(user.id)} className="text-gray-400 hover:text-red-600 p-1"><Trash2 className="w-5 h-5" /></button>
+                      <button className="text-gray-400 hover:text-gray-600 p-1"><Eye className="w-5 h-5" /></button>
+                      <button onClick={() => handleEditClick(user)} className="text-gray-400 hover:text-blue-600 p-1"><Edit className="w-5 h-5" /></button>
+                      <button onClick={() => handleDelete(user.id)} className="text-gray-400 hover:text-red-600 p-1"><Trash2 className="w-5 h-5" /></button>
                     </div>
                   </td>
                 </tr>
@@ -224,7 +254,7 @@ const UserManagement = () => {
             )}
           </tbody>
         </table>
-        
+
         {/* Table Footer with Pagination */}
         <div className="px-6 py-4 border-t border-gray-200">
           <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />

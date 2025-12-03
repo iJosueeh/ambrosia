@@ -1,8 +1,11 @@
 package com.ambrosia.ambrosia.application.service;
 
+import com.ambrosia.ambrosia.domain.model.Usuario;
+import com.ambrosia.ambrosia.domain.repository.UsuarioRepositoryPort;
 import com.ambrosia.ambrosia.infrastructure.adapter.in.web.dto.ProfesionalEstadisticasDTO;
 import com.ambrosia.ambrosia.infrastructure.adapter.in.web.dto.ResourcePopularityDataDTO;
 import com.ambrosia.ambrosia.infrastructure.adapter.in.web.dto.TrendDataDTO;
+import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
@@ -10,9 +13,86 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ExcelExportService {
+
+    private final UsuarioRepositoryPort usuarioRepository;
+
+    public ByteArrayInputStream exportUsuariosToExcel() throws IOException {
+        List<Usuario> usuarios = usuarioRepository.findAll();
+
+        try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            Sheet sheet = workbook.createSheet("Usuarios");
+
+            // Crear estilos
+            CellStyle headerStyle = createHeaderStyleForUsers(workbook);
+            CellStyle dateStyle = createDateStyleForUsers(workbook);
+
+            // Crear encabezados
+            Row headerRow = sheet.createRow(0);
+            String[] headers = { "ID", "Nombre", "Email", "Rol", "Teléfono", "Fecha de Registro", "Nivel de Acceso" };
+
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            // Llenar datos
+            int rowNum = 1;
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+            for (Usuario usuario : usuarios) {
+                Row row = sheet.createRow(rowNum++);
+
+                row.createCell(0).setCellValue(usuario.getId().toString());
+                row.createCell(1).setCellValue(usuario.getNombre());
+                row.createCell(2).setCellValue(usuario.getEmail());
+                row.createCell(3).setCellValue(usuario.getRol() != null ? usuario.getRol().getNombre() : "Sin rol");
+                row.createCell(4).setCellValue(usuario.getTelefono() != null ? usuario.getTelefono() : "");
+
+                Cell dateCell = row.createCell(5);
+                if (usuario.getFechaRegistro() != null) {
+                    dateCell.setCellValue(usuario.getFechaRegistro().format(dateFormatter));
+                    dateCell.setCellStyle(dateStyle);
+                }
+
+                row.createCell(6)
+                        .setCellValue(usuario.getNivelAcceso() != null ? String.valueOf(usuario.getNivelAcceso()) : "");
+            }
+
+            // Auto-ajustar columnas
+            for (int i = 0; i < headers.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            workbook.write(out);
+            return new ByteArrayInputStream(out.toByteArray());
+        }
+    }
+
+    private CellStyle createHeaderStyleForUsers(Workbook workbook) {
+        CellStyle style = workbook.createCellStyle();
+        Font font = workbook.createFont();
+        font.setBold(true);
+        font.setColor(IndexedColors.WHITE.getIndex());
+        style.setFont(font);
+        style.setFillForegroundColor(IndexedColors.DARK_BLUE.getIndex());
+        style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        style.setAlignment(HorizontalAlignment.CENTER);
+        style.setVerticalAlignment(VerticalAlignment.CENTER);
+        return style;
+    }
+
+    private CellStyle createDateStyleForUsers(Workbook workbook) {
+        CellStyle style = workbook.createCellStyle();
+        style.setAlignment(HorizontalAlignment.LEFT);
+        return style;
+    }
 
     public ByteArrayInputStream exportStatisticsToExcel(ProfesionalEstadisticasDTO statistics) throws IOException {
         try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {

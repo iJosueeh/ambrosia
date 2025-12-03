@@ -1,6 +1,9 @@
 package com.ambrosia.ambrosia.application.service;
 
 import com.ambrosia.ambrosia.application.port.in.admin.ObtenerAnalyticasUseCase;
+import com.ambrosia.ambrosia.domain.repository.UsuarioRepositoryPort;
+import com.ambrosia.ambrosia.domain.repository.RecursoRepositoryPort;
+import com.ambrosia.ambrosia.domain.repository.ForoRepositoryPort;
 import com.ambrosia.ambrosia.infrastructure.adapter.in.web.dto.AdminDashboardDTO;
 import com.ambrosia.ambrosia.infrastructure.adapter.in.web.dto.DashboardStatsDTO;
 import com.ambrosia.ambrosia.infrastructure.adapter.in.web.dto.RecentActivityDTO;
@@ -12,9 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.ArrayList;
+import java.time.format.TextStyle;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -22,10 +25,9 @@ public class AdminDashboardService implements ObtenerAnalyticasUseCase {
 
     private static final Logger logger = LoggerFactory.getLogger(AdminDashboardService.class);
 
-    // Inyecta aquí tus repositorios existentes cuando estén disponibles
-    // private final UsuarioRepositoryPort usuarioRepository;
-    // private final RecursoRepositoryPort recursoRepository;
-    // private final ForoRepositoryPort foroRepository;
+    private final UsuarioRepositoryPort usuarioRepository;
+    private final RecursoRepositoryPort recursoRepository;
+    private final ForoRepositoryPort foroRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -39,18 +41,33 @@ public class AdminDashboardService implements ObtenerAnalyticasUseCase {
     private DashboardStatsDTO getDashboardStats() {
         DashboardStatsDTO stats = new DashboardStatsDTO();
 
-        // --- LÓGICA REAL (descomentar cuando integres tus repositorios) ---
-        // stats.setTotalUsuarios(usuarioRepository.count());
-        // stats.setRecursosPublicados(recursoRepository.count());
-        // stats.setHilosActivos(foroRepository.count());
-        // LocalDateTime unMesAtras = LocalDateTime.now().minusMonths(1);
-        // stats.setNuevosRegistrosMes(usuarioRepository.countByFechaRegistroAfter(unMesAtras));
+        try {
+            // Obtener datos reales de la base de datos
+            long totalUsuarios = usuarioRepository.count();
+            long recursosPublicados = recursoRepository.count();
+            long hilosActivos = foroRepository.count();
 
-        // --- DATOS MOCKEADOS (para que funcione sin BD) ---
-        stats.setTotalUsuarios(1250);
-        stats.setRecursosPublicados(340);
-        stats.setHilosActivos(88);
-        stats.setNuevosRegistrosMes(75);
+            // Contar nuevos registros del último mes
+            LocalDateTime unMesAtras = LocalDateTime.now().minusMonths(1);
+            long nuevosRegistros = usuarioRepository.findAll().stream()
+                    .filter(u -> u.getFechaRegistro() != null && u.getFechaRegistro().isAfter(unMesAtras))
+                    .count();
+
+            stats.setTotalUsuarios((int) totalUsuarios);
+            stats.setRecursosPublicados((int) recursosPublicados);
+            stats.setHilosActivos((int) hilosActivos);
+            stats.setNuevosRegistrosMes((int) nuevosRegistros);
+
+            logger.info("Estadísticas obtenidas: {} usuarios, {} recursos, {} hilos, {} nuevos registros",
+                    totalUsuarios, recursosPublicados, hilosActivos, nuevosRegistros);
+        } catch (Exception e) {
+            logger.error("Error al obtener estadísticas, usando valores por defecto", e);
+            // Valores por defecto en caso de error
+            stats.setTotalUsuarios(0);
+            stats.setRecursosPublicados(0);
+            stats.setHilosActivos(0);
+            stats.setNuevosRegistrosMes(0);
+        }
 
         return stats;
     }
@@ -60,30 +77,56 @@ public class AdminDashboardService implements ObtenerAnalyticasUseCase {
     public AdminDashboardDTO getDashboardData() {
         AdminDashboardDTO dashboardData = new AdminDashboardDTO();
         dashboardData.setStats(getDashboardStats());
-        dashboardData.setUserGrowth(getMockUserGrowth());
-        dashboardData.setRecentActivity(getMockRecentActivity());
+        dashboardData.setUserGrowth(getUserGrowthData());
+        dashboardData.setRecentActivity(getRecentActivityData());
         return dashboardData;
     }
 
-    private UserGrowthDTO getMockUserGrowth() {
+    private UserGrowthDTO getUserGrowthData() {
         UserGrowthDTO userGrowth = new UserGrowthDTO();
-        userGrowth.setLabels(Arrays.asList("Ene", "Feb", "Mar", "Abr", "May", "Jun"));
-        userGrowth.setData(Arrays.asList(65L, 59L, 80L, 81L, 56L, 95L));
+
+        try {
+            // Obtener datos de los últimos 6 meses
+            LocalDateTime seisMesesAtras = LocalDateTime.now().minusMonths(6);
+            Map<String, Long> growthByMonth = usuarioRepository.findAll().stream()
+                    .filter(u -> u.getFechaRegistro() != null && u.getFechaRegistro().isAfter(seisMesesAtras))
+                    .collect(Collectors.groupingBy(
+                            u -> u.getFechaRegistro().getMonth().getDisplayName(TextStyle.SHORT, new Locale("es")),
+                            Collectors.counting()));
+
+            List<String> labels = new ArrayList<>(growthByMonth.keySet());
+            List<Long> data = new ArrayList<>(growthByMonth.values());
+
+            userGrowth.setLabels(labels.isEmpty() ? Arrays.asList("Ene", "Feb", "Mar", "Abr", "May", "Jun") : labels);
+            userGrowth.setData(data.isEmpty() ? Arrays.asList(0L, 0L, 0L, 0L, 0L, 0L) : data);
+        } catch (Exception e) {
+            logger.error("Error al obtener datos de crecimiento de usuarios", e);
+            userGrowth.setLabels(Arrays.asList("Ene", "Feb", "Mar", "Abr", "May", "Jun"));
+            userGrowth.setData(Arrays.asList(0L, 0L, 0L, 0L, 0L, 0L));
+        }
+
         return userGrowth;
     }
 
-    private List<RecentActivityDTO> getMockRecentActivity() {
+    private List<RecentActivityDTO> getRecentActivityData() {
         List<RecentActivityDTO> activities = new ArrayList<>();
-        activities.add(new RecentActivityDTO("USUARIO", "Nuevo usuario registrado: 'elena_gomez'",
-                LocalDateTime.now().minusHours(1)));
-        activities.add(new RecentActivityDTO("RECURSO", "Nuevo artículo publicado: 'Introducción a Mindfulness'",
-                LocalDateTime.now().minusHours(3)));
-        activities.add(new RecentActivityDTO("FORO", "'juan_perez' creó un nuevo hilo en 'Ansiedad'",
-                LocalDateTime.now().minusHours(5)));
-        activities.add(new RecentActivityDTO("USUARIO", "Nuevo usuario registrado: 'carlos_ruiz'",
-                LocalDateTime.now().minusDays(1)));
-        activities.add(new RecentActivityDTO("CONTACTO", "Nuevo mensaje de contacto recibido.",
-                LocalDateTime.now().minusDays(2)));
+
+        try {
+            // Obtener últimos 5 usuarios registrados
+            usuarioRepository.findAll().stream()
+                    .filter(u -> u.getFechaRegistro() != null)
+                    .sorted((u1, u2) -> u2.getFechaRegistro().compareTo(u1.getFechaRegistro()))
+                    .limit(5)
+                    .forEach(u -> activities.add(new RecentActivityDTO(
+                            "USUARIO",
+                            "Nuevo usuario registrado: '" + u.getNombre() + "'",
+                            u.getFechaRegistro())));
+        } catch (Exception e) {
+            logger.error("Error al obtener actividad reciente", e);
+            // Agregar actividad por defecto si hay error
+            activities.add(new RecentActivityDTO("SISTEMA", "No hay actividad reciente", LocalDateTime.now()));
+        }
+
         return activities;
     }
 }
