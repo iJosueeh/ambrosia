@@ -1,32 +1,54 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
-  FileText, Heart, Apple, BookOpen, Search, ChevronLeft, ChevronRight, LoaderCircle,
-  Cloud, Star, Users, Brain, Sparkles, Activity, Moon, Home, Briefcase, Zap, AlertCircle
-} from 'lucide-react';
-import { getCategories, searchResourcesWithFilters, type PaginatedResources, type ResourceFilters } from '../services/resource.service';
-import type { CategoriaRecursoDTO } from '../types/categoria.types';
-import type { RecursoDTO } from '../types/recurso.types';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+  FileText,
+  Heart,
+  Apple,
+  BookOpen,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  LoaderCircle,
+  Cloud,
+  Star,
+  Users,
+  Brain,
+  Sparkles,
+  Activity,
+  Moon,
+  Home,
+  Briefcase,
+  Zap,
+  AlertCircle,
+} from "lucide-react";
+import {
+  getCategories,
+  searchResourcesWithFilters,
+  type PaginatedResources,
+  type ResourceFilters,
+} from "../services/resource.service";
+import type { CategoriaRecursoDTO } from "../types/categoria.types";
+import type { RecursoDTO } from "../types/recurso.types";
+import { useNavigate, useParams, Link } from "react-router-dom";
 
 import { motion } from "framer-motion";
 
 // Mapeo de nombres de iconos (strings del backend) a componentes de Lucide React
 const iconComponents: Record<string, React.ElementType> = {
-  'Heart': Heart,
-  'Cloud': Cloud,
-  'Star': Star,
-  'Users': Users,
-  'Brain': Brain,
-  'Apple': Apple,
-  'Activity': Activity,
-  'Moon': Moon,
-  'Home': Home,
-  'Briefcase': Briefcase,
-  'Zap': Zap,
-  'AlertCircle': AlertCircle,
-  'BookOpen': BookOpen,
-  'FileText': FileText,
-  'Sparkles': Sparkles,
+  Heart: Heart,
+  Cloud: Cloud,
+  Star: Star,
+  Users: Users,
+  Brain: Brain,
+  Apple: Apple,
+  Activity: Activity,
+  Moon: Moon,
+  Home: Home,
+  Briefcase: Briefcase,
+  Zap: Zap,
+  AlertCircle: AlertCircle,
+  BookOpen: BookOpen,
+  FileText: FileText,
+  Sparkles: Sparkles,
 };
 
 export const RecursosExplorer: React.FC = () => {
@@ -36,14 +58,13 @@ export const RecursosExplorer: React.FC = () => {
   const [resources, setResources] = useState<RecursoDTO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [totalElements, setTotalElements] = useState(0);
   const navigate = useNavigate();
 
   const articlesPerPage = 6;
 
   useEffect(() => {
-
     const loadData = async () => {
       setIsLoading(true);
       try {
@@ -51,11 +72,13 @@ export const RecursosExplorer: React.FC = () => {
         setCategories(fetchedCategories);
 
         let currentSelectedCategory: string | null = null;
-        if (categoryId && fetchedCategories.some(c => c.id === categoryId)) {
+        if (categoryId && fetchedCategories.some((c) => c.id === categoryId)) {
           currentSelectedCategory = categoryId;
           console.log("setSelectedCategory from URL:", currentSelectedCategory);
         } else {
-          console.log("setSelectedCategory to null (no categoryId or invalid):");
+          console.log(
+            "setSelectedCategory to null (no categoryId or invalid):"
+          );
         }
         setSelectedCategory(currentSelectedCategory);
 
@@ -75,7 +98,6 @@ export const RecursosExplorer: React.FC = () => {
         console.log("Fetched paginated resources:", fetchedPaginatedResources);
         setResources(fetchedPaginatedResources.content);
         setTotalElements(fetchedPaginatedResources.totalElements);
-
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -86,7 +108,7 @@ export const RecursosExplorer: React.FC = () => {
   }, [categoryId, currentPage, searchQuery]); // Added currentPage and searchQuery to dependencies
 
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, [currentPage]);
 
   const totalPages = Math.ceil(totalElements / articlesPerPage);
@@ -96,20 +118,27 @@ export const RecursosExplorer: React.FC = () => {
     setSelectedCategory(id);
     setCurrentPage(1); // Reset page when category changes
     console.log("handleCategoryClick: Resetting currentPage to 1.");
-    navigate(id === null ? '/explorar-recursos' : `/explorar-recursos/${id}`, { replace: true });
+    navigate(id === null ? "/explorar-recursos" : `/explorar-recursos/${id}`, {
+      replace: true,
+    });
   };
 
   const renderContent = () => {
     console.log("renderContent: totalElements =", totalElements);
     console.log("renderContent: totalPages =", totalPages);
     console.log("renderContent: currentPage =", currentPage);
-    console.log("renderContent: displayedArticles.length =", displayedArticles.length);
+    console.log(
+      "renderContent: displayedArticles.length =",
+      displayedArticles.length
+    );
 
     if (isLoading) {
       return (
         <div className="text-center py-16 bg-white rounded-2xl shadow-md flex flex-col items-center justify-center">
           <LoaderCircle className="w-16 h-16 text-emerald-500 mx-auto mb-4 animate-spin" />
-          <h3 className="text-xl font-semibold text-gray-800">Cargando Recursos...</h3>
+          <h3 className="text-xl font-semibold text-gray-800">
+            Cargando Recursos...
+          </h3>
         </div>
       );
     }
@@ -124,45 +153,57 @@ export const RecursosExplorer: React.FC = () => {
               show: {
                 opacity: 1,
                 transition: {
-                  staggerChildren: 0.2
-                }
-              }
+                  staggerChildren: 0.2,
+                },
+              },
             }}
             initial="hidden"
             animate="show"
             className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 min-h-[500px]"
-          >            {displayedArticles.map((article) => (
-            <motion.article
-              key={article.id}
-              variants={{ hidden: { opacity: 0, y: 50 }, show: { opacity: 1, y: 0 } }}
-              className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 group cursor-pointer flex flex-col h-full"
-            >
-              <div className="relative h-52 overflow-hidden bg-gray-200">
-                <img
-                  src={article.urlimg}
-                  alt={article.titulo}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                />
-              </div>
-              <div className="p-6 flex flex-col flex-1">
-                <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-emerald-600 transition-colors leading-snug">
-                  {article.titulo}
-                </h3>
-                <p className="text-gray-600 mb-4 line-clamp-3 text-sm flex-1">
-                  {article.descripcion}
-                </p>
-                <Link to={`/articulos/${article.slug}`} className="inline-flex items-center gap-2 text-emerald-600 font-semibold hover:text-emerald-700 text-sm group/link">
-                  <span>Leer más</span>
-                  <ChevronRight className="w-4 h-4 ml-1 group-hover/link:translate-x-1 transition-transform" />
-                </Link>
-              </div>
-            </motion.article>
-          ))}
+          >
+            {" "}
+            {displayedArticles.map((article) => (
+              <motion.article
+                key={article.id}
+                variants={{
+                  hidden: { opacity: 0, y: 50 },
+                  show: { opacity: 1, y: 0 },
+                }}
+                className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 group cursor-pointer flex flex-col h-full"
+              >
+                <div className="relative h-52 overflow-hidden bg-gray-200">
+                  <img
+                    src={article.urlimg}
+                    alt={article.titulo}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                </div>
+                <div className="p-6 flex flex-col flex-1">
+                  <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-emerald-600 transition-colors leading-snug">
+                    {article.titulo}
+                  </h3>
+                  <p className="text-gray-600 mb-4 line-clamp-3 text-sm flex-1">
+                    {article.descripcion}
+                  </p>
+                  <Link
+                    to={`/articulos/${article.slug}`}
+                    className="inline-flex items-center gap-2 text-emerald-600 font-semibold hover:text-emerald-700 text-sm group/link"
+                  >
+                    <span>Leer más</span>
+                    <ChevronRight className="w-4 h-4 ml-1 group-hover/link:translate-x-1 transition-transform" />
+                  </Link>
+                </div>
+              </motion.article>
+            ))}
           </motion.div>
 
           {totalPages > 1 && (
             <div className="flex items-center justify-center gap-2">
-              <button onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))} disabled={currentPage === 1} className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-40 transition-colors text-gray-700">
+              <button
+                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-40 transition-colors text-gray-700"
+              >
                 <ChevronLeft className="w-5 h-5" />
               </button>
               {[...Array(totalPages)].map((_, index) => {
@@ -171,16 +212,23 @@ export const RecursosExplorer: React.FC = () => {
                   <button
                     key={pageNum}
                     onClick={() => setCurrentPage(pageNum)}
-                    className={`w-10 h-10 rounded-lg font-semibold transition-all duration-200 ${currentPage === pageNum
-                      ? 'bg-emerald-500 text-white shadow-md'
-                      : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
-                      }`}
+                    className={`w-10 h-10 rounded-lg font-semibold transition-all duration-200 ${
+                      currentPage === pageNum
+                        ? "bg-emerald-500 text-white shadow-md"
+                        : "border border-gray-300 text-gray-700 hover:bg-gray-50"
+                    }`}
                   >
                     {pageNum}
                   </button>
                 );
               })}
-              <button onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))} disabled={currentPage === totalPages} className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-40 transition-colors text-gray-700">
+              <button
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                }
+                disabled={currentPage === totalPages}
+                className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-40 transition-colors text-gray-700"
+              >
                 <ChevronRight className="w-5 h-5" />
               </button>
             </div>
@@ -192,22 +240,21 @@ export const RecursosExplorer: React.FC = () => {
     return (
       <div className="text-center py-16 bg-white rounded-2xl shadow-md">
         <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-        <h3 className="text-xl font-semibold text-gray-800 mb-2">No se encontraron artículos</h3>
-        <p className="text-gray-600">Intenta con otra búsqueda o selecciona una categoría diferente</p>
+        <h3 className="text-xl font-semibold text-gray-800 mb-2">
+          No se encontraron artículos
+        </h3>
+        <p className="text-gray-600">
+          Intenta con otra búsqueda o selecciona una categoría diferente
+        </p>
       </div>
     );
   };
 
   return (
-
     <>
-
       <div className="min-h-screen bg-gray-50">
-
         <div className="max-w-7xl mx-auto px-4 py-8">
-
           <div className="flex flex-col lg:flex-row gap-8">
-
             {/* Sidebar - Categories */}
 
             <motion.aside
@@ -216,71 +263,62 @@ export const RecursosExplorer: React.FC = () => {
               transition={{ duration: 0.5 }}
               className="lg:w-64 flex-shrink-0"
             >
-
               <div className="bg-white rounded-xl shadow-md p-6 lg:sticky lg:top-8">
-
-                <h2 className="text-lg font-bold text-gray-800 mb-4">Categorías</h2>
+                <h2 className="text-lg font-bold text-gray-800 mb-4">
+                  Categorías
+                </h2>
 
                 <nav className="space-y-2">
-
                   <button
-
                     onClick={() => handleCategoryClick(null)}
-
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-left ${selectedCategory === null
-
-                      ? 'bg-emerald-50 text-emerald-700 font-semibold border-l-4 border-emerald-500'
-
-                      : 'text-gray-600 hover:bg-gray-50 border-l-4 border-transparent'
-
-                      }`}
-
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-left ${
+                      selectedCategory === null
+                        ? "bg-emerald-50 text-emerald-700 font-semibold border-l-4 border-emerald-500"
+                        : "text-gray-600 hover:bg-gray-50 border-l-4 border-transparent"
+                    }`}
                   >
-
                     <FileText className="w-6 h-6 flex-shrink-0" />
 
                     <span>Todos</span>
-
                   </button>
 
                   {categories.map((category) => {
                     // Obtener el componente de icono desde el backend o usar FileText por defecto
-                    const IconComponent = category.icono && iconComponents[category.icono]
-                      ? iconComponents[category.icono]
-                      : FileText;
+                    const IconComponent =
+                      category.icono && iconComponents[category.icono]
+                        ? iconComponents[category.icono]
+                        : FileText;
 
                     const isActive = selectedCategory === category.id;
-                    const categoryColor = category.color || '#10b981'; // Verde esmeralda por defecto
+                    const categoryColor = category.color || "#10b981"; // Verde esmeralda por defecto
 
                     return (
                       <button
                         key={category.id}
                         onClick={() => handleCategoryClick(category.id)}
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-left ${isActive
-                            ? 'bg-emerald-50 text-emerald-700 font-semibold border-l-4'
-                            : 'text-gray-600 hover:bg-gray-50 border-l-4 border-transparent'
-                          }`}
-                        style={isActive ? { borderLeftColor: categoryColor } : {}}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-left ${
+                          isActive
+                            ? "bg-emerald-50 text-emerald-700 font-semibold border-l-4"
+                            : "text-gray-600 hover:bg-gray-50 border-l-4 border-transparent"
+                        }`}
+                        style={
+                          isActive ? { borderLeftColor: categoryColor } : {}
+                        }
                       >
                         <IconComponent
                           className="w-6 h-6 flex-shrink-0"
                           style={{
                             color: isActive ? categoryColor : categoryColor,
-                            opacity: isActive ? 1 : 0.7
+                            opacity: isActive ? 1 : 0.7,
                           }}
                         />
                         <span>{category.nombre}</span>
                       </button>
                     );
                   })}
-
                 </nav>
-
               </div>
-
             </motion.aside>
-
-
 
             {/* Main Content */}
 
@@ -290,56 +328,33 @@ export const RecursosExplorer: React.FC = () => {
               transition={{ duration: 0.5 }}
               className="flex-1 min-w-0"
             >
-
               <div className="mb-8">
-
                 <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-
                   Explora Nuestros Recursos
-
                 </h1>
 
                 <div className="relative max-w-2xl">
-
                   <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
 
                   <input
-
                     type="text"
-
                     placeholder="Buscar por palabra clave"
-
                     value={searchQuery}
-
                     onChange={(e) => {
-
                       setSearchQuery(e.target.value);
 
                       setCurrentPage(1);
-
                     }}
-
                     className="w-full pl-12 pr-4 py-3.5 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent shadow-md"
-
                   />
-
                 </div>
-
               </div>
 
               {renderContent()}
-
             </motion.main>
-
           </div>
-
         </div>
-
       </div>
-
     </>
-
   );
-
-}
-
+};

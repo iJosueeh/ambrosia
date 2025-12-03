@@ -66,7 +66,7 @@ const Resources = () => {
   const [resources, setResources] = useState<ResourceAdminDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalPages, setTotalPages] = useState(0);
-  
+
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingResource, setEditingResource] = useState<Partial<ResourceAdminDTO> | null>(null);
@@ -105,23 +105,24 @@ const Resources = () => {
 
   useEffect(() => {
     const loadFilters = async () => {
-        try {
-            const [catData, statusData] = await Promise.all([
-                fetchResourceCategories(),
-                fetchResourceStatuses()
-            ]);
-            setCategories(catData);
-            setStatuses(statusData);
-        } catch (error) {
-            console.error("Failed to load filters:", error);
-        }
+      try {
+        const [catData, statusData] = await Promise.all([
+          fetchResourceCategories(),
+          fetchResourceStatuses()
+        ]);
+        setCategories(catData);
+        setStatuses(statusData);
+      } catch (error) {
+        console.error("Failed to load filters:", error);
+      }
     };
     loadFilters();
   }, []);
 
   useEffect(() => {
     loadResources();
-  }, [loadResources]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, categoryId, statusId, searchQuery]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -135,12 +136,12 @@ const Resources = () => {
 
   const handleDelete = async (id: number) => {
     if (window.confirm('Are you sure you want to delete this resource?')) {
-        try {
-            await deleteResource(id);
-            loadResources();
-        } catch (error) {
-            console.error('Failed to delete resource', error);
-        }
+      try {
+        await deleteResource(id);
+        loadResources();
+      } catch (error) {
+        console.error('Failed to delete resource', error);
+      }
     }
   }
 
@@ -156,15 +157,15 @@ const Resources = () => {
 
   const handleSave = async (resourceData: ResourceUpdateDTO, id?: number) => {
     try {
-        if (id) {
-            await updateResource(id, resourceData);
-        } else {
-            await createResource(resourceData);
-        }
-        handleCloseModal();
-        loadResources();
+      if (id) {
+        await updateResource(id, resourceData);
+      } else {
+        await createResource(resourceData);
+      }
+      handleCloseModal();
+      loadResources();
     } catch (error) {
-        console.error('Failed to save resource', error);
+      console.error('Failed to save resource', error);
     }
   }
 
@@ -236,8 +237,8 @@ const Resources = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(resource.fechaPublicacion).toLocaleDateString()}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end space-x-2">
-                        <button onClick={() => handleOpenModal(resource)} className="text-gray-400 hover:text-blue-600 p-1"><Edit className="w-5 h-5" /></button>
-                        <button onClick={() => handleDelete(resource.id)} className="text-gray-400 hover:text-red-600 p-1"><Trash2 className="w-5 h-5" /></button>
+                      <button onClick={() => handleOpenModal(resource)} className="text-gray-400 hover:text-blue-600 p-1"><Edit className="w-5 h-5" /></button>
+                      <button onClick={() => handleDelete(resource.id)} className="text-gray-400 hover:text-red-600 p-1"><Trash2 className="w-5 h-5" /></button>
                     </div>
                   </td>
                 </tr>
@@ -245,20 +246,20 @@ const Resources = () => {
             )}
           </tbody>
         </table>
-        
+
         <div className="px-6 py-4 border-t border-gray-200">
           <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
         </div>
       </div>
 
-        <ResourceEditModal
-            isOpen={isModalOpen}
-            onClose={handleCloseModal}
-            onSave={handleSave}
-            resource={editingResource}
-            categories={categories}
-            statuses={statuses}
-        />
+      <ResourceEditModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onSave={handleSave}
+        resource={editingResource}
+        categories={categories}
+        statuses={statuses}
+      />
     </div>
   );
 };

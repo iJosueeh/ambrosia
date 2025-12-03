@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Menu, X, LogIn, LogOut } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import Logotipo from "../../assets/Ambrosia_Logo2.png";
 import { UserIcon } from "./icons/UserIcon";
 import { useAuth } from "../hooks/useAuth";
@@ -9,12 +9,13 @@ export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const firstName = user ? user.name.split(' ')[0] : '';
 
   const navItems = [
     { name: "Inicio", to: "/" },
-    { name: "Sobre Nosotros", to: "/" },
+    { name: "Sobre Nosotros", to: "/#about", isSection: true },
     { name: "Recursos", to: "/resources-center" },
     { name: "Artículos", to: "/articulos" },
     { name: "Foros", to: "/community-forums" },
@@ -28,6 +29,28 @@ export const Navbar = () => {
       navigate("/auth");
     }
     setIsOpen(false);
+  };
+
+  const handleAboutClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    setIsOpen(false);
+
+    // Si estamos en la página principal, hacer scroll suave
+    if (location.pathname === '/') {
+      const aboutSection = document.getElementById('about');
+      if (aboutSection) {
+        aboutSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    } else {
+      // Si estamos en otra página, navegar a la página principal y luego hacer scroll
+      navigate('/');
+      setTimeout(() => {
+        const aboutSection = document.getElementById('about');
+        if (aboutSection) {
+          aboutSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    }
   };
 
   return (
@@ -44,14 +67,26 @@ export const Navbar = () => {
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-8">
             {navItems.map((item) => (
-              <Link
-                key={item.name}
-                to={item.to}
-                className="relative group text-gray-600 hover:text-emerald-500 transition-colors duration-200 text-sm font-medium"
-              >
-                {item.name}
-                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-emerald-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-in-out"></span>
-              </Link>
+              item.isSection ? (
+                <a
+                  key={item.name}
+                  href={item.to}
+                  onClick={handleAboutClick}
+                  className="relative group text-gray-600 hover:text-emerald-500 transition-colors duration-200 text-sm font-medium cursor-pointer"
+                >
+                  {item.name}
+                  <span className="absolute bottom-0 left-0 w-full h-0.5 bg-emerald-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-in-out"></span>
+                </a>
+              ) : (
+                <Link
+                  key={item.name}
+                  to={item.to}
+                  className="relative group text-gray-600 hover:text-emerald-500 transition-colors duration-200 text-sm font-medium"
+                >
+                  {item.name}
+                  <span className="absolute bottom-0 left-0 w-full h-0.5 bg-emerald-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-in-out"></span>
+                </Link>
+              )
             ))}
             <Link
               to="/contacto"
@@ -126,14 +161,25 @@ export const Navbar = () => {
       >
         <div className="px-4 pt-2 pb-4 space-y-2">
           {navItems.map((item) => (
-            <Link
-              key={item.name}
-              to={item.to}
-              className="block py-2 text-gray-600 hover:text-emerald-500 transition-colors duration-200 text-sm font-medium"
-              onClick={() => setIsOpen(false)}
-            >
-              {item.name}
-            </Link>
+            item.isSection ? (
+              <a
+                key={item.name}
+                href={item.to}
+                onClick={handleAboutClick}
+                className="block py-2 text-gray-600 hover:text-emerald-500 transition-colors duration-200 text-sm font-medium cursor-pointer"
+              >
+                {item.name}
+              </a>
+            ) : (
+              <Link
+                key={item.name}
+                to={item.to}
+                className="block py-2 text-gray-600 hover:text-emerald-500 transition-colors duration-200 text-sm font-medium"
+                onClick={() => setIsOpen(false)}
+              >
+                {item.name}
+              </Link>
+            )
           ))}
           <Link
             to="/contacto"
